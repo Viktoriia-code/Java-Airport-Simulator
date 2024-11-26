@@ -1,12 +1,13 @@
-package simu.model;
+package src.main.java.model;
 
 import eduni.distributions.ContinuousGenerator;
-import simu.framework.*;
+import src.main.java.framework.*;
 import java.util.LinkedList;
 
 // TODO:
 // Service Point functionalities & calculations (+ variables needed) and reporting to be implemented
 public class ServicePoint {
+	private String name;
 	private LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
 	private ContinuousGenerator generator;
 	private EventList eventList;
@@ -15,7 +16,8 @@ public class ServicePoint {
 	private boolean reserved = false;
 
 
-	public ServicePoint(ContinuousGenerator generator, EventList eventList, EventType type){
+	public ServicePoint(String name, ContinuousGenerator generator, EventList eventList, EventType type){
+		this.name = name;
 		this.eventList = eventList;
 		this.generator = generator;
 		this.eventTypeScheduled = type;
@@ -31,7 +33,7 @@ public class ServicePoint {
 	}
 
 	public void beginService() {		// Begins a new service, customer is on the queue during the service
-		Trace.out(Trace.Level.INFO, "Starting a new service for the customer #" + queue.peek().getId());
+		Trace.out(Trace.Level.INFO, "Starting " + name + " for the customer #" + queue.peek().getId());
 		
 		reserved = true;
 		double serviceTime = generator.sample();

@@ -1,6 +1,6 @@
-package simu.model;
+package src.main.java.model;
 
-import simu.framework.*;
+import src.main.java.framework.*;
 
 // TODO:
 // Customer to be implemented according to the requirements of the simulation model (data!)
@@ -39,10 +39,10 @@ public class Customer {
 	}
 	
 	public void reportResults(){
-		Trace.out(Trace.Level.INFO, "\nCustomer " + id + " ready! ");
-		Trace.out(Trace.Level.INFO, "Customer "   + id + " arrived: " + arrivalTime);
-		Trace.out(Trace.Level.INFO,"Customer "    + id + " removed: " + removalTime);
-		Trace.out(Trace.Level.INFO,"Customer "    + id + " stayed: "  + (removalTime - arrivalTime));
+		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
+		Trace.out(Trace.Level.INFO, "Customer #"   + id + " arrived: " + arrivalTime);
+		Trace.out(Trace.Level.INFO,"Customer #"    + id + " removed: " + removalTime);
+		Trace.out(Trace.Level.INFO,"Customer #"    + id + " stayed: "  + (removalTime - arrivalTime));
 
 		sum += (removalTime - arrivalTime);
 		double mean = sum/id;
