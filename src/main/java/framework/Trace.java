@@ -1,4 +1,4 @@
-package src.main.java.framework;
+package framework;
 
 public class Trace {
 	public enum Level{INFO, WAR, ERR}

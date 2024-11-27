@@ -1,4 +1,4 @@
-package src.main.java.framework;
+package framework;
 
 public class Event implements Comparable<Event> {
 	private IEventType type;

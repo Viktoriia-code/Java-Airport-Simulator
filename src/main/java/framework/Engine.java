@@ -1,4 +1,4 @@
-package src.main.java.framework;
+package framework;
 
 public abstract class Engine {
 	private double simulationTime = 0;	// time when the simulation will be stopped

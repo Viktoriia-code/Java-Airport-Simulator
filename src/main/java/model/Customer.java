@@ -1,6 +1,6 @@
-package src.main.java.model;
+package model;
 
-import src.main.java.framework.*;
+import framework.*;
 
 // TODO:
 // Customer to be implemented according to the requirements of the simulation model (data!)

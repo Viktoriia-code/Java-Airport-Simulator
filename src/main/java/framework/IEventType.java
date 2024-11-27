@@ -1,3 +1,3 @@
-package src.main.java.framework;
+package framework;
 
 public interface IEventType {}

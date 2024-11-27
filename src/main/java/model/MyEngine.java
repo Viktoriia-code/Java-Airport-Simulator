@@ -1,9 +1,9 @@
-package src.main.java.model;
+package model;
 
 import eduni.distributions.ContinuousGenerator;
 import eduni.distributions.Normal;
-import src.main.java.framework.*;
 import eduni.distributions.Negexp;
+import framework.*;
 
 import java.util.Random;
 

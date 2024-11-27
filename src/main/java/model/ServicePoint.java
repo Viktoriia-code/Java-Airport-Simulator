@@ -1,7 +1,7 @@
-package src.main.java.model;
+package model;
 
 import eduni.distributions.ContinuousGenerator;
-import src.main.java.framework.*;
+import framework.*;
 import java.util.LinkedList;
 
 // TODO:

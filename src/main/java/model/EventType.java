@@ -1,6 +1,6 @@
-package src.main.java.model;
+package model;
 
-import src.main.java.framework.IEventType;
+import framework.IEventType;
 
 // TODO:
 // Event types are defined by the requirements of the simulation model

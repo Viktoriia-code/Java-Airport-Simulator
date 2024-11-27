@@ -1,9 +1,8 @@
-package src.main.java;
-
-import src.main.java.framework.Engine;
-import src.main.java.framework.Trace;
-import src.main.java.framework.Trace.Level;
-import src.main.java.model.MyEngine;
+import framework.Engine;
+import framework.Trace;
+import framework.Trace.Level;
+import model.MyEngine;
+//import view.SimulatorView;
 
 /* Command-line type User Interface */
 public class Main {
@@ -13,5 +12,7 @@ public class Main {
         Engine m = new MyEngine();
         m.setSimulationTime(100);
         m.run();
+
+        //SimulatorView.launch(SimulatorView.class);
     }
 }

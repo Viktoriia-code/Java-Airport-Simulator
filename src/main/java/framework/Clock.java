@@ -1,4 +1,4 @@
-package src.main.java.framework;
+package framework;
 
 public class Clock {
 	private double clock;
