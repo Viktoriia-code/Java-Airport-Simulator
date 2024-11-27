@@ -1,4 +1,4 @@
-package simu.framework;
+package src.main.java.framework;
 
 import java.util.PriorityQueue;
 

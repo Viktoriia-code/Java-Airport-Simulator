@@ -1,4 +1,4 @@
-package simu.framework;
+package src.main.java.framework;
 
 public abstract class Engine {
 	private double simulationTime = 0;	// time when the simulation will be stopped
@@ -30,6 +30,7 @@ public abstract class Engine {
 			Trace.out(Trace.Level.INFO, "\nC-phase:" );
 			tryCEvents();
 
+			System.out.println("\n=====================");
 		}
 
 		results();

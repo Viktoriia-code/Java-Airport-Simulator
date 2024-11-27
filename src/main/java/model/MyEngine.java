@@ -1,9 +1,8 @@
-package simu.model;
+package src.main.java.model;
 
 import eduni.distributions.ContinuousGenerator;
 import eduni.distributions.Normal;
-import eduni.distributions.Uniform;
-import simu.framework.*;
+import src.main.java.framework.*;
 import eduni.distributions.Negexp;
 
 import java.util.Random;
@@ -14,16 +13,18 @@ public class MyEngine extends Engine {
 	public static final boolean TEXTDEMO = true;
 	public static final boolean FIXEDARRIVALTIMES = false;
 	public static final boolean FXIEDSERVICETIMES = false;
+	private int servedClients = 0;
 
 	/*
 	 * This is the place where you implement your own simulator
 	 *
-	 * Demo simulation case:
-	 * Simulate three service points, customer goes through all three service points to get serviced
-	 * 		--> SP1 --> SP2 --> SP3 -->
+	 * Simulation case:
+	 * Simulate four service points, customer goes through all four service points to get serviced
+	 * 		--> SP1 --> SP2 --> SP3 --> SP4
+	 *      --> Check-in --> Security check --> Border Control --> Boarding
 	 */
 	public MyEngine() {
-		servicePoints = new ServicePoint[3];
+		servicePoints = new ServicePoint[4];
 
 		if (TEXTDEMO) {
 			/* special setup for the example in text
@@ -85,16 +86,18 @@ public class MyEngine extends Engine {
 				// normal distribution used to model service times
 				serviceTime = new Normal(10, 6, Integer.toUnsignedLong(r.nextInt()));
 
-			servicePoints[0] = new ServicePoint(serviceTime, eventList, EventType.DEP1);
-			servicePoints[1] = new ServicePoint(serviceTime, eventList, EventType.DEP2);
-			servicePoints[2] = new ServicePoint(serviceTime, eventList, EventType.DEP3);
+			servicePoints[0] = new ServicePoint("Check-in", serviceTime, eventList, EventType.DEP1);
+			servicePoints[1] = new ServicePoint("Security check", serviceTime, eventList, EventType.DEP2);
+			servicePoints[2] = new ServicePoint("Border control", serviceTime, eventList, EventType.DEP3);
+			servicePoints[3] = new ServicePoint("Boarding", serviceTime, eventList, EventType.DEP4);
 
 			arrivalProcess = new ArrivalProcess(arrivalTime, eventList, EventType.ARR1);
 		} else {
 			/* more realistic simulation case with variable customer arrival times and service times */
-			servicePoints[0] = new ServicePoint(new Normal(10, 6), eventList, EventType.DEP1);
-			servicePoints[1] = new ServicePoint(new Normal(10, 10), eventList, EventType.DEP2);
-			servicePoints[2] = new ServicePoint(new Normal(5, 3), eventList, EventType.DEP3);
+			servicePoints[0] = new ServicePoint("Check-in", new Normal(10, 6), eventList, EventType.DEP1);
+			servicePoints[1] = new ServicePoint("Security check", new Normal(10, 10), eventList, EventType.DEP2);
+			servicePoints[2] = new ServicePoint("Border control", new Normal(5, 3), eventList, EventType.DEP3);
+			servicePoints[3] = new ServicePoint("Boarding", new Normal(5, 3), eventList, EventType.DEP4);
 
 			arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARR1);
 		}
@@ -127,8 +130,14 @@ public class MyEngine extends Engine {
 
 		case DEP3:
 			a = servicePoints[2].removeQueue();
+			servicePoints[3].addQueue(a);
+			break;
+
+		case DEP4:
+			a = servicePoints[3].removeQueue();
 			a.setRemovalTime(Clock.getInstance().getClock());
 		    a.reportResults();
+			servedClients++;
 			break;
 		}
 	}
@@ -145,6 +154,7 @@ public class MyEngine extends Engine {
 	@Override
 	protected void results() {
 		System.out.println("Simulation ended at " + Clock.getInstance().getClock());
-		System.out.println("Results ... are currently missing");
+		System.out.println("Results:");
+		System.out.println("Number of served clients: " + servedClients);
 	}
 }

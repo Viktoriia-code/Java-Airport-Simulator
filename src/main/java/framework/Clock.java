@@ -1,4 +1,4 @@
-package simu.framework;
+package src.main.java.framework;
 
 public class Clock {
 	private double clock;
