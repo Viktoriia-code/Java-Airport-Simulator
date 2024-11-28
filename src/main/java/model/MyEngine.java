@@ -12,7 +12,7 @@ public class MyEngine extends Engine {
 	private ServicePoint[] servicePoints;
 	public static final boolean TEXTDEMO = true;
 	public static final boolean FIXEDARRIVALTIMES = false;
-	public static final boolean FXIEDSERVICETIMES = false;
+	public static final boolean FIXEDSERVICETIMES = false;
 	private int servedClients = 0;
 
 	/*
@@ -61,7 +61,7 @@ public class MyEngine extends Engine {
 				arrivalTime = new Negexp(10, Integer.toUnsignedLong(r.nextInt()));
 
 			ContinuousGenerator serviceTime = null;
-			if (FXIEDSERVICETIMES) {
+			if (FIXEDSERVICETIMES) {
 				// make a special "random number distribution" which produces constant value for the service time in service points
 				serviceTime = new ContinuousGenerator() {
 					@Override
