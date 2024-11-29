@@ -88,8 +88,10 @@ public class SimulatorController {
     private void showInstructions() {
         // Create a simple alert with instructions
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Instructions");
+        alert.setTitle("Info");
         alert.setHeaderText("Airport Simulator Instructions");
+        alert.setWidth(300);
+        alert.setHeight(400);
         alert.setContentText("1. Adjust the sliders to set the number of points for each stage of the process.\n"
                 + "2. Set the simulation time and passenger count.\n"
                 + "3. Click Start to begin the simulation.\n"
