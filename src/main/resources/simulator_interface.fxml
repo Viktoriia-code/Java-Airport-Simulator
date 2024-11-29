@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
    <left>
       <VBox prefHeight="348.0" prefWidth="158.0" spacing="3.0" BorderPane.alignment="TOP_CENTER">
          <children>
@@ -24,7 +24,7 @@
                <children>
                   <Label maxWidth="-Infinity" prefHeight="17.0" text="Check-in Points" HBox.hgrow="ALWAYS" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                  <Label text="1" HBox.hgrow="ALWAYS">
+                  <Label text="1">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
@@ -80,30 +80,10 @@
                </children>
             </HBox>
             <Slider blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
-            <HBox prefHeight="17.0" prefWidth="200.0">
-               <children>
-                  <Label text="Simulation time (hrs)" />
-                  <Pane HBox.hgrow="ALWAYS" />
-                  <Label text="1000">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-               </children>
-            </HBox>
-            <Spinner editable="true" />
-            <HBox prefHeight="17.0" prefWidth="200.0">
-               <children>
-                  <Label text="Passenger amount" />
-                  <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                  <Label text="1000">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-               </children>
-            </HBox>
-            <Spinner />
+            <Label text="Simulation time (hrs)" />
+            <Spinner fx:id="timeSpinner" editable="true" />
+            <Label text="Passenger amount" />
+            <Spinner fx:id="passengerSpinner" editable="true" />
             <Button mnemonicParsing="false" text="Start">
                <font>
                   <Font name="System Bold" size="14.0" />
