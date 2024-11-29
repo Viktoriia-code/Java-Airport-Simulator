@@ -14,15 +14,15 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <left>
-      <VBox prefHeight="348.0" prefWidth="158.0" spacing="3.0" BorderPane.alignment="CENTER">
+      <VBox prefHeight="348.0" prefWidth="158.0" spacing="3.0" BorderPane.alignment="TOP_CENTER">
          <children>
             <Label text="Parameters">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font></Label>
-            <HBox spacing="5.0">
+            <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
                <children>
-                  <Label maxWidth="-Infinity" prefHeight="18.0" text="Check-in Points" HBox.hgrow="ALWAYS" />
+                  <Label maxWidth="-Infinity" prefHeight="17.0" text="Check-in Points" HBox.hgrow="ALWAYS" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
                   <Label text="1" HBox.hgrow="ALWAYS">
                      <font>
@@ -32,7 +32,7 @@
                </children>
             </HBox>
             <Slider min="1.0" showTickLabels="true" showTickMarks="true" value="1.0" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Security Check Points" />
                   <Pane HBox.hgrow="ALWAYS" />
@@ -44,7 +44,7 @@
                </children>
             </HBox>
             <Slider min="1.0" showTickLabels="true" showTickMarks="true" value="1.0" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Border Control Points" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
@@ -56,7 +56,7 @@
                </children>
             </HBox>
             <Slider min="1.0" showTickLabels="true" showTickMarks="true" value="1.0" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Onboarding Points" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
@@ -68,7 +68,7 @@
                </children>
             </HBox>
             <Slider min="1.0" showTickLabels="true" showTickMarks="true" value="1.0" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Speed" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
@@ -80,7 +80,7 @@
                </children>
             </HBox>
             <Slider blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Simulation time (hrs)" />
                   <Pane HBox.hgrow="ALWAYS" />
@@ -92,7 +92,7 @@
                </children>
             </HBox>
             <Spinner editable="true" />
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Passenger amount" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
