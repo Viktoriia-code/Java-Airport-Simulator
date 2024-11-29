@@ -32,7 +32,7 @@ public class MyEngine extends Engine {
 			 */
 			Random r = new Random();
 
-			ContinuousGenerator arrivalTime = null;
+			ContinuousGenerator arrivalTime;
 			if (FIXEDARRIVALTIMES) {
 				/* version where the arrival times are constant (and greater than service times) */
 
@@ -60,7 +60,7 @@ public class MyEngine extends Engine {
 				// exponential distribution is used to model customer arrivals times, to get variability between programs runs, give a variable seed
 				arrivalTime = new Negexp(10, Integer.toUnsignedLong(r.nextInt()));
 
-			ContinuousGenerator serviceTime = null;
+			ContinuousGenerator serviceTime;
 			if (FIXEDSERVICETIMES) {
 				// make a special "random number distribution" which produces constant value for the service time in service points
 				serviceTime = new ContinuousGenerator() {
