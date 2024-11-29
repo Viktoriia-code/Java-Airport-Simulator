@@ -8,8 +8,8 @@ import framework.*;
 import java.util.Random;
 
 public class MyEngine extends Engine {
-	private ArrivalProcess arrivalProcess;
-	private ServicePoint[] servicePoints;
+	private final ArrivalProcess arrivalProcess;
+	private final ServicePoint[] servicePoints;
 	public static final boolean TEXTDEMO = true;
 	public static final boolean FIXEDARRIVALTIMES = false;
 	public static final boolean FIXEDSERVICETIMES = false;
@@ -86,20 +86,20 @@ public class MyEngine extends Engine {
 				// normal distribution used to model service times
 				serviceTime = new Normal(10, 6, Integer.toUnsignedLong(r.nextInt()));
 
-			servicePoints[0] = new ServicePoint("Check-in", serviceTime, eventList, EventType.DEP1);
-			servicePoints[1] = new ServicePoint("Security check", serviceTime, eventList, EventType.DEP2);
-			servicePoints[2] = new ServicePoint("Border control", serviceTime, eventList, EventType.DEP3);
-			servicePoints[3] = new ServicePoint("Boarding", serviceTime, eventList, EventType.DEP4);
+			servicePoints[0] = new ServicePoint("Check-in", serviceTime, eventList, EventType.DEP_CHECKIN);
+			servicePoints[1] = new ServicePoint("Security check", serviceTime, eventList, EventType.DEP_SECURITY);
+			servicePoints[2] = new ServicePoint("Border control", serviceTime, eventList, EventType.DEP_BORDERCTRL);
+			servicePoints[3] = new ServicePoint("Boarding", serviceTime, eventList, EventType.DEP_BOARDING);
 
-			arrivalProcess = new ArrivalProcess(arrivalTime, eventList, EventType.ARR1);
+			arrivalProcess = new ArrivalProcess(arrivalTime, eventList, EventType.ARRIVAL);
 		} else {
 			/* more realistic simulation case with variable customer arrival times and service times */
-			servicePoints[0] = new ServicePoint("Check-in", new Normal(10, 6), eventList, EventType.DEP1);
-			servicePoints[1] = new ServicePoint("Security check", new Normal(10, 10), eventList, EventType.DEP2);
-			servicePoints[2] = new ServicePoint("Border control", new Normal(5, 3), eventList, EventType.DEP3);
-			servicePoints[3] = new ServicePoint("Boarding", new Normal(5, 3), eventList, EventType.DEP4);
+			servicePoints[0] = new ServicePoint("Check-in", new Normal(10, 6), eventList, EventType.DEP_CHECKIN);
+			servicePoints[1] = new ServicePoint("Security check", new Normal(10, 10), eventList, EventType.DEP_SECURITY);
+			servicePoints[2] = new ServicePoint("Border control", new Normal(5, 3), eventList, EventType.DEP_BORDERCTRL);
+			servicePoints[3] = new ServicePoint("Boarding", new Normal(5, 3), eventList, EventType.DEP_BOARDING);
 
-			arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARR1);
+			arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL);
 		}
 	}
 
@@ -113,27 +113,27 @@ public class MyEngine extends Engine {
 		Customer a;
 
 		switch ((EventType)t.getType()) {
-		case ARR1:
+		case ARRIVAL:
 			servicePoints[0].addQueue(new Customer());
 			arrivalProcess.generateNextEvent();
 			break;
 
-		case DEP1:
+		case DEP_CHECKIN:
 			a = servicePoints[0].removeQueue();
 			servicePoints[1].addQueue(a);
 			break;
 
-		case DEP2:
+		case DEP_SECURITY:
 			a = servicePoints[1].removeQueue();
 			servicePoints[2].addQueue(a);
 			break;
 
-		case DEP3:
+		case DEP_BORDERCTRL:
 			a = servicePoints[2].removeQueue();
 			servicePoints[3].addQueue(a);
 			break;
 
-		case DEP4:
+		case DEP_BOARDING:
 			a = servicePoints[3].removeQueue();
 			a.setRemovalTime(Clock.getInstance().getClock());
 		    a.reportResults();

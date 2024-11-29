@@ -7,14 +7,13 @@ import java.util.LinkedList;
 // TODO:
 // Service Point functionalities & calculations (+ variables needed) and reporting to be implemented
 public class ServicePoint {
-	private String name;
-	private LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
-	private ContinuousGenerator generator;
-	private EventList eventList;
-	private EventType eventTypeScheduled;
-	//Queuestrategy strategy; // option: ordering of the customer
-	private boolean reserved = false;
+	private final String name;
+	private final LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
+	private final ContinuousGenerator generator;
+	private final EventList eventList;
+	private final EventType eventTypeScheduled;
 
+	private boolean reserved = false;
 
 	public ServicePoint(String name, ContinuousGenerator generator, EventList eventList, EventType type){
 		this.name = name;
@@ -45,6 +44,6 @@ public class ServicePoint {
 	}
 
 	public boolean isOnQueue(){
-		return queue.size() != 0;
+		return !queue.isEmpty();
 	}
 }
