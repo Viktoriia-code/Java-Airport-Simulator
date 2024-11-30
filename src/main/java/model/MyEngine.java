@@ -160,9 +160,8 @@ public class MyEngine extends Engine {
 		simulationTime = Clock.getInstance().getClock();
 		System.out.println("Results:");
 		System.out.println("Number of served clients: " + servedClients);
-		System.out.println("Mean service time: " + Clock.getInstance().getClock() / servedClients);
 		System.out.println("Simulation ended at: " + Clock.getInstance().getClock());
-
+		System.out.println("Mean service time: " + Clock.getInstance().getClock() / servedClients);
 	}
 
 	public int getServedClients() {
