@@ -23,7 +23,7 @@ public abstract class Engine {
 		while (simulate()) {
 			Trace.out(Trace.Level.INFO, "\nA-phase: time is " + currentTime());
 			clock.setClock(currentTime());
-			
+
 			Trace.out(Trace.Level.INFO, "\nB-phase:" );
 			runBEvents();
 			
@@ -32,8 +32,8 @@ public abstract class Engine {
 
 			System.out.println("\n=====================");
 		}
-
 		results();
+		clock.resetClock();
 	}
 	
 	private void runBEvents() {

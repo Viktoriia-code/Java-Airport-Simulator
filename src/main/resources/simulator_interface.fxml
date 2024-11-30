@@ -84,7 +84,7 @@
             <Spinner fx:id="timeSpinner" editable="true" VBox.vgrow="NEVER" />
             <Label text="Passenger amount" />
             <Spinner fx:id="passengerSpinner" editable="true" VBox.vgrow="NEVER" />
-            <Button mnemonicParsing="false" text="Start">
+            <Button mnemonicParsing="false" onAction="#startSimulation" text="Start">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>
@@ -100,7 +100,10 @@
                   <Font name="System Bold" size="14.0" />
                </font></Label>
             <Label text="Served passengers" />
-            <Label fx:id="servedPassLabel" text="0" />
+            <Label fx:id="totalPassengersServedLabel" text="0" />
+            <Separator prefWidth="200.0" />
+            <Label text="Simulation time" />
+            <Label fx:id="simulationTimeLabel" text="0 hrs" />
             <Separator prefWidth="200.0" />
             <Label text="Average service time" />
             <Label fx:id="avServiceTimeLabel" text="0 s" />

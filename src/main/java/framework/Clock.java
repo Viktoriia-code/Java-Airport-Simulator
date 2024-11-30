@@ -22,4 +22,6 @@ public class Clock {
 	public double getClock(){
 		return clock;
 	}
+
+	public void resetClock() { clock = 0; }
 }

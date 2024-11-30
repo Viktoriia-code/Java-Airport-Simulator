@@ -1,7 +1,9 @@
 package controller;
 
+import framework.Trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import model.MyEngine;
 
 public class SimulatorController {
 
@@ -41,6 +43,16 @@ public class SimulatorController {
 
     @FXML
     private Button helpButton;
+
+    // Results section
+    @FXML
+    private Label totalPassengersServedLabel;
+
+    @FXML
+    private Label avServiceTimeLabel;
+
+    @FXML
+    private Label simulationTimeLabel;
 
     @FXML
     public void initialize() {
@@ -124,5 +136,21 @@ public class SimulatorController {
 
         // Display the error message or clear it
         inputErrorLabel.setText(errorMessage);
+    }
+
+    @FXML
+    private void startSimulation() {
+        int timeValue = timeSpinner.getValue();
+        Trace.setTraceLevel(Trace.Level.INFO);
+        MyEngine sim = new MyEngine();
+        sim.setSimulationTime(timeValue);
+        sim.run();
+        printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+    }
+
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime) {
+        totalPassengersServedLabel.setText(String.valueOf(customersServed));
+        avServiceTimeLabel.setText(String.valueOf(meanServiceTime));
+        simulationTimeLabel.setText(String.valueOf(simulationTime));
     }
 }
