@@ -4,8 +4,8 @@ import eduni.distributions.ContinuousGenerator;
 import eduni.distributions.Normal;
 import eduni.distributions.Negexp;
 import framework.*;
-
 import java.util.Random;
+
 
 public class MyEngine extends Engine {
 	private ArrivalProcess arrivalProcess;
@@ -114,7 +114,8 @@ public class MyEngine extends Engine {
 
 		switch ((EventType)t.getType()) {
 		case ARR1:
-			servicePoints[0].addQueue(new Customer());
+			Random random = new Random();
+			servicePoints[0].addQueue(new Customer(random.nextBoolean(), random.nextBoolean()));
 			arrivalProcess.generateNextEvent();
 			break;
 
@@ -125,7 +126,11 @@ public class MyEngine extends Engine {
 
 		case DEP2:
 			a = servicePoints[1].removeQueue();
-			servicePoints[2].addQueue(a);
+			if (!a.isEUFlight()){
+				servicePoints[2].addQueue(a);
+			} else {
+				servicePoints[3].addQueue(a);
+			}
 			break;
 
 		case DEP3:
@@ -141,6 +146,7 @@ public class MyEngine extends Engine {
 			break;
 		}
 	}
+
 
 	@Override
 	protected void tryCEvents() {

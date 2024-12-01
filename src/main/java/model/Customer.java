@@ -7,15 +7,26 @@ import framework.*;
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
+	private final boolean isBusinessClass;
+	private final boolean isEUFlight;
 	private int id;
 	private static int i = 1;
 	private static long sum = 0;
 	
-	public Customer(){
+	public Customer(boolean isBusinessClass, boolean isEUFlight) {
+		this.isBusinessClass = isBusinessClass;
+		this.isEUFlight = isEUFlight;
 	    id = i++;
 	    
 		arrivalTime = Clock.getInstance().getClock();
 		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime);
+	}
+
+	public boolean isBusinessClass() {
+		return isBusinessClass;
+	}
+	public boolean isEUFlight() {
+		return isEUFlight;
 	}
 
 	public double getRemovalTime() {
@@ -47,5 +58,9 @@ public class Customer {
 		sum += (removalTime - arrivalTime);
 		double mean = sum/id;
 		System.out.println("Current mean of the customer service times " + mean);
+		System.out.printf("Customer: %s, Flight: %s, Total Time: %.2f%n",
+				isBusinessClass ? "Business" : "Economy",
+				isEUFlight ? "Internal" : "External",
+				removalTime - arrivalTime);
 	}
 }
