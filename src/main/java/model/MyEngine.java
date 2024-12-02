@@ -121,28 +121,36 @@ public class MyEngine extends Engine {
 
 		case DEP1:
 			a = servicePoints[0].removeQueue();
-			servicePoints[1].addQueue(a);
+			if (a != null) {
+				servicePoints[1].addQueue(a);
+			}
 			break;
 
 		case DEP2:
 			a = servicePoints[1].removeQueue();
-			if (!a.isEUFlight()){
-				servicePoints[2].addQueue(a);
-			} else {
-				servicePoints[3].addQueue(a);
+			if (a != null) {
+				if (!a.isEUFlight()) {
+					servicePoints[2].addQueue(a);
+				} else {
+					servicePoints[3].addQueue(a);
+				}
 			}
 			break;
 
 		case DEP3:
 			a = servicePoints[2].removeQueue();
-			servicePoints[3].addQueue(a);
+			if (a != null) {
+				servicePoints[3].addQueue(a);
+			}
 			break;
 
 		case DEP4:
 			a = servicePoints[3].removeQueue();
-			a.setRemovalTime(Clock.getInstance().getClock());
-		    a.reportResults();
-			servedClients++;
+			if (a != null) {
+				a.setRemovalTime(Clock.getInstance().getClock());
+				a.reportResults();
+				servedClients++;
+			}
 			break;
 		}
 	}
