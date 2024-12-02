@@ -153,6 +153,13 @@ public class MyEngine extends Engine {
 
             arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL, customerCreator);
         }
+
+        // gather and add all security points to the allServicePoints array
+        allServicePoints.add(securityPoints);
+        allServicePoints.add(securityFastTrackPoints);
+        allServicePoints.add(borderControlPoints);
+        allServicePoints.add(boardingInEUPoints);
+        allServicePoints.add(boardingNotEUPoints);
     }
 
     private ArrayList<ServicePoint> createServicePoints(String name, int count, ContinuousGenerator serviceTime, EventType eventType) {
@@ -209,7 +216,6 @@ public class MyEngine extends Engine {
              * and remove them from the queue: place them in the shortest queue of next station */
             case DEP_CHECKIN:
                 c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-
                 /* put the customer to the proper queue according to whether they're in
                  * business class or not */
 
@@ -259,6 +265,7 @@ public class MyEngine extends Engine {
              * the customer isn't placed in a new queue and is only removed from the appropriate
              * boarding queue. the time of leaving the system is saved to the customer */
             case DEP_BOARDING:
+                servedClients++;
                 if (t.getCustomer().isEUFlight()) {
                     boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
                 } else {
@@ -266,7 +273,6 @@ public class MyEngine extends Engine {
                 }
                 t.getCustomer().setRemovalTime(Clock.getInstance().getClock());
                 t.getCustomer().reportResults();
-                servedClients++;
                 break;
         }
     }
@@ -285,10 +291,10 @@ public class MyEngine extends Engine {
 	@Override
 	public void results() {
 		simulationTime = Clock.getInstance().getClock();
-		System.out.println("Results:");
-		System.out.println("Number of served clients: " + servedClients);
-		System.out.println("Simulation ended at: " + Clock.getInstance().getClock());
-		System.out.println("Mean service time: " + Clock.getInstance().getClock() / servedClients);
+		Trace.out(Trace.Level.INFO, "Results:");
+        Trace.out(Trace.Level.INFO,"Number of served clients: " + servedClients);
+        Trace.out(Trace.Level.INFO,"Simulation ended at: " + Clock.getInstance().getClock());
+        Trace.out(Trace.Level.INFO,"Mean service time: " + Clock.getInstance().getClock() / servedClients);
 	}
 
 	public int getServedClients() {
