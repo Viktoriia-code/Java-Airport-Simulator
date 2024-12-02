@@ -13,14 +13,20 @@ public class Customer {
 
 	private final boolean isBusinessClass;
 	private final boolean isEUFlight;
+	private final boolean isOnlineCheckOut;
 
-	public Customer(boolean isBusinessClass, boolean isEUFlight) {
+	public Customer(boolean isBusinessClass, boolean isEUFlight, boolean isOnlineCheckOut) {
 		this.isBusinessClass = isBusinessClass;
 		this.isEUFlight = isEUFlight;
+		this.isOnlineCheckOut = isOnlineCheckOut;
+
 		id = i++;
 
 		arrivalTime = Clock.getInstance().getClock();
-		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime);
+		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime +
+				(this.isBusinessClass ? " (Business Class" : " (Economy Class") +
+				(this.isEUFlight ? " || Inside EU ||" : " || Outside EU ||") +
+				(this.isOnlineCheckOut ? " Online Check-Out)" : " Regular Check Out)"));
 	}
 
 	public boolean isBusinessClass() {
@@ -29,6 +35,10 @@ public class Customer {
 
 	public boolean isEUFlight() {
 		return isEUFlight;
+	}
+
+	public boolean isOnlineCheckOut() {
+		return isOnlineCheckOut;
 	}
 
 	public double getRemovalTime() {
@@ -68,9 +78,10 @@ public class Customer {
 		sum += (long) (removalTime - arrivalTime);
 		double mean = (double) sum / id;
 		System.out.println("Current mean of the customer service times " + mean);
-		System.out.printf("Customer: %s, Flight: %s, Total Time: %.2f%n",
-				isBusinessClass ? "Business" : "Economy",
-				isEUFlight ? "Internal" : "External",
+		System.out.printf("Customer %s: %s, Flight: %s, Total Time: %.2f%n",
+				getId(),
+				this.isBusinessClass ? "Business" : "Economy",
+				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
 	}
 }

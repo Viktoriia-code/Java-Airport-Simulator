@@ -16,8 +16,17 @@ public class MyEngine extends Engine {
     public static final boolean FIXEDSERVICETIMES = false;
     private int servedClients = 0;
 
-    private final int PERCENTAGE_BUSINESS_CLASS = 20; /* how many customers out of 100 approximately are in business class */
-    private final int PERCENTAGE_INSIDE_EU = 80; /* how many customers out of 100 approximately are heading to an inside EU flight */
+    /* how many customers out of 100 approximately are in business class
+     * -> using a different security check line */
+    private final double PERCENTAGE_BUSINESS_CLASS = 20;
+
+    /* how many customers out of 100 approximately are heading to an inside EU flight
+     * -> customers inside EU skip border control */
+    private final double PERCENTAGE_INSIDE_EU = 50;
+
+    /* how many customers out of 100 approximately did online checkout
+     * -> skip check out line and go straight to security*/
+    private final double PERCENTAGE_ONLINE_CHECKOUT = 10;
 
     /* how many of each Service Points of each type are created (= how many queues)
      * NOTE: to disable fast track or outside EU boarding, both the stations and the corresponding
@@ -32,7 +41,7 @@ public class MyEngine extends Engine {
     private final int NUM_INSIDE_EU_BOARDING = 3;
     private final int NUM_OUTSIDE_EU_BOARDING = 3;
 
-    CustomerCreator customerCreator = new CustomerCreator(PERCENTAGE_BUSINESS_CLASS, PERCENTAGE_INSIDE_EU);
+    CustomerCreator customerCreator = new CustomerCreator(PERCENTAGE_BUSINESS_CLASS, PERCENTAGE_INSIDE_EU, PERCENTAGE_ONLINE_CHECKOUT);
 
     ArrayList<ServicePoint> checkInPoints = new ArrayList<>();
 
@@ -180,10 +189,22 @@ public class MyEngine extends Engine {
             /* use customer that was created during event creation via t.getCustomer,
              * place them in the shortest check-in queue */
             case ARRIVAL:
-                q = findShortestQueue(checkInPoints);
                 c = t.getCustomer();
-                q.addQueue(c);
-                c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+                if (c.isOnlineCheckOut()) {
+                    if (c.isBusinessClass()) {
+                        q = findShortestQueue(securityFastTrackPoints);
+                        q.addQueue(c);
+                        c.setCurrentQueueIndex(securityFastTrackPoints.indexOf(q));
+                    } else {
+                        q = findShortestQueue(securityPoints);
+                        q.addQueue(c);
+                        c.setCurrentQueueIndex(securityPoints.indexOf(q));
+                    }
+                } else {
+                    q = findShortestQueue(checkInPoints);
+                    q.addQueue(c);
+                    c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+                }
                 arrivalProcess.generateNextEvent();
                 break;
 
@@ -217,7 +238,7 @@ public class MyEngine extends Engine {
                 }
 
                 /* skip border control and go straight to in-EU boarding if customer is not
-                * flying outside europe: otherwise go to border control queue */
+                 * flying outside europe: otherwise go to border control queue */
                 if (t.getCustomer().isEUFlight()) {
                     q = findShortestQueue(boardingInEUPoints);
                     q.addQueue(c);
@@ -230,10 +251,12 @@ public class MyEngine extends Engine {
                 break;
 
             case DEP_BORDERCTRL:
-                c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                q = findShortestQueue(boardingNotEUPoints);
-                q.addQueue(c);
-                c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+                if (!t.getCustomer().isEUFlight()) {
+                    c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                    q = findShortestQueue(boardingNotEUPoints);
+                    q.addQueue(c);
+                    c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+                }
                 break;
 
             /* after DEP_BOARDING event is fired (= customer is done with boarding process),
@@ -241,13 +264,12 @@ public class MyEngine extends Engine {
              * boarding queue. the time of leaving the system is saved to the customer */
             case DEP_BOARDING:
                 if (t.getCustomer().isEUFlight()) {
-                    c = boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                    boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
                 } else {
-                    c = boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                    boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
                 }
-
-                c.setRemovalTime(Clock.getInstance().getClock());
-                c.reportResults();
+                t.getCustomer().setRemovalTime(Clock.getInstance().getClock());
+                t.getCustomer().reportResults();
                 servedClients++;
                 break;
         }
