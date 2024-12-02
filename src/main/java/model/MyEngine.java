@@ -10,11 +10,12 @@ import java.util.Comparator;
 import java.util.Random;
 
 public class MyEngine extends Engine {
-    private final ArrivalProcess arrivalProcess;
-    public static final boolean TEXTDEMO = true;
-    public static final boolean FIXEDARRIVALTIMES = false;
-    public static final boolean FIXEDSERVICETIMES = false;
-    private int servedClients = 0;
+	private ArrivalProcess arrivalProcess;
+	public static final boolean TEXTDEMO = true;
+	public static final boolean FIXEDARRIVALTIMES = false;
+	public static final boolean FIXEDSERVICETIMES = false;
+	private int servedClients;
+    private double simulationTime;
 
     /* how many customers out of 100 approximately are in business class
      * -> using a different security check line */
@@ -56,22 +57,16 @@ public class MyEngine extends Engine {
     ArrayList<ArrayList<ServicePoint>> allServicePoints = new ArrayList<>();
 
     /*
-     * This is the place where you implement your own simulator
-     *
-     * Simulation case:
-     * Simulate four service points, customer goes through all four service points to get serviced
-     * 		--> SP1 --> SP2 --> SP3 --> SP4
-     *      --> Check-in --> Security check --> Border Control --> Boarding
-     */
-
-    public MyEngine() {
-        allServicePoints.add(checkInPoints);
-        allServicePoints.add(securityFastTrackPoints);
-        allServicePoints.add(securityPoints);
-        allServicePoints.add(borderControlPoints);
-
-        allServicePoints.add(boardingInEUPoints);
-        allServicePoints.add(boardingNotEUPoints);
+	 * This is the place where you implement your own simulator
+	 *
+	 * Simulation case:
+	 * Simulate four service points, customer goes through all four service points to get serviced
+	 * 		--> SP1 --> SP2 --> SP3 --> SP4
+	 *      --> Check-in --> Security check --> Border Control --> Boarding
+	 */
+	public MyEngine() {
+        servedClients = 0;
+        simulationTime = 0;
 
         if (TEXTDEMO) {
             /* special setup for the example in text
@@ -175,10 +170,11 @@ public class MyEngine extends Engine {
                 .orElse(servicePointArr.get(0));
     }
 
-    @Override
-    protected void initialize() {    // First arrival in the system
-        arrivalProcess.generateNextEvent();
-    }
+	@Override
+	protected void initialize() {	// First arrival in the system
+		Customer.resetId();
+		arrivalProcess.generateNextEvent();
+	}
 
     @Override
     protected void runEvent(Event t) {  // B phase events
@@ -286,10 +282,24 @@ public class MyEngine extends Engine {
         }
     }
 
-    @Override
-    protected void results() {
-        System.out.println("Simulation ended at " + Clock.getInstance().getClock());
-        System.out.println("Results:");
-        System.out.println("Number of served clients: " + servedClients);
-    }
+	@Override
+	public void results() {
+		simulationTime = Clock.getInstance().getClock();
+		System.out.println("Results:");
+		System.out.println("Number of served clients: " + servedClients);
+		System.out.println("Simulation ended at: " + Clock.getInstance().getClock());
+		System.out.println("Mean service time: " + Clock.getInstance().getClock() / servedClients);
+	}
+
+	public int getServedClients() {
+		return servedClients;
+	}
+
+	public double getMeanServiceTime() {
+		return simulationTime/servedClients;
+	}
+
+	public double getSimulationTime() {
+		return simulationTime;
+	}
 }

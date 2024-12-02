@@ -2,6 +2,8 @@ package model;
 
 import framework.*;
 
+// TODO:
+// Customer to be implemented according to the requirements of the simulation model (data!)
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
@@ -61,15 +63,17 @@ public class Customer {
 		return id;
 	}
 
-	public void setCurrentQueueIndex(int i) {
-		this.currentQueue = i;
-	}
+    public void setCurrentQueueIndex(int i) {
+        this.currentQueue = i;
+    }
 
-	public int getCurrentQueueIndex() {
-		return this.currentQueue;
-	}
+    public int getCurrentQueueIndex() {
+        return this.currentQueue;
+    }
 
-	public void reportResults() {
+	public static void resetId() { i = 1; }
+
+	public void reportResults(){
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
 		Trace.out(Trace.Level.INFO, "Customer #" + id + " arrived: " + arrivalTime);
 		Trace.out(Trace.Level.INFO, "Customer #" + id + " removed: " + removalTime);
