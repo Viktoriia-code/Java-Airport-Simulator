@@ -5,8 +5,9 @@ import framework.*;
 
 import java.util.LinkedList;
 
-// TODO:
-// Service Point functionalities & calculations (+ variables needed) and reporting to be implemented
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 public class ServicePoint {
     private final String name;
     private final LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used

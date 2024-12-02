@@ -2,21 +2,33 @@ package model;
 
 import framework.*;
 
-// TODO:
-// Customer to be implemented according to the requirements of the simulation model (data!)
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
+
 	private final int id;
 	private static int i = 1;
 	private static long sum = 0;
 	private int currentQueue;
 
-	public Customer(){
-	    id = i++;
-	    
+	private final boolean isBusinessClass;
+	private final boolean isEUFlight;
+
+	public Customer(boolean isBusinessClass, boolean isEUFlight) {
+		this.isBusinessClass = isBusinessClass;
+		this.isEUFlight = isEUFlight;
+		id = i++;
+
 		arrivalTime = Clock.getInstance().getClock();
 		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime);
+	}
+
+	public boolean isBusinessClass() {
+		return isBusinessClass;
+	}
+
+	public boolean isEUFlight() {
+		return isEUFlight;
 	}
 
 	public double getRemovalTime() {
@@ -39,22 +51,26 @@ public class Customer {
 		return id;
 	}
 
-	public void setCurrentQueueIndex(int i){
+	public void setCurrentQueueIndex(int i) {
 		this.currentQueue = i;
 	}
 
-	public int getCurrentQueueIndex(){
+	public int getCurrentQueueIndex() {
 		return this.currentQueue;
 	}
 
-	public void reportResults(){
+	public void reportResults() {
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
-		Trace.out(Trace.Level.INFO, "Customer #"   + id + " arrived: " + arrivalTime);
-		Trace.out(Trace.Level.INFO,"Customer #"    + id + " removed: " + removalTime);
-		Trace.out(Trace.Level.INFO,"Customer #"    + id + " stayed: "  + (removalTime - arrivalTime));
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " arrived: " + arrivalTime);
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " removed: " + removalTime);
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " stayed: " + (removalTime - arrivalTime));
 
 		sum += (long) (removalTime - arrivalTime);
-		double mean = (double) sum /id;
+		double mean = (double) sum / id;
 		System.out.println("Current mean of the customer service times " + mean);
+		System.out.printf("Customer: %s, Flight: %s, Total Time: %.2f%n",
+				isBusinessClass ? "Business" : "Economy",
+				isEUFlight ? "Internal" : "External",
+				removalTime - arrivalTime);
 	}
 }
