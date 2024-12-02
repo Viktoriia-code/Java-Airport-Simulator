@@ -2,6 +2,11 @@ package model;
 
 import java.util.Random;
 
+/* creates new customers
+* used to ensure that the amount of certain customer types appear at wanted amounts
+* note that all percentages should be given as doubles between 0-100
+* the percentage getters and setters are located in MyEngine.java */
+
 public class CustomerCreator {
     private final double businessClassPercentage;
     private final double euFlightPercentage;
