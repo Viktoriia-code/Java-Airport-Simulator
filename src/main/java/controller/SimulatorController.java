@@ -53,11 +53,11 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> passengerSpinner;
 
-    @FXML
-    private Slider securityCheckFastSlider;
-
-    @FXML
-    private Label checkInNumber, securityCheckNumber, securityCheckFastNumber, borderControlNumber, onboardingNumber;
+//    @FXML
+//    private Slider securityCheckFastSlider;
+//
+//    @FXML
+//    private Label checkInNumber, securityCheckNumber, securityCheckFastNumber, borderControlNumber, onboardingNumber;
 
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
     private final Random random = new Random();
@@ -83,7 +83,7 @@ public class SimulatorController {
     public void initialize() {
         servicePointsMap.put("CheckIn", (int) checkInSlider.getValue());
         servicePointsMap.put("SecurityCheck", (int) securityCheckSlider.getValue());
-        servicePointsMap.put("SecurityCheckFast", (int) securityCheckFastSlider.getValue());
+        //servicePointsMap.put("SecurityCheckFast", (int) securityCheckFastSlider.getValue());
         servicePointsMap.put("BorderControl", (int) borderControlSlider.getValue());
         servicePointsMap.put("Onboarding", (int) onboardingSlider.getValue());
 
@@ -191,11 +191,11 @@ public class SimulatorController {
 
 
     private void initializeSliders() {
-        setupSlider(checkInSlider, checkInNumber, "CheckIn");
-        setupSlider(securityCheckSlider, securityCheckNumber, "SecurityCheck");
-        setupSlider(securityCheckFastSlider, securityCheckFastNumber, "SecurityCheckFast");
-        setupSlider(borderControlSlider, borderControlNumber, "BorderControl");
-        setupSlider(onboardingSlider, onboardingNumber, "Onboarding");
+        setupSlider(checkInSlider, checkInLabel, "CheckIn");
+        setupSlider(securityCheckSlider, securityCheckLabel, "SecurityCheck");
+        //setupSlider(securityCheckFastSlider, securityCheckFastLabel, "SecurityCheckFast");
+        setupSlider(borderControlSlider, borderControlLabel, "BorderControl");
+        setupSlider(onboardingSlider, onboardingLabel, "Onboarding");
     }
 
     private void setupSlider(Slider slider, Label label, String pointType) {
