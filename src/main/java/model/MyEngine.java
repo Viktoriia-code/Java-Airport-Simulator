@@ -13,7 +13,8 @@ public class MyEngine extends Engine {
 	public static final boolean TEXTDEMO = true;
 	public static final boolean FIXEDARRIVALTIMES = false;
 	public static final boolean FXIEDSERVICETIMES = false;
-	private int servedClients = 0;
+	private int servedClients;
+	private double simulationTime;
 
 	/*
 	 * This is the place where you implement your own simulator
@@ -25,6 +26,8 @@ public class MyEngine extends Engine {
 	 */
 	public MyEngine() {
 		servicePoints = new ServicePoint[4];
+		servedClients = 0;
+		simulationTime = 0;
 
 		if (TEXTDEMO) {
 			/* special setup for the example in text
@@ -105,6 +108,7 @@ public class MyEngine extends Engine {
 
 	@Override
 	protected void initialize() {	// First arrival in the system
+		Customer.resetId();
 		arrivalProcess.generateNextEvent();
 	}
 
@@ -135,9 +139,9 @@ public class MyEngine extends Engine {
 
 		case DEP4:
 			a = servicePoints[3].removeQueue();
-			a.setRemovalTime(Clock.getInstance().getClock());
-		    a.reportResults();
 			servedClients++;
+			a.setRemovalTime(Clock.getInstance().getClock());
+			a.reportResults();
 			break;
 		}
 	}
@@ -152,9 +156,23 @@ public class MyEngine extends Engine {
 	}
 
 	@Override
-	protected void results() {
-		System.out.println("Simulation ended at " + Clock.getInstance().getClock());
+	public void results() {
+		simulationTime = Clock.getInstance().getClock();
 		System.out.println("Results:");
 		System.out.println("Number of served clients: " + servedClients);
+		System.out.println("Simulation ended at: " + Clock.getInstance().getClock());
+		System.out.println("Mean service time: " + Clock.getInstance().getClock() / servedClients);
+	}
+
+	public int getServedClients() {
+		return servedClients;
+	}
+
+	public double getMeanServiceTime() {
+		return simulationTime/servedClients;
+	}
+
+	public double getSimulationTime() {
+		return simulationTime;
 	}
 }

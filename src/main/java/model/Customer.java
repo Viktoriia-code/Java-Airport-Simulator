@@ -37,6 +37,8 @@ public class Customer {
 	public int getId() {
 		return id;
 	}
+
+	public static void resetId() { i = 1; }
 	
 	public void reportResults(){
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
