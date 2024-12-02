@@ -7,10 +7,11 @@ import framework.*;
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
-	private int id;
+	private final int id;
 	private static int i = 1;
 	private static long sum = 0;
-	
+	private int currentQueue;
+
 	public Customer(){
 	    id = i++;
 	    
@@ -37,15 +38,23 @@ public class Customer {
 	public int getId() {
 		return id;
 	}
-	
+
+	public void setCurrentQueueIndex(int i){
+		this.currentQueue = i;
+	}
+
+	public int getCurrentQueueIndex(){
+		return this.currentQueue;
+	}
+
 	public void reportResults(){
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
 		Trace.out(Trace.Level.INFO, "Customer #"   + id + " arrived: " + arrivalTime);
 		Trace.out(Trace.Level.INFO,"Customer #"    + id + " removed: " + removalTime);
 		Trace.out(Trace.Level.INFO,"Customer #"    + id + " stayed: "  + (removalTime - arrivalTime));
 
-		sum += (removalTime - arrivalTime);
-		double mean = sum/id;
+		sum += (long) (removalTime - arrivalTime);
+		double mean = (double) sum /id;
 		System.out.println("Current mean of the customer service times " + mean);
 	}
 }
