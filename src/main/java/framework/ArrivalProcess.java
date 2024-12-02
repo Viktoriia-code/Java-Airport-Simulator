@@ -4,8 +4,6 @@ import eduni.distributions.ContinuousGenerator;
 import model.Customer;
 import model.CustomerCreator;
 
-import java.util.Random;
-
 public class ArrivalProcess {
 	private final ContinuousGenerator generator;
 	private final EventList eventList;

@@ -16,33 +16,33 @@ public class MyEngine extends Engine {
     public static final boolean FIXEDSERVICETIMES = false;
     private int servedClients = 0;
 
-	private final int PERCENTAGE_BUSINESS_CLASS = 20; /* how many customers out of 100 approximately are in business class */
-	private final int PERCENTAGE_INSIDE_EU = 80; /* how many customers out of 100 approximately are heading to an inside EU flight */
+    private final int PERCENTAGE_BUSINESS_CLASS = 20; /* how many customers out of 100 approximately are in business class */
+    private final int PERCENTAGE_INSIDE_EU = 80; /* how many customers out of 100 approximately are heading to an inside EU flight */
 
-	/* how many of each Service Points of each type are created (= how many queues)
-	* NOTE: to disable fast track or outside EU boarding, both the stations and the corresponding
-	* percentages above have to be 0 */
+    /* how many of each Service Points of each type are created (= how many queues)
+     * NOTE: to disable fast track or outside EU boarding, both the stations and the corresponding
+     * percentages above have to be 0 */
     private final int NUM_CHECKIN = 3;
 
     private final int NUM_SECURITY = 2;
-	private final int NUM_SECURITY_FAST_TRACK = 1;
+    private final int NUM_SECURITY_FAST_TRACK = 1;
 
-	private final int NUM_BORDERCTRL = 5;
+    private final int NUM_BORDERCTRL = 5;
 
     private final int NUM_INSIDE_EU_BOARDING = 3;
-	private final int NUM_OUTSIDE_EU_BOARDING = 3;
+    private final int NUM_OUTSIDE_EU_BOARDING = 3;
 
-	CustomerCreator customerCreator = new CustomerCreator(PERCENTAGE_BUSINESS_CLASS, PERCENTAGE_INSIDE_EU);
+    CustomerCreator customerCreator = new CustomerCreator(PERCENTAGE_BUSINESS_CLASS, PERCENTAGE_INSIDE_EU);
 
     ArrayList<ServicePoint> checkInPoints = new ArrayList<>();
 
-	ArrayList<ServicePoint> securityFastTrackPoints = new ArrayList<>();
-	ArrayList<ServicePoint> securityPoints = new ArrayList<>();
+    ArrayList<ServicePoint> securityFastTrackPoints = new ArrayList<>();
+    ArrayList<ServicePoint> securityPoints = new ArrayList<>();
 
-	ArrayList<ServicePoint> borderControlPoints = new ArrayList<>();
+    ArrayList<ServicePoint> borderControlPoints = new ArrayList<>();
 
-	ArrayList<ServicePoint> boardingInEUPoints = new ArrayList<>();
-	ArrayList<ServicePoint> boardingNotEUPoints = new ArrayList<>();
+    ArrayList<ServicePoint> boardingInEUPoints = new ArrayList<>();
+    ArrayList<ServicePoint> boardingNotEUPoints = new ArrayList<>();
 
     ArrayList<ArrayList<ServicePoint>> allServicePoints = new ArrayList<>();
 
@@ -57,12 +57,12 @@ public class MyEngine extends Engine {
 
     public MyEngine() {
         allServicePoints.add(checkInPoints);
-		allServicePoints.add(securityFastTrackPoints);
+        allServicePoints.add(securityFastTrackPoints);
         allServicePoints.add(securityPoints);
         allServicePoints.add(borderControlPoints);
 
         allServicePoints.add(boardingInEUPoints);
-		allServicePoints.add(boardingNotEUPoints);
+        allServicePoints.add(boardingNotEUPoints);
 
         if (TEXTDEMO) {
             /* special setup for the example in text
@@ -127,25 +127,25 @@ public class MyEngine extends Engine {
 
             checkInPoints.addAll(createServicePoints("Check-in", NUM_CHECKIN, serviceTime, EventType.DEP_CHECKIN));
 
-			securityPoints.addAll(createServicePoints("Security check", NUM_SECURITY, serviceTime, EventType.DEP_SECURITY));
-			securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", NUM_SECURITY_FAST_TRACK, serviceTime, EventType.DEP_SECURITY));
+            securityPoints.addAll(createServicePoints("Security check", NUM_SECURITY, serviceTime, EventType.DEP_SECURITY));
+            securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", NUM_SECURITY_FAST_TRACK, serviceTime, EventType.DEP_SECURITY));
 
             borderControlPoints.addAll(createServicePoints("Border control", NUM_BORDERCTRL, serviceTime, EventType.DEP_BORDERCTRL));
 
             boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", NUM_INSIDE_EU_BOARDING, serviceTime, EventType.DEP_BOARDING));
-			boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", NUM_OUTSIDE_EU_BOARDING, serviceTime, EventType.DEP_BOARDING));
+            boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", NUM_OUTSIDE_EU_BOARDING, serviceTime, EventType.DEP_BOARDING));
 
             arrivalProcess = new ArrivalProcess(arrivalTime, eventList, EventType.ARRIVAL, customerCreator);
         } else {
             checkInPoints.addAll(createServicePoints("Check-in", NUM_CHECKIN, new Normal(10, 6), EventType.DEP_CHECKIN));
 
             securityPoints.addAll(createServicePoints("Security check", NUM_SECURITY, new Normal(10, 10), EventType.DEP_SECURITY));
-			securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", NUM_SECURITY_FAST_TRACK, new Normal(10, 10), EventType.DEP_SECURITY));
+            securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", NUM_SECURITY_FAST_TRACK, new Normal(10, 10), EventType.DEP_SECURITY));
 
-			borderControlPoints.addAll(createServicePoints("Border control", NUM_BORDERCTRL, new Normal(5, 3), EventType.DEP_BORDERCTRL));
+            borderControlPoints.addAll(createServicePoints("Border control", NUM_BORDERCTRL, new Normal(5, 3), EventType.DEP_BORDERCTRL));
 
-			boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", NUM_INSIDE_EU_BOARDING, new Normal(5, 3), EventType.DEP_BOARDING));
-			boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", NUM_OUTSIDE_EU_BOARDING, new Normal(5, 3), EventType.DEP_BOARDING));
+            boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", NUM_INSIDE_EU_BOARDING, new Normal(5, 3), EventType.DEP_BOARDING));
+            boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", NUM_OUTSIDE_EU_BOARDING, new Normal(5, 3), EventType.DEP_BOARDING));
 
             arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL, customerCreator);
         }
@@ -178,7 +178,7 @@ public class MyEngine extends Engine {
 
         switch ((EventType) t.getType()) {
             /* use customer that was created during event creation via t.getCustomer,
-            * place them in the shortest check-in queue */
+             * place them in the shortest check-in queue */
             case ARRIVAL:
                 q = findShortestQueue(checkInPoints);
                 c = t.getCustomer();
@@ -188,63 +188,65 @@ public class MyEngine extends Engine {
                 break;
 
             /* using the customer that is associated with the event,
-            * get the current index of the queue the associated customer is at
-            * and remove them from the queue: place them in the shortest queue of next station */
+             * get the current index of the queue the associated customer is at
+             * and remove them from the queue: place them in the shortest queue of next station */
             case DEP_CHECKIN:
                 c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
 
-				/* put the customer to the proper queue according to whether they're in
-				* business class or not */
+                /* put the customer to the proper queue according to whether they're in
+                 * business class or not */
 
-				if (c.isBusinessClass()) {
+                if (c.isBusinessClass()) {
                     q = findShortestQueue(securityFastTrackPoints);
-					c.setCurrentQueueIndex(securityFastTrackPoints.indexOf(q));
-				} else {
-					q = findShortestQueue(securityPoints);
-					c.setCurrentQueueIndex(securityPoints.indexOf(q));
+                    c.setCurrentQueueIndex(securityFastTrackPoints.indexOf(q));
+                } else {
+                    q = findShortestQueue(securityPoints);
+                    c.setCurrentQueueIndex(securityPoints.indexOf(q));
                 }
 
                 q.addQueue(c);
-				break;
+                break;
 
             case DEP_SECURITY:
-				/* check if event-associated customer is in business class or not:
-				* remove from appropriate queue */
-				if (t.getCustomer().isBusinessClass()) {
-					c = securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-				} else {
-					c = securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-				}
+                /* check if event-associated customer is in business class or not:
+                 * remove from appropriate queue */
+                if (t.getCustomer().isBusinessClass()) {
+                    c = securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                } else {
+                    c = securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                }
 
-				q = findShortestQueue(borderControlPoints);
-                q.addQueue(c);
-                c.setCurrentQueueIndex(borderControlPoints.indexOf(q));
+                /* skip border control and go straight to in-EU boarding if customer is not
+                * flying outside europe: otherwise go to border control queue */
+                if (t.getCustomer().isEUFlight()) {
+                    q = findShortestQueue(boardingInEUPoints);
+                    q.addQueue(c);
+                    c.setCurrentQueueIndex(boardingInEUPoints.indexOf(q));
+                } else {
+                    q = findShortestQueue(borderControlPoints);
+                    q.addQueue(c);
+                    c.setCurrentQueueIndex(borderControlPoints.indexOf(q));
+                }
                 break;
 
             case DEP_BORDERCTRL:
                 c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                if (c.isEUFlight()){
-					q = findShortestQueue(boardingInEUPoints);
-					q.addQueue(c);
-					c.setCurrentQueueIndex(boardingInEUPoints.indexOf(q));
-				} else {
-					q = findShortestQueue(boardingNotEUPoints);
-					q.addQueue(c);
-					c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
-				}
+                q = findShortestQueue(boardingNotEUPoints);
+                q.addQueue(c);
+                c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
                 break;
 
             /* after DEP_BOARDING event is fired (= customer is done with boarding process),
-            * the customer isn't placed in a new queue and is only removed from the appropriate
-            * boarding queue. the time of leaving the system is saved to the customer */
+             * the customer isn't placed in a new queue and is only removed from the appropriate
+             * boarding queue. the time of leaving the system is saved to the customer */
             case DEP_BOARDING:
-				if (t.getCustomer().isEUFlight()) {
-					c = boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-				} else {
-					c = boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-				}
+                if (t.getCustomer().isEUFlight()) {
+                    c = boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                } else {
+                    c = boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+                }
 
-				c.setRemovalTime(Clock.getInstance().getClock());
+                c.setRemovalTime(Clock.getInstance().getClock());
                 c.reportResults();
                 servedClients++;
                 break;
