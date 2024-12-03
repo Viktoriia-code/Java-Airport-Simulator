@@ -7,15 +7,40 @@ import framework.*;
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
-	private int id;
+
+	private final int id;
 	private static int i = 1;
 	private static long sum = 0;
-	
-	public Customer(){
-	    id = i++;
-	    
+	private int currentQueue;
+
+	private final boolean isBusinessClass;
+	private final boolean isEUFlight;
+	private final boolean isOnlineCheckOut;
+
+	public Customer(boolean isBusinessClass, boolean isEUFlight, boolean isOnlineCheckOut) {
+		this.isBusinessClass = isBusinessClass;
+		this.isEUFlight = isEUFlight;
+		this.isOnlineCheckOut = isOnlineCheckOut;
+
+		id = i++;
+
 		arrivalTime = Clock.getInstance().getClock();
-		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime);
+		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime +
+				(this.isBusinessClass ? " (Business Class" : " (Economy Class") +
+				(this.isEUFlight ? " || Inside EU ||" : " || Outside EU ||") +
+				(this.isOnlineCheckOut ? " Online Check-Out)" : " Regular Check Out)"));
+	}
+
+	public boolean isBusinessClass() {
+		return isBusinessClass;
+	}
+
+	public boolean isEUFlight() {
+		return isEUFlight;
+	}
+
+	public boolean isOnlineCheckOut() {
+		return isOnlineCheckOut;
 	}
 
 	public double getRemovalTime() {
@@ -38,16 +63,29 @@ public class Customer {
 		return id;
 	}
 
+    public void setCurrentQueueIndex(int i) {
+        this.currentQueue = i;
+    }
+
+    public int getCurrentQueueIndex() {
+        return this.currentQueue;
+    }
+
 	public static void resetId() { i = 1; }
-	
+
 	public void reportResults(){
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
-		Trace.out(Trace.Level.INFO, "Customer #"   + id + " arrived: " + arrivalTime);
-		Trace.out(Trace.Level.INFO,"Customer #"    + id + " removed: " + removalTime);
-		Trace.out(Trace.Level.INFO,"Customer #"    + id + " stayed: "  + (removalTime - arrivalTime));
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " arrived: " + arrivalTime);
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " removed: " + removalTime);
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " stayed: " + (removalTime - arrivalTime));
 
-		sum += (removalTime - arrivalTime);
-		double mean = sum/id;
+		sum += (long) (removalTime - arrivalTime);
+		double mean = (double) sum / id;
 		System.out.println("Current mean of the customer service times " + mean);
+		System.out.printf("Customer %s: %s, Flight: %s, Total Time: %.2f%n",
+				getId(),
+				this.isBusinessClass ? "Business" : "Economy",
+				this.isEUFlight ? "Internal" : "External",
+				removalTime - arrivalTime);
 	}
 }

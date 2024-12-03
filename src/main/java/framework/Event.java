@@ -1,12 +1,15 @@
 package framework;
+import model.Customer;
 
 public class Event implements Comparable<Event> {
 	private IEventType type;
 	private double time;
-	
-	public Event(IEventType type, double time){
+	private Customer customer;
+
+	public Event(IEventType type, double time, Customer customer){
 		this.type = type;
 		this.time = time;
+		this.customer = customer;
 	}
 	
 	public void setType(IEventType type) {
@@ -15,12 +18,21 @@ public class Event implements Comparable<Event> {
 	public IEventType getType() {
 		return type;
 	}
+
 	public void setTime(double time) {
 		this.time = time;
 	}
 	public double getTime() {
 		return time;
 	}
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
+	public Customer getCustomer() {
+		return customer;
+	}
+
 
 	@Override
 	public int compareTo(Event arg) {
