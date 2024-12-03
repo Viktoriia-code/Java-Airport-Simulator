@@ -15,17 +15,18 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
    <left>
-      <VBox prefHeight="489.0" prefWidth="158.0" spacing="3.0" BorderPane.alignment="TOP_CENTER">
+      <VBox prefHeight="489.0" prefWidth="180.0" BorderPane.alignment="TOP_CENTER">
          <children>
-            <Label text="Parameters">
+            <Label text="Points">
                <font>
-                  <Font name="System Bold" size="14.0" />
-               </font></Label>
+                  <Font name="System Bold Italic" size="14.0" />
+               </font>
+            </Label>
             <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
                <children>
-                  <Label maxWidth="-Infinity" prefHeight="17.0" text="Check-in Points" HBox.hgrow="ALWAYS" />
+                  <Label maxWidth="-Infinity" prefHeight="17.0" text="Check-in" HBox.hgrow="ALWAYS" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
                   <Label fx:id="checkInLabel" text="65">
                      <font>
@@ -37,19 +38,31 @@
             <Slider fx:id="checkInSlider" max="130.0" min="1.0" showTickLabels="true" showTickMarks="true" value="65.0" />
             <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
-                  <Label text="Security Check Points" />
+                  <Label text="Regular Security Check" />
                   <Pane HBox.hgrow="ALWAYS" />
-                  <Label fx:id="securityCheckLabel" text="7">
+                  <Label fx:id="regularSecurityCheckLabel" text="7">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
                </children>
             </HBox>
-            <Slider fx:id="securityCheckSlider" max="14.0" min="1.0" showTickLabels="true" showTickMarks="true" value="7.0" />
+            <Slider fx:id="regularSecurityCheckSlider" max="14.0" min="1.0" showTickLabels="true" showTickMarks="true" value="7.0" />
             <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
-                  <Label text="Border Control Points" />
+                  <Label text="Fast Security Check" />
+                  <Pane HBox.hgrow="ALWAYS" />
+                  <Label fx:id="fastSecurityCheckLabel" text="3">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <Slider fx:id="fastSecurityCheckSlider" blockIncrement="1.0" max="5.0" min="1.0" showTickLabels="true" showTickMarks="true" value="3.0" />
+            <HBox prefHeight="17.0" prefWidth="200.0">
+               <children>
+                  <Label text="Border Control" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
                   <Label fx:id="borderControlLabel" text="14">
                      <font>
@@ -61,16 +74,37 @@
             <Slider fx:id="borderControlSlider" max="26.0" min="1.0" showTickLabels="true" showTickMarks="true" value="14.0" />
             <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
-                  <Label text="Onboarding Points" />
+                  <Label text="Onboarding (flight inside EU)" />
                   <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                  <Label fx:id="onboardingLabel" text="16">
+                  <Label fx:id="euOnboardingLabel" text="12">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Label>
                </children>
             </HBox>
-            <Slider fx:id="onboardingSlider" max="37.0" min="1.0" showTickLabels="true" showTickMarks="true" value="16.0" />
+            <Slider fx:id="euOnboardingSlider" max="24.0" min="1.0" showTickLabels="true" showTickMarks="true" value="12.0" />
+            <HBox prefHeight="17.0" prefWidth="200.0">
+               <children>
+                  <Label text="Onboarding (flight out of EU)" />
+                  <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="outEuOnboardingLabel" text="10">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <Slider fx:id="outEuOnboardingSlider" blockIncrement="1.0" max="22.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
+            <Label text="Clients">
+               <font>
+                  <Font name="System Bold Italic" size="14.0" />
+               </font>
+            </Label>
+            <Label text="Passenger amount" />
+            <Spinner fx:id="passengerSpinner" editable="true" VBox.vgrow="NEVER" />
+            <Label text="Simulation time (hrs)" />
+            <Spinner fx:id="timeSpinner" editable="true" VBox.vgrow="NEVER" />
             <HBox prefHeight="17.0" prefWidth="200.0">
                <children>
                   <Label text="Speed" />
@@ -83,10 +117,6 @@
                </children>
             </HBox>
             <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
-            <Label text="Simulation time (hrs)" />
-            <Spinner fx:id="timeSpinner" editable="true" VBox.vgrow="NEVER" />
-            <Label text="Passenger amount" />
-            <Spinner fx:id="passengerSpinner" editable="true" VBox.vgrow="NEVER" />
             <Button mnemonicParsing="false" onAction="#startSimulation" text="Start">
                <font>
                   <Font name="System Bold" size="14.0" />
@@ -117,7 +147,6 @@
             <Label text="Longest queue lenght" />
             <Label fx:id="longestQueueSPLabel" text="Point name" />
             <Label fx:id="longestQueueLabel" text="0 passengers" />
-            <Separator prefWidth="200.0" />
          </children>
          <BorderPane.margin>
             <Insets left="5.0" />
