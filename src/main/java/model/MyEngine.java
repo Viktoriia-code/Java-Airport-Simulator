@@ -12,9 +12,6 @@ import java.util.Random;
 public class MyEngine extends Engine {
     /* basic variable initializing */
     private final ArrivalProcess arrivalProcess;
-    public static final boolean TEXTDEMO = true;
-    public static final boolean FIXEDARRIVALTIMES = false;
-    public static final boolean FIXEDSERVICETIMES = false;
     private int servedClients;
     private double simulationTime;
 
@@ -61,97 +58,22 @@ public class MyEngine extends Engine {
         servedClients = 0;
         simulationTime = 0;
 
-        if (TEXTDEMO) {
-            /* special setup for the example in text
-             * https://github.com/jacquesbergelius/PP-CourseMaterial/blob/master/1.1_Introduction_to_Simulation.md
-             */
-            Random r = new Random();
+        /* creating and adding ServicePoints to the appropriate lists with varying service time */
+        checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(10, 6), EventType.DEP_CHECKIN));
 
-            ContinuousGenerator arrivalTime;
-            if (FIXEDARRIVALTIMES) {
-                /* version where the arrival times are constant (and greater than service times) */
+        securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(10, 10), EventType.DEP_SECURITY));
+        securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(10, 10), EventType.DEP_SECURITY));
 
-                // make a special "random number distribution" which produces constant value for the customer arrival times
-                arrivalTime = new ContinuousGenerator() {
-                    @Override
-                    public double sample() {
-                        return 10;
-                    }
+        borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(5, 3), EventType.DEP_BORDERCTRL));
 
-                    @Override
-                    public void setSeed(long seed) {
-                    }
+        boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
+        boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
 
-                    @Override
-                    public long getSeed() {
-                        return 0;
-                    }
-
-                    @Override
-                    public void reseed() {
-                    }
-                };
-            } else
-                // exponential distribution is used to model customer arrivals times, to get variability between programs runs, give a variable seed
-                arrivalTime = new Negexp(10, Integer.toUnsignedLong(r.nextInt()));
-
-            ContinuousGenerator serviceTime;
-            if (FIXEDSERVICETIMES) {
-                // make a special "random number distribution" which produces constant value for the service time in service points
-                serviceTime = new ContinuousGenerator() {
-                    @Override
-                    public double sample() {
-                        return 9;
-                    }
-
-                    @Override
-                    public void setSeed(long seed) {
-                    }
-
-                    @Override
-                    public long getSeed() {
-                        return 0;
-                    }
-
-                    @Override
-                    public void reseed() {
-                    }
-                };
-            } else {
-                // normal distribution used to model service times
-                serviceTime = new Normal(4, 6, Integer.toUnsignedLong(r.nextInt()));
-            }
-
-            /* creating and adding ServicePoints to the appropriate lists with a fixed service time */
-            checkInPoints.addAll(createServicePoints("Check-in", num_checkin, serviceTime, EventType.DEP_CHECKIN));
-
-            securityPoints.addAll(createServicePoints("Security check", num_security, serviceTime, EventType.DEP_SECURITY));
-            securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, serviceTime, EventType.DEP_SECURITY));
-
-            borderControlPoints.addAll(createServicePoints("Border control", num_border_control, serviceTime, EventType.DEP_BORDERCTRL));
-
-            boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, serviceTime, EventType.DEP_BOARDING));
-            boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, serviceTime, EventType.DEP_BOARDING));
-
-            /* making arrivalProcess, customerCreator is also sent here */
-            arrivalProcess = new ArrivalProcess(arrivalTime, eventList, EventType.ARRIVAL, customerCreator);
-        } else {
-            /* creating and adding ServicePoints to the appropriate lists with varying service time */
-            checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(10, 6), EventType.DEP_CHECKIN));
-
-            securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(10, 10), EventType.DEP_SECURITY));
-            securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(10, 10), EventType.DEP_SECURITY));
-
-            borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(5, 3), EventType.DEP_BORDERCTRL));
-
-            boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
-            boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
-
-            /* making arrivalProcess, customerCreator is also sent here */
-            arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL, customerCreator);
-        }
+        /* making arrivalProcess, customerCreator is also sent here */
+        arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL, customerCreator);
 
         /* gather and add all security points to the allServicePoints master array */
+        allServicePoints.add(checkInPoints);
         allServicePoints.add(securityPoints);
         allServicePoints.add(securityFastTrackPoints);
         allServicePoints.add(borderControlPoints);
@@ -174,7 +96,7 @@ public class MyEngine extends Engine {
         /* given an array of ServicePoints, returns the one with the shortest queue */
         return servicePointArr.stream()
                 .min(Comparator.comparingInt(ServicePoint::getQueueSize))
-                .orElse(servicePointArr.get(0));
+                .orElse(servicePointArr.get(new Random().nextInt(servicePointArr.size())));
     }
 
     @Override
@@ -256,7 +178,7 @@ public class MyEngine extends Engine {
 
             case DEP_BORDERCTRL:
                 /* customers exiting border control are traveling out of EU:
-                * send to non-EU boarding queue */
+                 * send to non-EU boarding queue */
                 c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
                 q = findShortestQueue(boardingNotEUPoints);
                 q.addQueue(c);
@@ -280,7 +202,7 @@ public class MyEngine extends Engine {
     }
 
     /* C-events: checks if any of the service points have availability and if there's someone in the queue:
-    * begins service if appropriate */
+     * begins service if appropriate */
     @Override
     protected void tryCEvents() {
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
@@ -355,8 +277,8 @@ public class MyEngine extends Engine {
 
     /* method for setting all the Service Point amounts in one line */
     public void setAmountOfAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
-                                         int amount_of_fast_security, int amount_of_border_control,
-                                         int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
+                                            int amount_of_fast_security, int amount_of_border_control,
+                                            int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
         setAmountOfCheckInPoints(amount_of_check_in_points);
         setAmountOfRegularSecurityPoints(amount_of_regular_security);
         setAmountOfFastSecurityPoints(amount_of_fast_security);
