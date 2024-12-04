@@ -295,7 +295,7 @@ public class MyEngine extends Engine {
     }
 
     /* method for setting all the CustomerCreator percentages at once: note that the values should be between 0-100 */
-    public void setCustomerPercentagesAtOnce(double onlineCheckInCustomers, double innerEUCustomers, double businessClassCustomers) {
+    public void setAllCustomerPercentages(double onlineCheckInCustomers, double innerEUCustomers, double businessClassCustomers) {
         setOnlineCheckInPercentage(onlineCheckInCustomers);
         setInsideEUPercentage(innerEUCustomers);
         setBusinessClassPercentage(businessClassCustomers);

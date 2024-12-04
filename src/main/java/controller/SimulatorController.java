@@ -212,6 +212,11 @@ public class SimulatorController {
         int borderControlPoints = Integer.valueOf((int) borderControlSlider.getValue());
         int euOnboardingPoints = Integer.valueOf((int) euOnboardingSlider.getValue());
         int outEuOnboardingPoints = Integer.valueOf((int) outEuOnboardingSlider.getValue());
+
+        int businessClassValue = 100 - Integer.valueOf((int) classSlider.getValue());
+        int euFlightValue = Integer.valueOf((int) euFlightSlider.getValue());
+        int onlineCheckInValue = Integer.valueOf((int) onlineCheckInSlider.getValue());
+
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
         // Set time for the simulation
@@ -224,6 +229,12 @@ public class SimulatorController {
                 borderControlPoints,
                 euOnboardingPoints,
                 outEuOnboardingPoints
+        );
+        // Set customer percentages for the simulation
+        sim.setAllCustomerPercentages(
+                onlineCheckInValue,
+                euFlightValue,
+                businessClassValue
         );
         sim.run();
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());

@@ -9,7 +9,7 @@ public class Main {
         Trace.setTraceLevel(Level.INFO);
 
         MyEngine m = new MyEngine();
-        m.setCustomerPercentagesAtOnce(10, 5, 15);
+        m.setAllCustomerPercentages(10, 5, 15);
         m.setAllServicePoints(10, 10, 10, 10, 10, 10);
         m.setSimulationTime(10000);
         m.run();
