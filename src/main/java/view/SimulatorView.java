@@ -19,7 +19,7 @@ public class SimulatorView extends Application {
         Image applicationIcon = new Image(getClass().getResourceAsStream("/icon.png"));
         primaryStage.getIcons().add(applicationIcon);
 
-        primaryStage.setScene(new Scene(root, 800, 550));
+        primaryStage.setScene(new Scene(root, 1100, 650));
         primaryStage.show();
     }
 }

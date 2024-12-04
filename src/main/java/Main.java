@@ -10,7 +10,7 @@ public class Main {
 
         MyEngine m = new MyEngine();
         m.setCustomerPercentagesAtOnce(10, 5, 15);
-        m.setAmountOfAllServicePoints(10, 10, 10, 10, 10, 10);
+        m.setAllServicePoints(10, 10, 10, 10, 10, 10);
         m.setSimulationTime(10000);
         m.run();
 
