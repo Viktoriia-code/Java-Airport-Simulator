@@ -237,27 +237,27 @@ public class MyEngine extends Engine {
         return simulationTime;
     }
 
-    public void setAmountOfCheckInPoints(int amt) {
+    public void setCheckInPoints(int amt) {
         num_checkin = amt;
     }
 
-    public void setAmountOfRegularSecurityPoints(int amt) {
+    public void setRegularSecurityPoints(int amt) {
         num_security = amt;
     }
 
-    public void setAmountOfFastSecurityPoints(int amt) {
+    public void setFastSecurityPoints(int amt) {
         num_security_fast = amt;
     }
 
-    public void setAmountOfBorderControlPoints(int amt) {
+    public void setBorderControlPoints(int amt) {
         num_border_control = amt;
     }
 
-    public void setAmountOfOutEUBoarding(int amt) {
+    public void setOutEUBoardingPoints(int amt) {
         num_out_EU_boarding = amt;
     }
 
-    public void setAmountOfInEUBoarding(int amt) {
+    public void setInEUBoardingPoints(int amt) {
         num_in_EU_boarding = amt;
     }
 
@@ -276,15 +276,15 @@ public class MyEngine extends Engine {
 
 
     /* method for setting all the Service Point amounts in one line */
-    public void setAmountOfAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
-                                            int amount_of_fast_security, int amount_of_border_control,
-                                            int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
-        setAmountOfCheckInPoints(amount_of_check_in_points);
-        setAmountOfRegularSecurityPoints(amount_of_regular_security);
-        setAmountOfFastSecurityPoints(amount_of_fast_security);
-        setAmountOfBorderControlPoints(amount_of_border_control);
-        setAmountOfInEUBoarding(amount_of_IN_EU_boarding);
-        setAmountOfOutEUBoarding(amount_of_OUT_EU_boarding);
+    public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
+                                         int amount_of_fast_security, int amount_of_border_control,
+                                         int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
+        setCheckInPoints(amount_of_check_in_points);
+        setRegularSecurityPoints(amount_of_regular_security);
+        setFastSecurityPoints(amount_of_fast_security);
+        setBorderControlPoints(amount_of_border_control);
+        setInEUBoardingPoints(amount_of_IN_EU_boarding);
+        setOutEUBoardingPoints(amount_of_OUT_EU_boarding);
     }
 
     /* method for setting all the CustomerCreator percentages at once: note that the values should be between 0-100 */

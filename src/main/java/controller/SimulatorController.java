@@ -8,23 +8,27 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
-import java.util.Random;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimulatorController {
-
+    // Input section (left part of the screen)
     @FXML
     private Label checkInLabel;
     @FXML
     private Slider checkInSlider;
 
     @FXML
-    private Label securityCheckLabel;
+    private Label regularSecurityCheckLabel;
     @FXML
-    private Slider securityCheckSlider;
+    private Slider regularSecurityCheckSlider;
+
+    @FXML
+    private Label fastSecurityCheckLabel;
+    @FXML
+    private Slider fastSecurityCheckSlider;
 
     @FXML
     private Label borderControlLabel;
@@ -32,9 +36,14 @@ public class SimulatorController {
     private Slider borderControlSlider;
 
     @FXML
-    private Label onboardingLabel;
+    private Label euOnboardingLabel;
     @FXML
-    private Slider onboardingSlider;
+    private Slider euOnboardingSlider;
+
+    @FXML
+    private Label outEuOnboardingLabel;
+    @FXML
+    private Slider outEuOnboardingSlider;
 
     @FXML
     private Label speedLabel;
@@ -42,81 +51,47 @@ public class SimulatorController {
     private Slider speedSlider;
 
     @FXML
-    private Canvas airportCanvas;
-
-    @FXML
-    private TextArea logArea;
-
-    @FXML
     private Spinner<Integer> timeSpinner;
 
     @FXML
     private Spinner<Integer> passengerSpinner;
 
-//    @FXML
-//    private Slider securityCheckFastSlider;
-//
-//    @FXML
-//    private Label checkInNumber, securityCheckNumber, securityCheckFastNumber, borderControlNumber, onboardingNumber;
-
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
-    private final Random random = new Random();
 
-
+    // Bottom part of the screen
     @FXML
     private Label inputErrorLabel;
-
     @FXML
     private Button helpButton;
 
-    // Results section
+    // Central part of the screen
+    @FXML
+    private Canvas airportCanvas;
+    @FXML
+    private TextArea logArea;
+
+    // Results section (right part of the screen)
     @FXML
     private Label totalPassengersServedLabel;
-
     @FXML
     private Label avServiceTimeLabel;
-
     @FXML
     private Label simulationTimeLabel;
 
     @FXML
     public void initialize() {
         servicePointsMap.put("CheckIn", (int) checkInSlider.getValue());
-        servicePointsMap.put("SecurityCheck", (int) securityCheckSlider.getValue());
-        //servicePointsMap.put("SecurityCheckFast", (int) securityCheckFastSlider.getValue());
+        servicePointsMap.put("RegularSecurityCheck", (int) regularSecurityCheckSlider.getValue());
+        servicePointsMap.put("FastSecurityCheck", (int) fastSecurityCheckSlider.getValue());
         servicePointsMap.put("BorderControl", (int) borderControlSlider.getValue());
-        servicePointsMap.put("Onboarding", (int) onboardingSlider.getValue());
+        servicePointsMap.put("EuOnboarding", (int) euOnboardingSlider.getValue());
+        servicePointsMap.put("OutEuOnboarding", (int) outEuOnboardingSlider.getValue());
 
         initializeSliders();
 
         drawAllServicePoints();
 
         helpButton.setOnAction(event -> showInstructions());
-
-        // control for the check-in slider
-        checkInSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-                checkInLabel.setText(String.format("%.0f", newValue.doubleValue())) // Format to integer display
-        );
-
-        // control for the security check slider
-        securityCheckSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-                securityCheckLabel.setText(String.format("%.0f", newValue.doubleValue())) // Format to integer display
-        );
-
-        // control for the border control slider
-        borderControlSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-                borderControlLabel.setText(String.format("%.0f", newValue.doubleValue())) // Format to integer display
-        );
-
-        // control for the onboarding slider
-        onboardingSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-                onboardingLabel.setText(String.format("%.0f", newValue.doubleValue())) // Format to integer display
-        );
-
-        // control for the speed slider
-        speedSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-                speedLabel.setText(String.format("%.0f", newValue.doubleValue())) // Format to integer display
-        );
 
         // Control for the time spinner
         SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 1000, 100);
@@ -176,9 +151,25 @@ public class SimulatorController {
     @FXML
     private void startSimulation() {
         int timeValue = timeSpinner.getValue();
+        int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
+        int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
+        int fastSecurityCheckPoints = Integer.valueOf((int) fastSecurityCheckSlider.getValue());
+        int borderControlPoints = Integer.valueOf((int) borderControlSlider.getValue());
+        int euOnboardingPoints = Integer.valueOf((int) euOnboardingSlider.getValue());
+        int outEuOnboardingPoints = Integer.valueOf((int) outEuOnboardingSlider.getValue());
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
+        // Set time for the simulation
         sim.setSimulationTime(timeValue);
+        // Set SPs for the simulation
+        sim.setAllServicePoints(
+                checkInPoints,
+                regularSecurityCheckPoints,
+                fastSecurityCheckPoints,
+                borderControlPoints,
+                euOnboardingPoints,
+                outEuOnboardingPoints
+        );
         sim.run();
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
     }
@@ -189,13 +180,13 @@ public class SimulatorController {
         simulationTimeLabel.setText(String.valueOf(simulationTime));
     }
 
-
     private void initializeSliders() {
         setupSlider(checkInSlider, checkInLabel, "CheckIn");
-        setupSlider(securityCheckSlider, securityCheckLabel, "SecurityCheck");
-        //setupSlider(securityCheckFastSlider, securityCheckFastLabel, "SecurityCheckFast");
+        setupSlider(regularSecurityCheckSlider, regularSecurityCheckLabel, "RegularSecurityCheck");
+        setupSlider(fastSecurityCheckSlider, fastSecurityCheckLabel, "FastSecurityCheck");
         setupSlider(borderControlSlider, borderControlLabel, "BorderControl");
-        setupSlider(onboardingSlider, onboardingLabel, "Onboarding");
+        setupSlider(euOnboardingSlider, euOnboardingLabel, "EuOnboarding");
+        setupSlider(outEuOnboardingSlider, outEuOnboardingLabel, "OutEuOnboarding");
     }
 
     private void setupSlider(Slider slider, Label label, String pointType) {
