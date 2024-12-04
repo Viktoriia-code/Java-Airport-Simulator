@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class SimulatorController {
     // Input section (left part of the screen)
+    // Service points settings
     @FXML
     private Label checkInLabel;
     @FXML
@@ -45,6 +46,32 @@ public class SimulatorController {
     @FXML
     private Slider outEuOnboardingSlider;
 
+    // Clients settings
+    @FXML
+    private Spinner<Integer> passengerSpinner;
+
+    @FXML
+    private Label economClassPercLabel;
+    @FXML
+    private Slider classSlider;
+    @FXML
+    private Label businessClassPercLabel;
+
+    @FXML
+    private Label euFlightPercLabel;
+    @FXML
+    private Slider euFlightSlider;
+    @FXML
+    private Label outEuFlightPercLabel;
+
+    @FXML
+    private Label onlineCheckInPercLabel;
+    @FXML
+    private Slider onlineCheckInSlider;
+    @FXML
+    private Label offlineCheckInPercLabel;
+
+    // General simulation settings
     @FXML
     private Label speedLabel;
     @FXML
@@ -53,10 +80,9 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
-    @FXML
-    private Spinner<Integer> passengerSpinner;
 
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
+    private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     // Bottom part of the screen
     @FXML
@@ -87,6 +113,8 @@ public class SimulatorController {
         servicePointsMap.put("EuOnboarding", (int) euOnboardingSlider.getValue());
         servicePointsMap.put("OutEuOnboarding", (int) outEuOnboardingSlider.getValue());
 
+        customerTypesMap.put("EconomClass", (double) classSlider.getValue());
+
         initializeSliders();
 
         drawAllServicePoints();
@@ -100,6 +128,33 @@ public class SimulatorController {
         // Control for the passenger spinner
         SpinnerValueFactory<Integer> passengerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 100, 100);
         passengerSpinner.setValueFactory(passengerValueFactory);
+
+        // Control for the class slider
+        classSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int econClassValue = newValue.intValue(); // Converts to int directly
+            int businessClassValue = 100 - econClassValue;
+
+            economClassPercLabel.setText(econClassValue + "%");
+            businessClassPercLabel.setText(businessClassValue + "%");
+        });
+
+        // Control for the EU flight slider
+        euFlightSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int euFlightValue = newValue.intValue(); // Converts to int directly
+            int outEuFlightValue = 100 - euFlightValue;
+
+            euFlightPercLabel.setText(euFlightValue + "%");
+            outEuFlightPercLabel.setText(outEuFlightValue + "%");
+        });
+
+        // Control for the online check-in slider
+        onlineCheckInSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int onlineCheckInValue = newValue.intValue(); // Converts to int directly
+            int offlineCheckInValue = 100 - onlineCheckInValue;
+
+            onlineCheckInPercLabel.setText(onlineCheckInValue + "%");
+            offlineCheckInPercLabel.setText(offlineCheckInValue + "%");
+        });
 
         // Validate input for the time and passenger spinners
         timeSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(timeSpinner, newValue, 1, 30000, "Time"));
@@ -187,6 +242,8 @@ public class SimulatorController {
         setupSlider(borderControlSlider, borderControlLabel, "BorderControl");
         setupSlider(euOnboardingSlider, euOnboardingLabel, "EuOnboarding");
         setupSlider(outEuOnboardingSlider, outEuOnboardingLabel, "OutEuOnboarding");
+
+        //setupSlider(classSlider, economClassPercLabel, "EconomClass");
     }
 
     private void setupSlider(Slider slider, Label label, String pointType) {

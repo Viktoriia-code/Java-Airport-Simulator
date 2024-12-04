@@ -9,6 +9,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
 
+/**
+ * Main simulator engine.
+ *
+ * Demo simulation case:
+ * Simulate three service points, customer goes through all three service points to get serviced
+ * 		--> SP1 --> SP2 --> SP3 --> SP4
+ */
 public class MyEngine extends Engine {
     /* basic variable initializing */
     private final ArrivalProcess arrivalProcess;

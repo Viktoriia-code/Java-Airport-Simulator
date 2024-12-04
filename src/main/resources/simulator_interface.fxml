@@ -149,20 +149,20 @@
                         </HBox>
                         <HBox prefWidth="200.0">
                            <children>
-                              <Label fx:id="economClassPercLabel1" text="20%">
+                              <Label fx:id="euFlightPercLabel" text="20%">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
                               <Pane HBox.hgrow="ALWAYS" />
-                              <Label fx:id="businessClassPercLabel1" text="80%">
+                              <Label fx:id="outEuFlightPercLabel" text="80%">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
                            </children>
                         </HBox>
-                        <Slider fx:id="classSlider1" blockIncrement="1.0" majorTickUnit="5.0" value="20.0" />
+                        <Slider fx:id="euFlightSlider" blockIncrement="1.0" majorTickUnit="5.0" value="20.0" />
                         <HBox prefWidth="200.0">
                            <children>
                               <Label text="Online Check In" />
@@ -172,20 +172,20 @@
                         </HBox>
                         <HBox prefWidth="200.0">
                            <children>
-                              <Label fx:id="economClassPercLabel11" text="20%">
+                              <Label fx:id="onlineCheckInPercLabel" text="20%">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
                               <Pane HBox.hgrow="ALWAYS" />
-                              <Label fx:id="businessClassPercLabel11" text="80%">
+                              <Label fx:id="offlineCheckInPercLabel" text="80%">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
                            </children>
                         </HBox>
-                        <Slider fx:id="classSlider11" blockIncrement="1.0" majorTickUnit="5.0" value="20.0" />
+                        <Slider fx:id="onlineCheckInSlider" blockIncrement="1.0" majorTickUnit="5.0" value="20.0" />
                      </children>
                   </VBox>
                </children>
