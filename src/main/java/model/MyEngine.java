@@ -40,16 +40,16 @@ public class MyEngine extends Engine {
 
     public MyEngine() {
         /* some default values: feel free to replace, these have their own set-methods too */
-        percentage_business_class = 20;
+        percentage_business_class = 40;
         percentage_inside_EU = 50;
-        percentage_online_checkin = 10;
+        percentage_online_checkin = 50;
 
-        num_checkin = 1;
-        num_security = 1;
-        num_security_fast = 1;
-        num_border_control = 1;
-        num_in_EU_boarding = 1;
-        num_out_EU_boarding = 1;
+        num_checkin = 9;
+        num_security = 2;
+        num_security_fast = 3;
+        num_border_control = 2;
+        num_in_EU_boarding = 2;
+        num_out_EU_boarding = 2;
 
         /* creates the customerCreator according to the percentages */
         CustomerCreator customerCreator = new CustomerCreator(percentage_business_class, percentage_inside_EU, percentage_online_checkin);
@@ -59,18 +59,18 @@ public class MyEngine extends Engine {
         simulationTime = 0;
 
         /* creating and adding ServicePoints to the appropriate lists with varying service time */
-        checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(10, 6), EventType.DEP_CHECKIN));
+        checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(20, 6), EventType.DEP_CHECKIN));
 
-        securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(10, 10), EventType.DEP_SECURITY));
-        securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(10, 10), EventType.DEP_SECURITY));
+        securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(20, 20), EventType.DEP_SECURITY));
+        securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(20, 10), EventType.DEP_SECURITY));
 
-        borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(5, 3), EventType.DEP_BORDERCTRL));
+        borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(20, 3), EventType.DEP_BORDERCTRL));
 
-        boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
-        boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(5, 3), EventType.DEP_BOARDING));
+        boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(20, 3), EventType.DEP_BOARDING));
+        boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(20, 3), EventType.DEP_BOARDING));
 
         /* making arrivalProcess, customerCreator is also sent here */
-        arrivalProcess = new ArrivalProcess(new Negexp(15, 5), eventList, EventType.ARRIVAL, customerCreator);
+        arrivalProcess = new ArrivalProcess(new Negexp(2, 5), eventList, EventType.ARRIVAL, customerCreator);
 
         /* gather and add all security points to the allServicePoints master array */
         allServicePoints.add(checkInPoints);
@@ -107,98 +107,69 @@ public class MyEngine extends Engine {
 
     @Override
     protected void runEvent(Event t) {  // B phase events
-        Customer c;
-        ServicePoint q;
-
-        /* due to changes in the Event Class, the Event now contains association to the customer (see usage of t.getCustomer())*/
         switch ((EventType) t.getType()) {
-            /* if event type is ARRIVAL:
-             * - customer is sent to the shortest check in queue
-             * - in case customer has done online check in, they're sent to the appropriate security queue instead
-             * - next arrivalProcess event is generated
-             * - the index of which line customer is sent to is saved to customer (see Customer.getCurrentQueueIndex()) */
             case ARRIVAL:
-                c = t.getCustomer();
-                if (c.isOnlineCheckOut()) {
-                    if (c.isBusinessClass()) {
-                        q = findShortestQueue(securityFastTrackPoints);
-                        q.addQueue(c);
-                        c.setCurrentQueueIndex(securityFastTrackPoints.indexOf(q));
-                    } else {
-                        q = findShortestQueue(securityPoints);
-                        q.addQueue(c);
-                        c.setCurrentQueueIndex(securityPoints.indexOf(q));
-                    }
-                } else {
-                    q = findShortestQueue(checkInPoints);
-                    q.addQueue(c);
-                    c.setCurrentQueueIndex(checkInPoints.indexOf(q));
-                }
-                arrivalProcess.generateNextEvent();
+                handleArrival(t);
                 break;
-
             case DEP_CHECKIN:
-                /* using the saved index value, customer is retrieved from the right check-in queue */
-                c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-
-                /* put the customer to the proper queue according to whether they're in
-                 * business class or not */
-                if (c.isBusinessClass()) {
-                    q = findShortestQueue(securityFastTrackPoints);
-                    c.setCurrentQueueIndex(securityFastTrackPoints.indexOf(q));
-                } else {
-                    q = findShortestQueue(securityPoints);
-                    c.setCurrentQueueIndex(securityPoints.indexOf(q));
-                }
-
-                q.addQueue(c);
+                handleDepCheckin(t);
                 break;
-
             case DEP_SECURITY:
-                /* check if event-associated customer is in business class or not:
-                 * remove from appropriate queue */
-                if (t.getCustomer().isBusinessClass()) {
-                    c = securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                } else {
-                    c = securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                }
-
-                /* skip border control and go straight to in-EU boarding if customer is not
-                 * flying outside europe: otherwise go to border control queue */
-                if (t.getCustomer().isEUFlight()) {
-                    q = findShortestQueue(boardingInEUPoints);
-                    q.addQueue(c);
-                    c.setCurrentQueueIndex(boardingInEUPoints.indexOf(q));
-                } else {
-                    q = findShortestQueue(borderControlPoints);
-                    q.addQueue(c);
-                    c.setCurrentQueueIndex(borderControlPoints.indexOf(q));
-                }
+                handleDepSecurity(t);
                 break;
-
             case DEP_BORDERCTRL:
-                /* customers exiting border control are traveling out of EU:
-                 * send to non-EU boarding queue */
-                c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                q = findShortestQueue(boardingNotEUPoints);
-                q.addQueue(c);
-                c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+                handleDepBorderCtrl(t);
                 break;
-
-            /* after customer is done with boarding process,
-             * the customer isn't placed in a new queue and is only removed from the appropriate
-             * boarding queue. the time of leaving the system is saved to the customer and results are reported */
             case DEP_BOARDING:
-                servedClients++;
-                if (t.getCustomer().isEUFlight()) {
-                    boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                } else {
-                    boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-                }
-                t.getCustomer().setRemovalTime(Clock.getInstance().getClock());
-                t.getCustomer().reportResults();
+                handleDepBoarding(t);
                 break;
         }
+    }
+
+    private void handleArrival(Event t) {
+        Customer c = t.getCustomer();
+        ServicePoint q;
+        if (c.isOnlineCheckOut()) {
+            q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
+            c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+        } else {
+            q = findShortestQueue(checkInPoints);
+            c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+        }
+        q.addQueue(c);
+        arrivalProcess.generateNextEvent();
+    }
+
+    private void handleDepCheckin(Event t) {
+        Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+        ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
+        q.addQueue(c);
+        c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+    }
+
+    private void handleDepSecurity(Event t) {
+        Customer c = t.getCustomer().isBusinessClass() ?
+                securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
+                securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+        ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
+        q.addQueue(c);
+        c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
+    }
+
+    private void handleDepBorderCtrl(Event t) {
+        Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+        ServicePoint q = findShortestQueue(boardingNotEUPoints);
+        q.addQueue(c);
+        c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+    }
+
+    private void handleDepBoarding(Event t) {
+        Customer c = t.getCustomer().isEUFlight() ?
+                boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
+                boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+        c.setRemovalTime(Clock.getInstance().getClock());
+        c.reportResults();
+        servedClients++;
     }
 
     /* C-events: checks if any of the service points have availability and if there's someone in the queue:
@@ -217,6 +188,14 @@ public class MyEngine extends Engine {
     /* displays simulation results */
     @Override
     public void results() {
+        for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
+            for (ServicePoint p : servicePointList) {
+                Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
+                Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
+                Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
+            }
+        }
+
         simulationTime = Clock.getInstance().getClock();
         Trace.out(Trace.Level.INFO, "Results:");
         Trace.out(Trace.Level.INFO, "Number of served clients: " + servedClients);
