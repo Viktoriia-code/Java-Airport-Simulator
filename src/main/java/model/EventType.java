@@ -2,8 +2,9 @@ package model;
 
 import framework.IEventType;
 
-// TODO:
-// Event types are defined by the requirements of the simulation model
+/**
+ * Event types are defined by the requirements of the simulation model
+ */
 public enum EventType implements IEventType {
 	/* a new customer has arrived to the airport */
 	ARRIVAL,

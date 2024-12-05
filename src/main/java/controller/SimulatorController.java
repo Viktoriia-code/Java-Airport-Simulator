@@ -3,18 +3,23 @@ package controller;
 import framework.Trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SimulatorController {
     // Input section (left part of the screen)
+    // Service points settings
     @FXML
     private Label checkInLabel;
     @FXML
@@ -45,6 +50,32 @@ public class SimulatorController {
     @FXML
     private Slider outEuOnboardingSlider;
 
+    // Clients settings
+    @FXML
+    private Spinner<Integer> passengerSpinner;
+
+    @FXML
+    private Label economClassPercLabel;
+    @FXML
+    private Slider classSlider;
+    @FXML
+    private Label businessClassPercLabel;
+
+    @FXML
+    private Label euFlightPercLabel;
+    @FXML
+    private Slider euFlightSlider;
+    @FXML
+    private Label outEuFlightPercLabel;
+
+    @FXML
+    private Label onlineCheckInPercLabel;
+    @FXML
+    private Slider onlineCheckInSlider;
+    @FXML
+    private Label offlineCheckInPercLabel;
+
+    // General simulation settings
     @FXML
     private Label speedLabel;
     @FXML
@@ -53,10 +84,13 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
-    @FXML
-    private Spinner<Integer> passengerSpinner;
 
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
+
+    private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
+
+    private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
+
 
     // Bottom part of the screen
     @FXML
@@ -66,9 +100,11 @@ public class SimulatorController {
 
     // Central part of the screen
     @FXML
+    private SplitPane splitPane;
+    @FXML
     private Canvas airportCanvas;
     @FXML
-    private TextArea logArea;
+    private ListView logListView;
 
     // Results section (right part of the screen)
     @FXML
@@ -87,6 +123,16 @@ public class SimulatorController {
         servicePointsMap.put("EuOnboarding", (int) euOnboardingSlider.getValue());
         servicePointsMap.put("OutEuOnboarding", (int) outEuOnboardingSlider.getValue());
 
+        customerTypesMap.put("EconomClass", (double) classSlider.getValue());
+
+        maxServicePointsMap.put("CheckIn", 65);
+        maxServicePointsMap.put("RegularSecurityCheck", 14);
+        maxServicePointsMap.put("FastSecurityCheck", 10);
+        maxServicePointsMap.put("BorderControl", 26);
+        maxServicePointsMap.put("EuOnboarding", 20);
+        maxServicePointsMap.put("OutEuOnboarding", 15);
+
+
         initializeSliders();
 
         drawAllServicePoints();
@@ -101,10 +147,62 @@ public class SimulatorController {
         SpinnerValueFactory<Integer> passengerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 100, 100);
         passengerSpinner.setValueFactory(passengerValueFactory);
 
+        // Control for the class slider
+        classSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int econClassValue = newValue.intValue(); // Converts to int directly
+            int businessClassValue = 100 - econClassValue;
+
+            economClassPercLabel.setText(econClassValue + "%");
+            businessClassPercLabel.setText(businessClassValue + "%");
+        });
+
+        // Control for the EU flight slider
+        euFlightSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int euFlightValue = newValue.intValue(); // Converts to int directly
+            int outEuFlightValue = 100 - euFlightValue;
+
+            euFlightPercLabel.setText(euFlightValue + "%");
+            outEuFlightPercLabel.setText(outEuFlightValue + "%");
+        });
+
+        // Control for the online check-in slider
+        onlineCheckInSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int onlineCheckInValue = newValue.intValue(); // Converts to int directly
+            int offlineCheckInValue = 100 - onlineCheckInValue;
+
+            onlineCheckInPercLabel.setText(onlineCheckInValue + "%");
+            offlineCheckInPercLabel.setText(offlineCheckInValue + "%");
+        });
+
         // Validate input for the time and passenger spinners
         timeSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(timeSpinner, newValue, 1, 30000, "Time"));
         passengerSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(passengerSpinner, newValue, 1, 1000, "Passenger count"));
 
+        log("Welcome to the Airport simulation!");
+    }
+
+    private double lastCanvasHeight = -1;
+    private double lastCanvasWidth = -1;
+
+    private void adjustCanvasSize() {
+        double canvasHeight = splitPane.getDividerPositions()[0] * splitPane.getHeight();
+        double canvasWidth = splitPane.getWidth();
+
+        if (canvasHeight != lastCanvasHeight || canvasWidth != lastCanvasWidth) {
+            airportCanvas.setHeight(canvasHeight);
+            airportCanvas.setWidth(canvasWidth);
+
+            lastCanvasHeight = canvasHeight;
+            lastCanvasWidth = canvasWidth;
+
+            drawAllServicePoints();
+        }
+    }
+
+    private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
+        double xLeftEdge = 5;
+        gc.setFill(Color.BLACK);
+        gc.fillText(pointType, xLeftEdge, y);
     }
 
     private void showInstructions() {
@@ -157,6 +255,11 @@ public class SimulatorController {
         int borderControlPoints = Integer.valueOf((int) borderControlSlider.getValue());
         int euOnboardingPoints = Integer.valueOf((int) euOnboardingSlider.getValue());
         int outEuOnboardingPoints = Integer.valueOf((int) outEuOnboardingSlider.getValue());
+
+        int businessClassValue = 100 - Integer.valueOf((int) classSlider.getValue());
+        int euFlightValue = Integer.valueOf((int) euFlightSlider.getValue());
+        int onlineCheckInValue = Integer.valueOf((int) onlineCheckInSlider.getValue());
+
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
         // Set time for the simulation
@@ -170,8 +273,23 @@ public class SimulatorController {
                 euOnboardingPoints,
                 outEuOnboardingPoints
         );
+        // Set customer percentages for the simulation
+        sim.setAllCustomerPercentages(
+                onlineCheckInValue,
+                euFlightValue,
+                businessClassValue
+        );
+        log(String.format(
+                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                " BusinessClass=%d%%",
+                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                onlineCheckInValue, euFlightValue, businessClassValue
+        ));
         sim.run();
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+        log("Simulation ended");
     }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime) {
@@ -191,6 +309,8 @@ public class SimulatorController {
 
     private void setupSlider(Slider slider, Label label, String pointType) {
         int defaultValue = (int) slider.getValue();
+        int maxPoints = maxServicePointsMap.getOrDefault(pointType, 0);
+        slider.setMax(maxPoints);
         servicePointsMap.put(pointType, defaultValue);
         label.setText(String.valueOf(defaultValue));
 
@@ -198,8 +318,6 @@ public class SimulatorController {
             int newCount = newValue.intValue();
             servicePointsMap.put(pointType, newCount);
             label.setText(String.valueOf(newCount));
-
-            logMessage(pointType + " updated to " + newCount + " service points.");
             drawAllServicePoints();
         });
     }
@@ -208,34 +326,72 @@ public class SimulatorController {
         GraphicsContext gc = airportCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, airportCanvas.getWidth(), airportCanvas.getHeight());
 
-        double yStep = airportCanvas.getHeight() / (servicePointsMap.size() + 1);
+        double yStep = 75;
         int typeIndex = 0;
 
-        for (Map.Entry<String, Integer> entry : servicePointsMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : maxServicePointsMap.entrySet()) {
             String pointType = entry.getKey();
-            int count = entry.getValue();
+            int totalPoints = entry.getValue();
+            int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
 
             double y = yStep * (typeIndex + 1);
-            drawServicePoints(gc, count, y, pointType);
+
+            if (pointType.equals("CheckIn") && typeIndex > 0) {
+                y += 2;
+            } else if (typeIndex > 0) {
+                y += yStep;
+            }
+
+            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
         }
     }
 
-    private void drawServicePoints(GraphicsContext gc, int count, double y, String pointType) {
-        double spacing = airportCanvas.getWidth() / (count + 1);
 
-        for (int i = 0; i < count; i++) {
-            double x = spacing * (i + 1);
 
-            gc.setFill(Color.BLUE);
-            gc.fillOval(x - 15, y - 15, 30, 30);
+    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart) {
+        double pointDiameter = 10.0;
+        double spacingX = 20.0;
+        double spacingY = 30.0;
+        int pointsPerRow = 26;
 
-            gc.setFill(Color.WHITE);
-            gc.fillText(pointType + " " + (i + 1), x - 20, y + 5);
+        int currentRow = 0;
+        for (int i = 0; i < totalPoints; i++) {
+            int rowPosition = i % pointsPerRow;
+            if (i > 0 && rowPosition == 0) {
+                currentRow++;
+            }
+
+            double x = spacingX * (rowPosition + 1);
+            double yOffset = yStart  + spacingY * currentRow;
+
+            if (i < activatedCount) {
+                gc.setFill(Color.BLUE);
+            } else {
+                gc.setFill(Color.DARKGRAY);
+            }
+
+            gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
         }
     }
 
-    private void logMessage(String message) {
-        logArea.appendText(message + "\n");
+    public void log(String s) {
+        // Get the current time in HH:mm:ss format
+        LocalTime currentTime = LocalTime.now();
+        String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+        // Create a Text object for the time and set it to bold
+        Text timeText = new Text(timeString + "  ");
+        timeText.setStyle("-fx-font-weight: bold;");
+
+        // Create a Text object for the message
+        Text messageText = new Text(s);
+
+        // Combine both into a TextFlow
+        TextFlow textFlow = new TextFlow(timeText, messageText);
+
+        // Add the TextFlow to the ListView
+        logListView.getItems().add(textFlow);
     }
 }
