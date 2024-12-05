@@ -9,7 +9,8 @@ The simulation helps optimize airport layouts, passenger flow, aircraft movement
 ## Technical stack
 - **Java**: The main programming language used for building the application.
 - **Maven**: A tool that helps manage the project's dependencies and automates the build process.
-- **JavaFX**: A framework used to create the user interface (UI) for the application
+- **JavaFX**: A framework used to create the user interface (UI) for the application.
+- **JavaDoc**: A tool used to generate API documentation in HTML format directly from the Java source code.
 
 ## Installation
 
