@@ -278,7 +278,7 @@
          </BorderPane.margin>
          <children>
             <Canvas fx:id="airportCanvas" height="572.0" width="577.0" />
-            <ListView layoutX="-1.0" layoutY="573.0" prefHeight="138.0" prefWidth="579.0" />
+            <ListView fx:id="logListView" layoutX="-1.0" layoutY="573.0" prefHeight="138.0" prefWidth="579.0" />
          </children>
       </AnchorPane>
    </center>

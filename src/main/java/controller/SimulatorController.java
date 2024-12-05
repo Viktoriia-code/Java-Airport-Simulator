@@ -3,13 +3,17 @@ package controller;
 import framework.Trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -100,7 +104,7 @@ public class SimulatorController {
     @FXML
     private Canvas airportCanvas;
     @FXML
-    private TextArea logArea;
+    private ListView logListView;
 
     // Results section (right part of the screen)
     @FXML
@@ -174,6 +178,7 @@ public class SimulatorController {
         timeSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(timeSpinner, newValue, 1, 30000, "Time"));
         passengerSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(passengerSpinner, newValue, 1, 1000, "Passenger count"));
 
+        log("Welcome to the Airport simulation!");
     }
 
     private double lastCanvasHeight = -1;
@@ -274,8 +279,17 @@ public class SimulatorController {
                 euFlightValue,
                 businessClassValue
         );
+        log(String.format(
+                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                " BusinessClass=%d%%",
+                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                onlineCheckInValue, euFlightValue, businessClassValue
+        ));
         sim.run();
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+        log("Simulation ended");
     }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime) {
@@ -291,8 +305,6 @@ public class SimulatorController {
         setupSlider(borderControlSlider, borderControlLabel, "BorderControl");
         setupSlider(euOnboardingSlider, euOnboardingLabel, "EuOnboarding");
         setupSlider(outEuOnboardingSlider, outEuOnboardingLabel, "OutEuOnboarding");
-
-        //setupSlider(classSlider, economClassPercLabel, "EconomClass");
     }
 
     private void setupSlider(Slider slider, Label label, String pointType) {
@@ -362,5 +374,24 @@ public class SimulatorController {
 
             gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
         }
+    }
+
+    public void log(String s) {
+        // Get the current time in HH:mm:ss format
+        LocalTime currentTime = LocalTime.now();
+        String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+        // Create a Text object for the time and set it to bold
+        Text timeText = new Text(timeString + "  ");
+        timeText.setStyle("-fx-font-weight: bold;");
+
+        // Create a Text object for the message
+        Text messageText = new Text(s);
+
+        // Combine both into a TextFlow
+        TextFlow textFlow = new TextFlow(timeText, messageText);
+
+        // Add the TextFlow to the ListView
+        logListView.getItems().add(textFlow);
     }
 }
