@@ -9,6 +9,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
 
+/**
+ * Main simulator engine.
+ *
+ * Demo simulation case:
+ * Simulate three service points, customer goes through all three service points to get serviced
+ * 		--> SP1 --> SP2 --> SP3 --> SP4
+ */
 public class MyEngine extends Engine {
     /* basic variable initializing */
     private final ArrivalProcess arrivalProcess;
@@ -288,7 +295,7 @@ public class MyEngine extends Engine {
     }
 
     /* method for setting all the CustomerCreator percentages at once: note that the values should be between 0-100 */
-    public void setCustomerPercentagesAtOnce(double onlineCheckInCustomers, double innerEUCustomers, double businessClassCustomers) {
+    public void setAllCustomerPercentages(double onlineCheckInCustomers, double innerEUCustomers, double businessClassCustomers) {
         setOnlineCheckInPercentage(onlineCheckInCustomers);
         setInsideEUPercentage(innerEUCustomers);
         setBusinessClassPercentage(businessClassCustomers);

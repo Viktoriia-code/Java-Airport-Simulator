@@ -2,8 +2,11 @@ package model;
 
 import framework.*;
 
-// TODO:
-// Customer to be implemented according to the requirements of the simulation model (data!)
+/**
+ * Customer in a simulator
+ *
+ * TODO: This is to be implemented according to the requirements of the simulation model (data!)
+ */
 public class Customer {
 	private double arrivalTime;
 	private double removalTime;
@@ -17,6 +20,9 @@ public class Customer {
 	private final boolean isEUFlight;
 	private final boolean isOnlineCheckOut;
 
+	/**
+	 * Create a unique customer
+	 */
 	public Customer(boolean isBusinessClass, boolean isEUFlight, boolean isOnlineCheckOut) {
 		this.isBusinessClass = isBusinessClass;
 		this.isEUFlight = isEUFlight;
@@ -43,22 +49,42 @@ public class Customer {
 		return isOnlineCheckOut;
 	}
 
+	/**
+	 * Give the time when customer has been removed (from the system to be simulated)
+	 * @return Customer removal time
+	 */
 	public double getRemovalTime() {
 		return removalTime;
 	}
 
+	/**
+	 * Mark the time when the customer has been removed (from the system to be simulated)
+	 * @param removalTime Customer removal time
+	 */
 	public void setRemovalTime(double removalTime) {
 		this.removalTime = removalTime;
 	}
 
+	/**
+	 * Give the time when the customer arrived to the system to be simulated
+	 * @return Customer arrival time
+	 */
 	public double getArrivalTime() {
 		return arrivalTime;
 	}
 
+	/**
+	 * Mark the time when the customer arrived to the system to be simulated
+	 * @param arrivalTime Customer arrival time
+	 */
 	public void setArrivalTime(double arrivalTime) {
 		this.arrivalTime = arrivalTime;
 	}
 
+	/**
+	 * Get the (unique) customer id
+	 * @return Customer id
+	 */
 	public int getId() {
 		return id;
 	}
@@ -73,6 +99,9 @@ public class Customer {
 
 	public static void resetId() { i = 1; }
 
+	/**
+	 * Report the measured variables of the customer. In this case to the diagnostic output.
+	 */
 	public void reportResults(){
 		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
 		Trace.out(Trace.Level.INFO, "Customer #" + id + " arrived: " + arrivalTime);
