@@ -18,7 +18,7 @@ import java.util.Random;
  */
 public class MyEngine extends Engine {
     /* basic variable initializing */
-    private final ArrivalProcess arrivalProcess;
+    private ArrivalProcess arrivalProcess;
     private int servedClients;
     private double simulationTime;
 
@@ -45,47 +45,36 @@ public class MyEngine extends Engine {
     int num_out_EU_boarding;
     int num_in_EU_boarding;
 
+    double arrival_mean;
+    double checkIn_mean;
+    double security_mean;
+    double borderControl_mean;
+    double boarding_mean;
+
     public MyEngine() {
-        /* some default values: feel free to replace, these have their own set-methods too */
-        percentage_business_class = 40;
-        percentage_inside_EU = 50;
-        percentage_online_checkin = 50;
+        /* customer distribution percentages (0-100) */
+        this.percentage_business_class = 40;
+        this.percentage_inside_EU = 50;
+        this.percentage_online_checkin = 50;
 
-        num_checkin = 9;
-        num_security = 2;
-        num_security_fast = 3;
-        num_border_control = 2;
-        num_in_EU_boarding = 2;
-        num_out_EU_boarding = 2;
+        /* amount of each service point station */
+        this.num_checkin = 9;
+        this.num_security = 2;
+        this.num_security_fast = 3;
+        this.num_border_control = 2;
+        this.num_in_EU_boarding = 2;
+        this.num_out_EU_boarding = 2;
 
-        /* creates the customerCreator according to the percentages */
-        CustomerCreator customerCreator = new CustomerCreator(percentage_business_class, percentage_inside_EU, percentage_online_checkin);
+        /* timing parameters */
+        this.arrival_mean = 5;
+        this.checkIn_mean = 30;
+        this.security_mean = 10;
+        this.borderControl_mean = 10;
+        this.boarding_mean = 10;
 
         /* resetting amount of served clients and simulation time */
-        servedClients = 0;
-        simulationTime = 0;
-
-        /* creating and adding ServicePoints to the appropriate lists with varying service time */
-        checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(20, 6), EventType.DEP_CHECKIN));
-
-        securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(20, 20), EventType.DEP_SECURITY));
-        securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(20, 10), EventType.DEP_SECURITY));
-
-        borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(20, 3), EventType.DEP_BORDERCTRL));
-
-        boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(20, 3), EventType.DEP_BOARDING));
-        boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(20, 3), EventType.DEP_BOARDING));
-
-        /* making arrivalProcess, customerCreator is also sent here */
-        arrivalProcess = new ArrivalProcess(new Negexp(2, 5), eventList, EventType.ARRIVAL, customerCreator);
-
-        /* gather and add all security points to the allServicePoints master array */
-        allServicePoints.add(checkInPoints);
-        allServicePoints.add(securityPoints);
-        allServicePoints.add(securityFastTrackPoints);
-        allServicePoints.add(borderControlPoints);
-        allServicePoints.add(boardingInEUPoints);
-        allServicePoints.add(boardingNotEUPoints);
+        this.servedClients = 0;
+        this.simulationTime = 0;
     }
 
     /* method used in the to create the specific amount of service points without having to repeat code */
@@ -108,8 +97,33 @@ public class MyEngine extends Engine {
 
     @Override
     protected void initialize() {    // First arrival in the system
+        /* creating and adding ServicePoints to the appropriate lists with varying service time */
+        this.checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(checkIn_mean, 6), EventType.DEP_CHECKIN));
+
+        this.securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(security_mean, 20), EventType.DEP_SECURITY));
+        this.securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(security_mean, 10), EventType.DEP_SECURITY));
+
+        this.borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(borderControl_mean, 3), EventType.DEP_BORDERCTRL));
+
+        this.boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(boarding_mean, 3), EventType.DEP_BOARDING));
+        this.boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(boarding_mean, 3), EventType.DEP_BOARDING));
+
+        /* creating the customerCreator according to the percentages */
+        CustomerCreator customerCreator = new CustomerCreator(this.percentage_business_class, this.percentage_inside_EU, this.percentage_online_checkin);
+        /* making arrivalProcess, customerCreator is also sent here */
+        this.arrivalProcess = new ArrivalProcess(new Negexp(arrival_mean), eventList, EventType.ARRIVAL, customerCreator);
+
+        /* gather and add all security points to the allServicePoints master array */
+        this.allServicePoints.add(checkInPoints);
+        this.allServicePoints.add(securityPoints);
+        this.allServicePoints.add(securityFastTrackPoints);
+        this.allServicePoints.add(borderControlPoints);
+        this.allServicePoints.add(boardingInEUPoints);
+        this.allServicePoints.add(boardingNotEUPoints);
+
         Customer.resetId();
-        arrivalProcess.generateNextEvent();
+        Customer.resetServiceTimeSum();
+        this.arrivalProcess.generateNextEvent();
     }
 
     @Override
@@ -195,11 +209,20 @@ public class MyEngine extends Engine {
     /* displays simulation results */
     @Override
     public void results() {
+        int maxQueueSize = 0;
+        String longestQueueSPName = ""; 
+        
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
             for (ServicePoint p : servicePointList) {
                 Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
                 Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
+                Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
+
+                if (p.getLongestQueueSize() > maxQueueSize){
+                    maxQueueSize = p.getLongestQueueSize();
+                    longestQueueSPName = (p.getName() + " #" + servicePointList.indexOf(p));
+                }
             }
         }
 
@@ -207,7 +230,8 @@ public class MyEngine extends Engine {
         Trace.out(Trace.Level.INFO, "Results:");
         Trace.out(Trace.Level.INFO, "Number of served clients: " + servedClients);
         Trace.out(Trace.Level.INFO, "Simulation ended at: " + Clock.getInstance().getClock());
-        Trace.out(Trace.Level.INFO, "Mean service time: " + Clock.getInstance().getClock() / servedClients);
+        Trace.out(Trace.Level.INFO, "Mean service time: " + Customer.getServiceTimeSum() / servedClients);
+        Trace.out(Trace.Level.INFO, "Longest queue: " + maxQueueSize + " customers at " + longestQueueSPName);
     }
 
     /* general getters and setters */
@@ -260,6 +284,25 @@ public class MyEngine extends Engine {
         percentage_business_class = percentage;
     }
 
+    public void setArrivalMean(double mean){
+        arrival_mean = mean;
+    }
+
+    public void setCheckInMean(double mean){
+        checkIn_mean = mean;
+    }
+
+    public void setBorderControlMean(double mean){
+        borderControl_mean = mean;
+    }
+
+    public void setSecurityMean(double mean){
+        security_mean = mean;
+    }
+
+    public void setBoardingMean(double mean){
+        boarding_mean = mean;
+    }
 
     /* method for setting all the Service Point amounts in one line */
     public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
@@ -278,5 +321,13 @@ public class MyEngine extends Engine {
         setOnlineCheckInPercentage(onlineCheckInCustomers);
         setInsideEUPercentage(innerEUCustomers);
         setBusinessClassPercentage(businessClassCustomers);
+    }
+
+    public void setAllTimingMeans(double arrival, double checkIn, double borderControl, double security, double boarding){
+        setArrivalMean(arrival);
+        setCheckInMean(checkIn);
+        setBorderControlMean(borderControl);
+        setSecurityMean(security);
+        setBoardingMean(boarding);
     }
 }

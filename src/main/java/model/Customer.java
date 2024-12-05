@@ -5,7 +5,6 @@ import framework.*;
 /**
  * Customer in a simulator
  *
- * TODO: This is to be implemented according to the requirements of the simulation model (data!)
  */
 public class Customer {
 	private double arrivalTime;
@@ -13,12 +12,13 @@ public class Customer {
 
 	private final int id;
 	private static int i = 1;
-	private static long sum = 0;
+	private static double serviceTimeSum = 0;
 	private int currentQueue;
 
 	private final boolean isBusinessClass;
 	private final boolean isEUFlight;
 	private final boolean isOnlineCheckOut;
+	private double queueEntryTime;
 
 	/**
 	 * Create a unique customer
@@ -30,11 +30,19 @@ public class Customer {
 
 		id = i++;
 
-		arrivalTime = Clock.getInstance().getClock();
+		setArrivalTime(Clock.getInstance().getClock());
 		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime +
 				(this.isBusinessClass ? " (Business Class" : " (Economy Class") +
 				(this.isEUFlight ? " || Inside EU ||" : " || Outside EU ||") +
 				(this.isOnlineCheckOut ? " Online Check-Out)" : " Regular Check Out)"));
+	}
+
+	public void setQueueEntryTime(double queueEntryTime) {
+		this.queueEntryTime = queueEntryTime;
+	}
+
+	public double getQueueEntryTime() {
+		return queueEntryTime;
 	}
 
 	public boolean isBusinessClass() {
@@ -108,13 +116,21 @@ public class Customer {
 		Trace.out(Trace.Level.INFO, "Customer #" + id + " removed: " + removalTime);
 		Trace.out(Trace.Level.INFO, "Customer #" + id + " stayed: " + (removalTime - arrivalTime));
 
-		sum += (long) (removalTime - arrivalTime);
-		double mean = (double) sum / id;
+		serviceTimeSum += (getRemovalTime() - getArrivalTime());
+		double mean = serviceTimeSum / id;
 		System.out.println("Current mean of the customer service times " + mean);
 		System.out.printf("Customer %s: %s, Flight: %s, Total Time: %.2f%n",
 				getId(),
 				this.isBusinessClass ? "Business" : "Economy",
 				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
+	}
+
+	public static double getServiceTimeSum(){
+		return serviceTimeSum;
+	}
+
+	public static void resetServiceTimeSum(){
+		serviceTimeSum = 0;
 	}
 }

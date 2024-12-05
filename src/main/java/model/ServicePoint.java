@@ -5,9 +5,6 @@ import framework.*;
 
 import java.util.LinkedList;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
 /**
  * Service Point implements the functionalities, calculations and reporting.
  *
@@ -28,6 +25,7 @@ public class ServicePoint {
     private boolean reserved = false;
     private int longestQueueSize;
     private int servedCustomersHere;
+    private double totalQueueTime;
 
     /**
      * Create the service point with a waiting queue.
@@ -75,6 +73,7 @@ public class ServicePoint {
      */
     public void addQueue(Customer a) {    // The first customer of the queue is always in service
         this.queue.add(a);
+        a.setQueueEntryTime(Clock.getInstance().getClock());
         if (getLongestQueueSize() < getQueueSize()){
             setLongestQueueSize(getQueueSize());
         }
@@ -89,7 +88,9 @@ public class ServicePoint {
     public Customer removeQueue() {        // Remove serviced customer
         this.reserved = false;
         increaseServedCustomersHereByOne();
-        return this.queue.poll();
+        Customer a = this.queue.poll();
+        this.totalQueueTime += Clock.getInstance().getClock() - a.getQueueEntryTime();
+        return a;
     }
 
     /**
@@ -124,5 +125,9 @@ public class ServicePoint {
      */
     public boolean isOnQueue() {
         return !queue.isEmpty();
+    }
+
+    public double getAverageQueueTime() {
+        return totalQueueTime / servedCustomersHere;
     }
 }
