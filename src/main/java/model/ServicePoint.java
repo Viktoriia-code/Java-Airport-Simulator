@@ -17,6 +17,8 @@ import java.util.LinkedList;
  */
 public class ServicePoint {
     private final String name;
+    private int uniqueId=0 ;
+    private static int idCounter = 0;
     private final LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
     private final ContinuousGenerator generator;
     private final EventList eventList;
@@ -35,13 +37,16 @@ public class ServicePoint {
      * @param type Event type for the service end event
      */
     public ServicePoint(String name, ContinuousGenerator generator, EventList eventList, EventType type) {
+        this.uniqueId = idCounter++;
         this.name = name;
         this.eventList = eventList;
         this.generator = generator;
         this.eventTypeScheduled = type;
         this.longestQueueSize = 0;
     }
-
+    public int getUniqueId() {
+        return uniqueId;
+    }
     public int getQueueSize() {
         return this.queue.size();
     }

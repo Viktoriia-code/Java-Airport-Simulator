@@ -1,5 +1,6 @@
 package controller;
 
+import entity.Parameters;
 import entity.Result;
 import framework.Trace;
 import javafx.fxml.FXML;
@@ -273,6 +274,7 @@ public class SimulatorController {
                 euOnboardingPoints,
                 outEuOnboardingPoints
         );
+        saveSimuParameters(checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints, borderControlPoints, euOnboardingPoints, outEuOnboardingPoints);
         // Set customer percentages for the simulation
         sim.setAllCustomerPercentages(
                 onlineCheckInValue,
@@ -286,6 +288,31 @@ public class SimulatorController {
         saveSimuResult(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime(),  longestQueue,  sim.getLQueueName());
     }
 
+    private void saveSimuParameters( int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding){
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Parameters simulationParameters = new Parameters();
+            simulationParameters.setCheck_in(check_in);
+            simulationParameters.setSecurity_check(security_check);
+            simulationParameters.setFasttrack(fasttrack);
+            simulationParameters.setBorder_control(border_control);
+            simulationParameters.setEU_boarding(EU_boarding);
+            simulationParameters.setNon_EU_Boarding(non_EU_Boarding);
+            em.persist(simulationParameters);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            // Close EntityManager
+            em.close();
+            emf.close();
+        }
+    }
     private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, double maxQueueLength, String longestQueuename) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();

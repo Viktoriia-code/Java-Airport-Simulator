@@ -20,17 +20,33 @@ public class Result {
     private double averageServiceTime;
     @Column(name= "longestQueue")
     private String longestQueue;
+    @OneToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "parameters_id", referencedColumnName = "id")
+    private Parameters parameters;
 
-    public Result(int servedPassenger, double averageQueueLength, double simulationTime, double averageServiceTime, String longestQueue) {
+    public Result(int servedPassenger, double averageQueueLength, double simulationTime, double averageServiceTime, String longestQueue, Parameters parameters) {
         super();
         this.servedPassenger = servedPassenger;
         this.averageQueueLength = averageQueueLength;
         this.simulationTime = simulationTime;
         this.averageServiceTime = averageServiceTime;
         this.longestQueue = longestQueue;
+        this.parameters = parameters;
     }
     public Result() {
 
+    }
+    public Parameters getParameters() {
+        return parameters;
+    }
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
+    }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
     }
     public int getServedPassenger() {
         return servedPassenger;

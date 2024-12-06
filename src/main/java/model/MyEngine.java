@@ -215,14 +215,14 @@ public class MyEngine extends Engine {
 
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
             for (ServicePoint p : servicePointList) {
-                Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
+                Trace.out(Trace.Level.INFO, p.getName() + " #" + p.getUniqueId());
                 Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
                 Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
 
-                if (p.getLongestQueueSize() > maxQueueSize){
+                if (p.getLongestQueueSize() >= maxQueueSize){
                     maxQueueSize = p.getLongestQueueSize();
-                    longestQueueSPName = (p.getName() + " #" + servicePointList.indexOf(p));
+                    longestQueueSPName = (p.getName() + " #" + p.getUniqueId());
                 }
             }
         }
