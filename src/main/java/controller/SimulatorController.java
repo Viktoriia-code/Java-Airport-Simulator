@@ -1,5 +1,6 @@
 package controller;
 
+import entity.Result;
 import framework.Trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -12,6 +13,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class SimulatorController {
     // Input section (left part of the screen)
@@ -275,7 +280,45 @@ public class SimulatorController {
                 businessClassValue
         );
         sim.run();
+
+        int longestQueue = 5;
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+        saveSimuResult(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime(),  longestQueue,  sim.getLQueueName());
+    }
+
+    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, double maxQueueLength, String longestQueuename) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            // Start a transaction
+            em.getTransaction().begin();
+
+            // Create and populate a SimulationResults entity
+            Result simulationResults = new Result();
+            simulationResults.setServedPassenger(servedClients);
+            simulationResults.setSimulationTime(simulationTime);
+            simulationResults.setAverageServiceTime(meanServiceTime);
+            simulationResults.setAverageQueueLength(maxQueueLength); // Replace with calculated value if available
+            simulationResults.setLongestQueue(longestQueuename);
+
+            // Persist the entity
+            em.persist(simulationResults);
+
+            // Commit the transaction
+            em.getTransaction().commit();
+
+        } catch (Exception e) {
+            // Rollback transaction if there's an issue
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            // Close EntityManager
+            em.close();
+            emf.close();
+        }
     }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime) {
