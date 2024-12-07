@@ -17,7 +17,6 @@ import java.util.Random;
  * 		--> SP1 --> SP2 --> SP3 --> SP4
  */
 public class MyEngine extends Engine {
-    /* basic variable initializing */
     private ArrivalProcess arrivalProcess;
     private int servedClients;
     private double simulationTime;
@@ -77,7 +76,14 @@ public class MyEngine extends Engine {
         this.simulationTime = 0;
     }
 
-    /* method used in the to create the specific amount of service points without having to repeat code */
+    /**
+     * Creates a given amount of Service Points
+     * @param name The name shared between all the Service Points created here (e.g. "Border Control")
+     * @param count How many Service Points like this should the returned array contain
+     * @param serviceTime ContinuousGenerator that tells the ServicePoint class how long service should take 
+     * @param eventType The EventType of Event that occurs when the service is done (e.g. DEP_CHECKIN)
+     * @return An ArrayList that contains the Service Points
+     */
     private ArrayList<ServicePoint> createServicePoints(String name, int count, ContinuousGenerator serviceTime, EventType eventType) {
         ArrayList<ServicePoint> servicePoints = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -86,17 +92,24 @@ public class MyEngine extends Engine {
         return servicePoints;
     }
 
-    /* in runEvent, this method is used to find which queue is the shortest.
-     * this is how it is decided which queue customer goes next */
+    /**
+     * Finds the Service Point that the Customer is put into: either takes the first shortest one, or
+     * in case of queue sizes being the same, picks a random Service Point
+     * @param servicePointArr ArrayList of Service Points that the ServicePoint should be from
+     * @return Service Point with either the shortest queue or a random one if shortest can't be found
+     */
     public ServicePoint findShortestQueue(ArrayList<ServicePoint> servicePointArr) {
-        /* given an array of ServicePoints, returns the one with the shortest queue */
         return servicePointArr.stream()
                 .min(Comparator.comparingInt(ServicePoint::getQueueSize))
                 .orElse(servicePointArr.get(new Random().nextInt(servicePointArr.size())));
     }
 
+    /**
+     * Generates first arrival in the system, creates Service Points according to given numbers,
+     * creates CustomerCreator with proper percentages, resets ServiceTimeSum and id of Customer Class
+     */
     @Override
-    protected void initialize() {    // First arrival in the system
+    protected void initialize() {
         /* creating and adding ServicePoints to the appropriate lists with varying service time */
         this.checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(checkIn_mean, 6), EventType.DEP_CHECKIN));
 
@@ -126,6 +139,10 @@ public class MyEngine extends Engine {
         this.arrivalProcess.generateNextEvent();
     }
 
+    /**
+     * B-Phase events: takes the event and calls the method that corresponds its EventType
+     * @param t The event to be executed
+     */
     @Override
     protected void runEvent(Event t) {  // B phase events
         switch ((EventType) t.getType()) {
@@ -147,10 +164,15 @@ public class MyEngine extends Engine {
         }
     }
 
+    /**
+     * Handling of ARRIVAL event. If associated Customer has done online Check-In, places them
+     * to Security: if not, places them to Check-In. Generates next arrival event.
+     * @param t The event that is being handled
+     */
     private void handleArrival(Event t) {
         Customer c = t.getCustomer();
         ServicePoint q;
-        if (c.isOnlineCheckOut()) {
+        if (c.isOnlineCheckIn()) {
             q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
             c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
         } else {
@@ -161,6 +183,11 @@ public class MyEngine extends Engine {
         arrivalProcess.generateNextEvent();
     }
 
+    /**
+     * Handling of DEP_CHECKIN. Customer is removed from the Check-In queue and placed
+     * in Security queue (either Fast Track or regular, depending on if Customer is in Business Class)
+     * @param t The event that is being handled
+     */
     private void handleDepCheckin(Event t) {
         Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
@@ -168,6 +195,11 @@ public class MyEngine extends Engine {
         c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
     }
 
+    /**
+     * Handling of DEP_SECURITY. Removes Customer from the right queue and places them to
+     * In-EU Boarding or Border Control, depending on if their destination is in or out of EU.
+     * @param t The event that is being handled
+     */
     private void handleDepSecurity(Event t) {
         Customer c = t.getCustomer().isBusinessClass() ?
                 securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
@@ -177,6 +209,11 @@ public class MyEngine extends Engine {
         c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
     }
 
+    /**
+     * Handling of DEP_BORDERCTRL. Removes Customer from Border Control queue, places them
+     * in out of EU Boarding.
+     * @param t The event that is being handled
+     */
     private void handleDepBorderCtrl(Event t) {
         Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         ServicePoint q = findShortestQueue(boardingNotEUPoints);
@@ -184,6 +221,11 @@ public class MyEngine extends Engine {
         c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
     }
 
+    /**
+     * Handling of DEP_BOARDING. Removes Customer from the boarding queue, sets the Customer's removal
+     * time to the current time, adds +1 to the total served clients in this simulation run.
+     * @param t The event that is being handled
+     */
     private void handleDepBoarding(Event t) {
         Customer c = t.getCustomer().isEUFlight() ?
                 boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
@@ -193,8 +235,10 @@ public class MyEngine extends Engine {
         servedClients++;
     }
 
-    /* C-events: checks if any of the service points have availability and if there's someone in the queue:
-     * begins service if appropriate */
+    /**
+     * C-Phase Events: checks through every ServicePoint in the system and checks if they're currently
+     * free and if there is someone in the queue. If so, ServicePoint's beginService() method is called.
+     */
     @Override
     protected void tryCEvents() {
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
@@ -206,7 +250,9 @@ public class MyEngine extends Engine {
         }
     }
 
-    /* displays simulation results */
+    /**
+     * Displays Simulation results with Trace
+     * */
     @Override
     public void results() {
         int maxQueueSize = 0;
@@ -234,77 +280,153 @@ public class MyEngine extends Engine {
         Trace.out(Trace.Level.INFO, "Longest queue: " + maxQueueSize + " customers at " + longestQueueSPName);
     }
 
-    /* general getters and setters */
+    /**
+     * Gets the number of served clients.
+     * @return the number of served clients
+     */
     public int getServedClients() {
         return servedClients;
     }
 
+    /**
+     * Gets the mean service time.
+     * @return the mean service time
+     */
     public double getMeanServiceTime() {
         return simulationTime / servedClients;
     }
 
+    /**
+     * Gets the simulation time.
+     * @return the simulation time
+     */
     public double getSimulationTime() {
         return simulationTime;
     }
 
+    /**
+     * Sets the number of check-in points.
+     * @param amt the number of check-in points
+     */
     public void setCheckInPoints(int amt) {
         num_checkin = amt;
     }
 
+    /**
+     * Sets the number of regular security points.
+     * @param amt the number of regular security points
+     */
     public void setRegularSecurityPoints(int amt) {
         num_security = amt;
     }
 
+    /**
+     * Sets the number of Fast Track security points.
+     * @param amt the number of Fast Track security points
+     */
     public void setFastSecurityPoints(int amt) {
         num_security_fast = amt;
     }
 
+    /**
+     * Sets the number of border control points.
+     * @param amt the number of border control points
+     */
     public void setBorderControlPoints(int amt) {
         num_border_control = amt;
     }
 
+    /**
+     * Sets the number of out-EU boarding points.
+     * @param amt the number of out-EU boarding points
+     */
     public void setOutEUBoardingPoints(int amt) {
         num_out_EU_boarding = amt;
     }
 
+    /**
+     * Sets the number of in-EU boarding points.
+     * @param amt the number of in-EU boarding points
+     */
     public void setInEUBoardingPoints(int amt) {
         num_in_EU_boarding = amt;
     }
 
-
+    /**
+     * Sets the percentage of online check-in.
+     * @param percentage the percentage of online check-in
+     */
     public void setOnlineCheckInPercentage(double percentage) {
         percentage_online_checkin = percentage;
     }
 
+    /**
+     * Sets the percentage of inside EU flights.
+     * @param percentage the percentage of inside EU flights
+     */
     public void setInsideEUPercentage(double percentage) {
         percentage_inside_EU = percentage;
     }
 
+    /**
+     * Sets the percentage of business class customers.
+     * @param percentage the percentage of business class customers
+     */
     public void setBusinessClassPercentage(double percentage) {
         percentage_business_class = percentage;
     }
 
+    /**
+     * Sets the mean arrival time.
+     * @param mean the mean arrival time
+     */
     public void setArrivalMean(double mean){
         arrival_mean = mean;
     }
 
+    /**
+     * Sets the mean check-in time.
+     * @param mean the mean check-in time
+     */
     public void setCheckInMean(double mean){
         checkIn_mean = mean;
     }
 
+    /**
+     * Sets the mean border control time.
+     * @param mean the mean border control time
+     */
     public void setBorderControlMean(double mean){
         borderControl_mean = mean;
     }
 
+    /**
+     * Sets the mean security time.
+     * @param mean the mean security time
+     */
     public void setSecurityMean(double mean){
         security_mean = mean;
     }
 
+    /**
+     * Sets the mean boarding time.
+     * @param mean the mean boarding time
+     */
     public void setBoardingMean(double mean){
         boarding_mean = mean;
     }
 
     /* method for setting all the Service Point amounts in one line */
+
+    /**
+     * Set amounts of all Service Points at once
+     * @param amount_of_check_in_points amount of check-in service points
+     * @param amount_of_regular_security amount of security (Non-Fast Track) service points
+     * @param amount_of_fast_security amount of security (Fast Track) service points
+     * @param amount_of_border_control amount of Border Control service points
+     * @param amount_of_IN_EU_boarding amount of boarding (inside EU) service points
+     * @param amount_of_OUT_EU_boarding amount of boarding (outside EU) service points
+     */
     public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
                                          int amount_of_fast_security, int amount_of_border_control,
                                          int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
@@ -316,13 +438,26 @@ public class MyEngine extends Engine {
         setOutEUBoardingPoints(amount_of_OUT_EU_boarding);
     }
 
-    /* method for setting all the CustomerCreator percentages at once: note that the values should be between 0-100 */
+    /**
+     * Sets all Customer related percentages at once. Note that values should be between 0-100.
+     * @param onlineCheckInCustomers percentage of customers checking in online (skipping on-site check-in)
+     * @param innerEUCustomers percentage of customers traveling inside of EU (skipping Border Control)
+     * @param businessClassCustomers percentage of business class customers (put in fast track security)
+     */
     public void setAllCustomerPercentages(double onlineCheckInCustomers, double innerEUCustomers, double businessClassCustomers) {
         setOnlineCheckInPercentage(onlineCheckInCustomers);
         setInsideEUPercentage(innerEUCustomers);
         setBusinessClassPercentage(businessClassCustomers);
     }
 
+    /**
+     * Set all timing means at once
+     * @param arrival mean time between customer arrivals
+     * @param checkIn mean for the time of check-in service
+     * @param borderControl mean for the time of border control service
+     * @param security mean for the time of security service
+     * @param boarding mean for the time of boarding service
+     */
     public void setAllTimingMeans(double arrival, double checkIn, double borderControl, double security, double boarding){
         setArrivalMean(arrival);
         setCheckInMean(checkIn);
