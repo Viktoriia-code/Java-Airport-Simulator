@@ -12,8 +12,6 @@ public class Result {
     private int id;
     @Column(name= "servedPassenger")
     private int servedPassenger;
-    @Column(name= "averageQueueLenght")
-    private double averageQueueLength;
     @Column(name= "simulationTime")
     private double simulationTime;
     @Column(name= "averageServiceTime")
@@ -24,10 +22,9 @@ public class Result {
     @JoinColumn(name = "parameters_id", nullable = false)
     private Parameters parameters;
 
-    public Result(int servedPassenger, double averageQueueLength, double simulationTime, double averageServiceTime, String longestQueue, Parameters parameters) {
+    public Result(int servedPassenger, double simulationTime, double averageServiceTime, String longestQueue, Parameters parameters) {
         super();
         this.servedPassenger = servedPassenger;
-        this.averageQueueLength = averageQueueLength;
         this.simulationTime = simulationTime;
         this.averageServiceTime = averageServiceTime;
         this.longestQueue = longestQueue;
@@ -51,9 +48,6 @@ public class Result {
     public int getServedPassenger() {
         return servedPassenger;
     }
-    public double getAverageQueueLength() {
-        return averageQueueLength;
-    }
     public double getSimulationTime() {
         return simulationTime;
     }
@@ -66,9 +60,7 @@ public class Result {
     public void setServedPassenger(int servedPassenger) {
         this.servedPassenger = servedPassenger;
     }
-    public void setAverageQueueLength(double averageQueueLength) {
-        this.averageQueueLength = averageQueueLength;
-    }
+
     public void setSimulationTime(double simulationTime) {
         this.simulationTime = simulationTime;
     }

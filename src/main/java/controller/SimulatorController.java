@@ -292,7 +292,6 @@ public class SimulatorController {
         );
         sim.run();
 
-        int longestQueue = 5; // Example value, replace with actual logic if needed.
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
 
 
@@ -301,7 +300,6 @@ public class SimulatorController {
                 sim.getServedClients(),
                 sim.getMeanServiceTime(),
                 sim.getSimulationTime(),
-                longestQueue,
                 sim.getLQueueName(),
                 simulationParameters // Pass the Parameters object
         );
@@ -336,7 +334,7 @@ public class SimulatorController {
         }
     }
 
-    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, double maxQueueLength, String longestQueuename, Parameters parameters) {
+    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, String longestQueuename, Parameters parameters) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();
 
@@ -348,7 +346,6 @@ public class SimulatorController {
             simulationResults.setServedPassenger(servedClients);
             simulationResults.setSimulationTime(simulationTime);
             simulationResults.setAverageServiceTime(meanServiceTime);
-            simulationResults.setAverageQueueLength(maxQueueLength);
             simulationResults.setLongestQueue(longestQueuename);
 
             // Link the Parameters entity to the Result entity
