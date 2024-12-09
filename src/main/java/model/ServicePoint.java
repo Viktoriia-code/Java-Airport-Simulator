@@ -5,9 +5,6 @@ import framework.*;
 
 import java.util.LinkedList;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
 /**
  * Service Point implements the functionalities, calculations and reporting.
  *
@@ -26,10 +23,13 @@ public class ServicePoint {
     private final EventType eventTypeScheduled;
 
     private boolean reserved = false;
+    private int longestQueueSize;
+    private int servedCustomersHere;
+    private double totalQueueTime;
 
     /**
      * Create the service point with a waiting queue.
-     *
+     * @param name String reflecting the type of Service Point: only used for display
      * @param generator Random number generator for service time simulation
      * @param eventList Simulator event list, needed for the insertion of service ready event
      * @param type Event type for the service end event
@@ -39,6 +39,58 @@ public class ServicePoint {
         this.eventList = eventList;
         this.generator = generator;
         this.eventTypeScheduled = type;
+        this.longestQueueSize = 0;
+    }
+
+    /**
+     * Retrieves the length of the queue at the moment
+     *
+     * @return Current length of queue
+     */
+    public int getQueueSize() {
+        return this.queue.size();
+    }
+
+    /**
+     * Sets the length of the longest queue size that's been seen in this specific Service Point
+     *
+     * @param longestQueue Integer to set as the longest queue size
+     */
+    public void setLongestQueueSize(int longestQueue) {
+        this.longestQueueSize = longestQueue;
+    }
+
+    /**
+     * Retrieves length of the longest queue size that's been seen in this specific Service Point
+     *
+     * @return Integer amount of longest queue size at this specific Service Point
+     */
+    public int getLongestQueueSize() {
+        return this.longestQueueSize;
+    }
+
+    /**
+     * Retrieves amount of served customer at this specific Service Point
+     *
+     * @return Integer amount of served customers at this specific Service Point
+     */
+    public int getServedCustomersHere() {
+        return this.servedCustomersHere;
+    }
+
+    /**
+     * Get the name of the Service Point
+     * @return Name String
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Increases the amount of served customers in this specific Service Point
+     */
+    public void increaseServedCustomersHereByOne() {
+        this.servedCustomersHere++;
     }
 
     /**
@@ -47,7 +99,11 @@ public class ServicePoint {
      * @param a Customer to be queued
      */
     public void addQueue(Customer a) {    // The first customer of the queue is always in service
-        queue.add(a);
+        this.queue.add(a);
+        a.setQueueEntryTime(Clock.getInstance().getClock());
+        if (getLongestQueueSize() < getQueueSize()){
+            setLongestQueueSize(getQueueSize());
+        }
     }
 
     /**
@@ -57,8 +113,11 @@ public class ServicePoint {
      * @return Customer retrieved from the waiting queue
      */
     public Customer removeQueue() {        // Remove serviced customer
-        reserved = false;
-        return queue.poll();
+        this.reserved = false;
+        increaseServedCustomersHereByOne();
+        Customer a = this.queue.poll();
+        this.totalQueueTime += Clock.getInstance().getClock() - a.getQueueEntryTime();
+        return a;
     }
 
     /**
@@ -69,7 +128,6 @@ public class ServicePoint {
     public void beginService() {        // Begins a new service, customer is on the queue during the service
         try {
             Trace.out(Trace.Level.INFO, "Starting " + name + " for the customer #" + queue.peek().getId() + " at queue #" + queue.peek().getCurrentQueueIndex());
-
             reserved = true;
             double serviceTime = generator.sample();
             eventList.add(new Event(eventTypeScheduled, Clock.getInstance().getClock() + serviceTime, queue.getLast()));
@@ -96,7 +154,12 @@ public class ServicePoint {
         return !queue.isEmpty();
     }
 
-    public int getQueueSize() {
-        return queue.size();
+    /**
+     * Return the average queue time in this Service Point
+     *
+     * @return double of the calculated average queue time
+     */
+    public double getAverageQueueTime() {
+        return totalQueueTime / servedCustomersHere;
     }
 }
