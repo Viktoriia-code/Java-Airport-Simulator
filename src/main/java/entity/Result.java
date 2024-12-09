@@ -20,8 +20,8 @@ public class Result {
     private double averageServiceTime;
     @Column(name= "longestQueue")
     private String longestQueue;
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "parameters_id", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "parameters_id", nullable = false)
     private Parameters parameters;
 
     public Result(int servedPassenger, double averageQueueLength, double simulationTime, double averageServiceTime, String longestQueue, Parameters parameters) {

@@ -274,7 +274,16 @@ public class SimulatorController {
                 euOnboardingPoints,
                 outEuOnboardingPoints
         );
-        saveSimuParameters(checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints, borderControlPoints, euOnboardingPoints, outEuOnboardingPoints);
+
+        // Create Parameters object
+        Parameters simulationParameters = new Parameters();
+        simulationParameters.setCheck_in(checkInPoints);
+        simulationParameters.setSecurity_check(regularSecurityCheckPoints);
+        simulationParameters.setFasttrack(fastSecurityCheckPoints);
+        simulationParameters.setBorder_control(borderControlPoints);
+        simulationParameters.setEU_boarding(euOnboardingPoints);
+        simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+
         // Set customer percentages for the simulation
         sim.setAllCustomerPercentages(
                 onlineCheckInValue,
@@ -283,16 +292,28 @@ public class SimulatorController {
         );
         sim.run();
 
-        int longestQueue = 5;
+        int longestQueue = 5; // Example value, replace with actual logic if needed.
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
-        saveSimuResult(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime(),  longestQueue,  sim.getLQueueName());
+
+
+        // Save simulation results
+        saveSimuResult(
+                sim.getServedClients(),
+                sim.getMeanServiceTime(),
+                sim.getSimulationTime(),
+                longestQueue,
+                sim.getLQueueName(),
+                simulationParameters // Pass the Parameters object
+        );
     }
 
-    private void saveSimuParameters( int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding){
+    private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
+
+            // Create and populate Parameters entity
             Parameters simulationParameters = new Parameters();
             simulationParameters.setCheck_in(check_in);
             simulationParameters.setSecurity_check(security_check);
@@ -300,6 +321,8 @@ public class SimulatorController {
             simulationParameters.setBorder_control(border_control);
             simulationParameters.setEU_boarding(EU_boarding);
             simulationParameters.setNon_EU_Boarding(non_EU_Boarding);
+
+            // Persist Parameters entity
             em.persist(simulationParameters);
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -308,41 +331,39 @@ public class SimulatorController {
             }
             e.printStackTrace();
         } finally {
-            // Close EntityManager
             em.close();
             emf.close();
         }
     }
-    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, double maxQueueLength, String longestQueuename) {
+
+    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, double maxQueueLength, String longestQueuename, Parameters parameters) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();
 
         try {
-            // Start a transaction
             em.getTransaction().begin();
 
-            // Create and populate a SimulationResults entity
+            // Create and populate Result entity
             Result simulationResults = new Result();
             simulationResults.setServedPassenger(servedClients);
             simulationResults.setSimulationTime(simulationTime);
             simulationResults.setAverageServiceTime(meanServiceTime);
-            simulationResults.setAverageQueueLength(maxQueueLength); // Replace with calculated value if available
+            simulationResults.setAverageQueueLength(maxQueueLength);
             simulationResults.setLongestQueue(longestQueuename);
 
-            // Persist the entity
+            // Link the Parameters entity to the Result entity
+            simulationResults.setParameters(parameters);
+
+            // Persist the Result entity
             em.persist(simulationResults);
 
-            // Commit the transaction
             em.getTransaction().commit();
-
         } catch (Exception e) {
-            // Rollback transaction if there's an issue
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
             e.printStackTrace();
         } finally {
-            // Close EntityManager
             em.close();
             emf.close();
         }

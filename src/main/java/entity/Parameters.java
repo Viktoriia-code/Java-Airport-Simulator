@@ -1,5 +1,9 @@
 package entity;
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 @Entity
 @Table(name = "parameters")
@@ -8,7 +12,7 @@ public class Parameters {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name= "check-in")
+    @Column(name= "check_in")
     private int check_in;
     @Column(name= "security_check")
     private int security_check;
