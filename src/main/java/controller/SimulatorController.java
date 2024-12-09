@@ -312,7 +312,7 @@ public class SimulatorController {
                 sim.getServedClients(),
                 sim.getMeanServiceTime(),
                 sim.getSimulationTime(),
-                sim.getLQueueName(),
+                sim.findLongestQueueSPName(),
                 simulationParameters // Pass the Parameters object
         );
     }
