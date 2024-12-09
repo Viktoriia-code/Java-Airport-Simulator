@@ -32,10 +32,11 @@ public class MyEngine extends Engine {
 
     ArrayList<ArrayList<ServicePoint>> allServicePoints = new ArrayList<>();
 
+    String maxQueueName = "";
+
     double percentage_business_class;
     double percentage_inside_EU;
     double percentage_online_checkin;
-
     int num_checkin;
     int num_security;
     int num_security_fast;
@@ -468,8 +469,8 @@ public class MyEngine extends Engine {
      * @param amount_of_OUT_EU_boarding amount of boarding (outside EU) service points
      */
     public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
-                                         int amount_of_fast_security, int amount_of_border_control,
-                                         int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
+                                    int amount_of_fast_security, int amount_of_border_control,
+                                    int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
         setCheckInPoints(amount_of_check_in_points);
         setRegularSecurityPoints(amount_of_regular_security);
         setFastSecurityPoints(amount_of_fast_security);

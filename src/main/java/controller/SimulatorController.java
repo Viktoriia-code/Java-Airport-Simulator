@@ -1,5 +1,7 @@
 package controller;
 
+import entity.Parameters;
+import entity.Result;
 import framework.Trace;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -16,6 +18,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class SimulatorController {
     // Input section (left part of the screen)
@@ -273,6 +279,16 @@ public class SimulatorController {
                 euOnboardingPoints,
                 outEuOnboardingPoints
         );
+
+        // Create Parameters object
+        Parameters simulationParameters = new Parameters();
+        simulationParameters.setCheck_in(checkInPoints);
+        simulationParameters.setSecurity_check(regularSecurityCheckPoints);
+        simulationParameters.setFasttrack(fastSecurityCheckPoints);
+        simulationParameters.setBorder_control(borderControlPoints);
+        simulationParameters.setEU_boarding(euOnboardingPoints);
+        simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+
         // Set customer percentages for the simulation
         sim.setAllCustomerPercentages(
                 onlineCheckInValue,
@@ -288,8 +304,80 @@ public class SimulatorController {
                 onlineCheckInValue, euFlightValue, businessClassValue
         ));
         sim.run();
+
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+
+        // Save simulation results
+        saveSimuResult(
+                sim.getServedClients(),
+                sim.getMeanServiceTime(),
+                sim.getSimulationTime(),
+                sim.getLQueueName(),
+                simulationParameters // Pass the Parameters object
+        );
+    }
+
+    private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // Create and populate Parameters entity
+            Parameters simulationParameters = new Parameters();
+            simulationParameters.setCheck_in(check_in);
+            simulationParameters.setSecurity_check(security_check);
+            simulationParameters.setFasttrack(fasttrack);
+            simulationParameters.setBorder_control(border_control);
+            simulationParameters.setEU_boarding(EU_boarding);
+            simulationParameters.setNon_EU_Boarding(non_EU_Boarding);
+
+            // Persist Parameters entity
+            em.persist(simulationParameters);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            em.close();
+            emf.close();
+        }
+    }
+
+    private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, String longestQueuename, Parameters parameters) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            em.getTransaction().begin();
+
+            // Create and populate Result entity
+            Result simulationResults = new Result();
+            simulationResults.setServedPassenger(servedClients);
+            simulationResults.setSimulationTime(simulationTime);
+            simulationResults.setAverageServiceTime(meanServiceTime);
+            simulationResults.setLongestQueue(longestQueuename);
+
+            // Link the Parameters entity to the Result entity
+            simulationResults.setParameters(parameters);
+
+            // Persist the Result entity
+            em.persist(simulationResults);
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            em.close();
+            emf.close();
+        }
         log("Simulation ended");
+
     }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime) {

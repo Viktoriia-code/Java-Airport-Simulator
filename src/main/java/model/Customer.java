@@ -18,6 +18,7 @@ public class Customer {
 	private final boolean isBusinessClass;
 	private final boolean isEUFlight;
 	private final boolean isOnlineCheckIn;
+
 	private double queueEntryTime;
 
 	/**
@@ -175,5 +176,13 @@ public class Customer {
 				this.isBusinessClass ? "Business" : "Economy",
 				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
+	}
+
+	public static double getServiceTimeSum(){
+		return serviceTimeSum;
+	}
+
+	public static void resetServiceTimeSum(){
+		serviceTimeSum = 0;
 	}
 }
