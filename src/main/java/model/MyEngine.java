@@ -11,7 +11,6 @@ import java.util.Random;
 
 /**
  * Main simulator engine.
- *
  * Demo simulation case:
  * Simulate three service points, customer goes through all three service points to get serviced
  * 		--> SP1 --> SP2 --> SP3 --> SP4
@@ -255,29 +254,70 @@ public class MyEngine extends Engine {
      * */
     @Override
     public void results() {
-        int maxQueueSize = 0;
-        String longestQueueSPName = ""; 
-        
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
             for (ServicePoint p : servicePointList) {
                 Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
                 Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
                 Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
-
-                if (p.getLongestQueueSize() > maxQueueSize){
-                    maxQueueSize = p.getLongestQueueSize();
-                    longestQueueSPName = (p.getName() + " #" + servicePointList.indexOf(p));
-                }
             }
         }
 
         simulationTime = Clock.getInstance().getClock();
         Trace.out(Trace.Level.INFO, "Results:");
-        Trace.out(Trace.Level.INFO, "Number of served clients: " + servedClients);
+        Trace.out(Trace.Level.INFO, "Number of served clients: " + getServedClients());
         Trace.out(Trace.Level.INFO, "Simulation ended at: " + Clock.getInstance().getClock());
-        Trace.out(Trace.Level.INFO, "Mean service time: " + Customer.getServiceTimeSum() / servedClients);
-        Trace.out(Trace.Level.INFO, "Longest queue: " + maxQueueSize + " customers at " + longestQueueSPName);
+        Trace.out(Trace.Level.INFO, "Mean service time: " + Customer.getServiceTimeSum() / getServedClients());
+        Trace.out(Trace.Level.INFO, "Longest queue: " + findLongestQueueSize() + " customers at " + findLongestQueueSPName());
+    }
+
+    /**
+     * Gets all Service Points
+     * @return all Service Points: notice it returns 6 ArrayLists inside one ArrayList
+     */
+
+    public ArrayList<ArrayList<ServicePoint>> getAllServicePoints(){
+        return allServicePoints;
+    }
+
+    /**
+     * Find the name of the SP with the longest queue
+     * @return string that consists of SP name + index in the array of similar SPs (e.g. "Check-In #4")
+     */
+
+    public String findLongestQueueSPName(){
+        int maxQueueSize = 0;
+        String longestQueueSPName = "";
+
+        for (ArrayList<ServicePoint> arr : allServicePoints){
+            for (ServicePoint sp : arr){
+                if (maxQueueSize <= sp.getLongestQueueSize()){
+                    maxQueueSize = sp.getLongestQueueSize();
+                    longestQueueSPName = sp.getName() + " #" + arr.indexOf(sp);
+                }
+            }
+        }
+
+        return longestQueueSPName;
+    }
+
+    /**
+     * Find the size of the longest queue
+     * @return size of the longest queue
+     */
+
+    public int findLongestQueueSize(){
+        int maxQueueSize = 0;
+
+        for (ArrayList<ServicePoint> arr : allServicePoints){
+            for (ServicePoint sp : arr){
+                if (maxQueueSize <= sp.getLongestQueueSize()){
+                    maxQueueSize = sp.getLongestQueueSize();
+                }
+            }
+        }
+
+        return maxQueueSize;
     }
 
     /**
