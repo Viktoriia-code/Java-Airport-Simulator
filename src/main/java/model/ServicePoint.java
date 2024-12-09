@@ -17,7 +17,7 @@ import java.util.LinkedList;
  */
 public class ServicePoint {
     private final String name;
-    private int uniqueId=0 ;
+    private int uniqueId = 0;
     private static int idCounter = 0;
     private final LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
     private final ContinuousGenerator generator;

@@ -32,6 +32,11 @@ public class SimulatorController {
     private Slider checkInSlider;
 
     @FXML
+    private Label checkInTimeLabel;
+    @FXML
+    private Slider checkInTimeSlider;
+
+    @FXML
     private Label regularSecurityCheckLabel;
     @FXML
     private Slider regularSecurityCheckSlider;
@@ -42,9 +47,19 @@ public class SimulatorController {
     private Slider fastSecurityCheckSlider;
 
     @FXML
+    private Label securityTimeLabel;
+    @FXML
+    private Slider securityTimeSlider;
+
+    @FXML
     private Label borderControlLabel;
     @FXML
     private Slider borderControlSlider;
+
+    @FXML
+    private Label borderTimeLabel;
+    @FXML
+    private Slider borderTimeSlider;
 
     @FXML
     private Label euOnboardingLabel;
@@ -55,6 +70,11 @@ public class SimulatorController {
     private Label outEuOnboardingLabel;
     @FXML
     private Slider outEuOnboardingSlider;
+
+    @FXML
+    private Label onboardingTimeLabel;
+    @FXML
+    private Slider onboardingTimeSlider;
 
     // Clients settings
     @FXML
@@ -138,6 +158,11 @@ public class SimulatorController {
         maxServicePointsMap.put("EuOnboarding", 20);
         maxServicePointsMap.put("OutEuOnboarding", 15);
 
+        // SP Time inputs
+        bindSliderToLabel(checkInTimeSlider, checkInTimeLabel);
+        bindSliderToLabel(securityTimeSlider, securityTimeLabel);
+        bindSliderToLabel(borderTimeSlider, borderTimeLabel);
+        bindSliderToLabel(onboardingTimeSlider, onboardingTimeLabel);
 
         initializeSliders();
 
@@ -185,6 +210,30 @@ public class SimulatorController {
         passengerSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(passengerSpinner, newValue, 1, 1000, "Passenger count"));
 
         log("Welcome to the Airport simulation!");
+    }
+
+    /**
+     * Binds a slider to a label and updates the label with the slider's value.
+     * @param slider the slider to observe
+     * @param label the label to update
+     */
+    public static void bindSliderToLabel(Slider slider, Label label) {
+        // Set the initial label value based on the slider's current value
+        updateLabel((int) slider.getValue(), label);
+
+        // Add a listener to update the label whenever the slider value changes
+        slider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            updateLabel(newValue.intValue(), label);
+        });
+    }
+
+    /**
+     * Updates the label with the slider's current value.
+     * @param value the slider's value
+     * @param label the label to update
+     */
+    private static void updateLabel(int value, Label label) {
+        label.setText(String.valueOf(value));
     }
 
     private double lastCanvasHeight = -1;
@@ -266,6 +315,11 @@ public class SimulatorController {
         int euFlightValue = Integer.valueOf((int) euFlightSlider.getValue());
         int onlineCheckInValue = Integer.valueOf((int) onlineCheckInSlider.getValue());
 
+        int checkInTime = Integer.valueOf((int) checkInTimeSlider.getValue());
+        int securityTime = Integer.valueOf((int) securityTimeSlider.getValue());
+        int borderTime = Integer.valueOf((int) borderTimeSlider.getValue());
+        int onboardingTime = Integer.valueOf((int) onboardingTimeSlider.getValue());
+
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
         // Set time for the simulation
@@ -278,6 +332,14 @@ public class SimulatorController {
                 borderControlPoints,
                 euOnboardingPoints,
                 outEuOnboardingPoints
+        );
+        // Set time for SP
+        sim.setAllTimingMeans(
+                5,
+                checkInTime,
+                securityTime,
+                borderTime,
+                onboardingTime
         );
 
         // Create Parameters object
