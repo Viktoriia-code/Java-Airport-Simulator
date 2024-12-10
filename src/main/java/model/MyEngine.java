@@ -265,11 +265,12 @@ public class MyEngine extends Engine {
         }
 
         simulationTime = Clock.getInstance().getClock();
+
         Trace.out(Trace.Level.INFO, "Results:");
         Trace.out(Trace.Level.INFO, "Number of served clients: " + getServedClients());
         Trace.out(Trace.Level.INFO, "Simulation ended at: " + Clock.getInstance().getClock());
         Trace.out(Trace.Level.INFO, "Mean service time: " + Customer.getServiceTimeSum() / getServedClients());
-        Trace.out(Trace.Level.INFO, "Longest queue: " + findLongestQueueSize() + " customers at " + findLongestQueueSPName());
+        Trace.out(Trace.Level.INFO, "Longest queue: " + getLongestQueueSize() + " customers at " + getLongestQueueSPName());
     }
 
     /**
@@ -286,7 +287,7 @@ public class MyEngine extends Engine {
      * @return string that consists of SP name + index in the array of similar SPs (e.g. "Check-In #4")
      */
 
-    public String findLongestQueueSPName(){
+    public String getLongestQueueSPName(){
         int maxQueueSize = 0;
         String longestQueueSPName = "";
 
@@ -307,7 +308,7 @@ public class MyEngine extends Engine {
      * @return size of the longest queue
      */
 
-    public int findLongestQueueSize(){
+    public int getLongestQueueSize(){
         int maxQueueSize = 0;
 
         for (ArrayList<ServicePoint> arr : allServicePoints){
@@ -333,8 +334,8 @@ public class MyEngine extends Engine {
      * Gets the mean service time.
      * @return the mean service time
      */
-    public double getMeanServiceTime() {
-        return simulationTime / servedClients;
+    public double getAvServiceTime() {
+        return Customer.getServiceTimeSum() / getServedClients();
     }
 
     /**
