@@ -78,8 +78,7 @@ public class SimulatorController {
 
     // Clients settings
     @FXML
-    private Spinner<Integer> passengerSpinner;
-
+    private ChoiceBox<String> passengerSelect;
     @FXML
     private Label economClassPercLabel;
     @FXML
@@ -103,20 +102,13 @@ public class SimulatorController {
 
     // General simulation settings
     @FXML
-    private Label speedLabel;
-    @FXML
-    private Slider speedSlider;
-
-    @FXML
     private Spinner<Integer> timeSpinner;
-
 
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
-
 
     // Bottom part of the screen
     @FXML
@@ -145,6 +137,8 @@ public class SimulatorController {
     private Label longestQueueNameLabel;
     @FXML
     private Label longestQueueSizeLabel;
+    @FXML
+    private TextArea servicePointResultsTextArea;
 
     @FXML
     public void initialize() {
@@ -177,12 +171,8 @@ public class SimulatorController {
         helpButton.setOnAction(event -> showInstructions());
 
         // Control for the time spinner
-        SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 1000, 100);
+        SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 500, 100);
         timeSpinner.setValueFactory(timeValueFactory);
-
-        // Control for the passenger spinner
-        SpinnerValueFactory<Integer> passengerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 100, 100);
-        passengerSpinner.setValueFactory(passengerValueFactory);
 
         // Control for the class slider
         classSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -213,7 +203,18 @@ public class SimulatorController {
 
         // Validate input for the time and passenger spinners
         timeSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(timeSpinner, newValue, 1, 30000, "Time"));
-        passengerSpinner.getEditor().textProperty().addListener((obs, oldValue, newValue) -> validateInput(passengerSpinner, newValue, 1, 1000, "Passenger count"));
+
+        // Validate input for the passenger frequency
+        passengerSelect.getItems().addAll(
+                "Fast (Every 1 second)",
+                "Moderate (Every 3 seconds)",
+                "Normal (Every 5 seconds)",
+                "Slow (Every 10 seconds)",
+                "Very Slow (Every 20 seconds)"
+        );
+
+        // Set default selection
+        passengerSelect.setValue("Normal (Every 5 seconds)");
 
         log("Welcome to the Airport simulation!");
     }
@@ -307,6 +308,24 @@ public class SimulatorController {
         inputErrorLabel.setText(errorMessage);
     }
 
+    private double getSelectedFrequency() {
+        String selectedOption = passengerSelect.getValue(); // Get the selected item
+        switch (selectedOption) {
+            case "Fast (Every 1 second)":
+                return 1.0 / 60.0; // 1 second = 1/60 minutes
+            case "Moderate (Every 3 seconds)":
+                return 3.0 / 60.0; // 3 seconds = 3/60 minutes
+            case "Normal (Every 5 seconds)":
+                return 5.0 / 60.0; // 5 seconds = 5/60 minutes
+            case "Slow (Every 10 seconds)":
+                return 10.0 / 60.0; // 10 seconds = 10/60 minutes
+            case "Very Slow (Every 20 seconds)":
+                return 20.0 / 60.0; // 20 seconds = 20/60 minutes
+            default:
+                throw new IllegalArgumentException("Unexpected selection: " + selectedOption);
+        }
+    }
+
     @FXML
     private void startSimulation() {
         int timeValue = timeSpinner.getValue();
@@ -341,7 +360,7 @@ public class SimulatorController {
         );
         // Set time for SP
         sim.setAllTimingMeans(
-                5,
+                getSelectedFrequency(),
                 checkInTime,
                 securityTime,
                 borderTime,
@@ -366,10 +385,10 @@ public class SimulatorController {
         log(String.format(
                 "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
                 " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                " BusinessClass=%d%%",
+                " BusinessClass=%d%%, PassFrequency=%.2f",
                 timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
                 borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                onlineCheckInValue, euFlightValue, businessClassValue
+                onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
         ));
         sim.run();
 
@@ -379,7 +398,8 @@ public class SimulatorController {
                 sim.getSimulationTime(),
                 sim.getAverageQueueSize(),
                 sim.getLongestQueueSPName(),
-                sim.getLongestQueueSize()
+                sim.getLongestQueueSize(),
+                sim.getServicePointResults()
         );
 
         // Save simulation results
@@ -392,13 +412,14 @@ public class SimulatorController {
         );
     }
 
-    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize) {
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
         simulationTimeLabel.setText(String.format("%.0f mins", simulationTime));
         avQueueLabel.setText(String.format(avQueueSize + " passengers"));
         longestQueueNameLabel.setText(longestQueueName);
         longestQueueSizeLabel.setText(String.format(longestQueueSize + " passengers"));
+        servicePointResultsTextArea.setText(servicePointResults);
     }
 
     private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
