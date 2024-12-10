@@ -139,6 +139,10 @@ public class SimulatorController {
     private Label avServiceTimeLabel;
     @FXML
     private Label simulationTimeLabel;
+    @FXML
+    private Label longestQueueNameLabel;
+    @FXML
+    private Label longestQueueSizeLabel;
 
     @FXML
     public void initialize() {
@@ -367,16 +371,24 @@ public class SimulatorController {
         ));
         sim.run();
 
-        printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
+        printResults(sim.getServedClients(), sim.getAvServiceTime(), sim.getSimulationTime(), sim.getLongestQueueSPName(), sim.getLongestQueueSize());
 
         // Save simulation results
         saveSimuResult(
                 sim.getServedClients(),
-                sim.getMeanServiceTime(),
+                sim.getAvServiceTime(),
                 sim.getSimulationTime(),
-                sim.findLongestQueueSPName(),
+                sim.getLongestQueueSPName(),
                 simulationParameters // Pass the Parameters object
         );
+    }
+
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime, String longestQueueName, int longestQueueSize) {
+        totalPassengersServedLabel.setText(String.valueOf(customersServed));
+        avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
+        simulationTimeLabel.setText(String.format("%.0f mins", simulationTime));
+        longestQueueNameLabel.setText(longestQueueName);
+        longestQueueSizeLabel.setText(String.format(longestQueueSize + " passengers"));
     }
 
     private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
@@ -440,12 +452,6 @@ public class SimulatorController {
         }
         log("Simulation ended");
 
-    }
-
-    public void printResults(int customersServed, double meanServiceTime, double simulationTime) {
-        totalPassengersServedLabel.setText(String.valueOf(customersServed));
-        avServiceTimeLabel.setText(String.valueOf(meanServiceTime));
-        simulationTimeLabel.setText(String.valueOf(simulationTime));
     }
 
     private void initializeSliders() {
