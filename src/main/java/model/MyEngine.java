@@ -193,9 +193,14 @@ public class MyEngine extends Engine {
 //                passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
 //            }
 
+//            if (passengerMover != null) {
+//                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "RegularSecurityCheck", c.getCurrentQueueIndex()));
+//            }
             if (passengerMover != null) {
-                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex()));
+                String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
+                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
             }
+
 
         } else {
             q = findShortestQueue(checkInPoints);
@@ -229,7 +234,7 @@ public class MyEngine extends Engine {
 //        }
 
         if (passengerMover != null) {
-            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex()));
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "RegularSecurityCheck", c.getCurrentQueueIndex()));
         }
 
     }
@@ -248,7 +253,7 @@ public class MyEngine extends Engine {
         c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
 
         if (passengerMover != null) {
-            String nextServiceType = c.isEUFlight() ? "BoardingInEU" : "BorderControl";
+            String nextServiceType = c.isEUFlight() ? "EuOnboarding" : "BorderControl";
 //            passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex());
             Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex()));
 
@@ -267,7 +272,7 @@ public class MyEngine extends Engine {
         c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
 
         if (passengerMover != null) {
-            passengerMover.movePassengerToServicePoint(c, "BoardingNotEU", c.getCurrentQueueIndex());
+            passengerMover.movePassengerToServicePoint(c, "OutEuOnboarding", c.getCurrentQueueIndex());
         }
 
     }
@@ -284,9 +289,9 @@ public class MyEngine extends Engine {
         c.setRemovalTime(Clock.getInstance().getClock());
         c.reportResults();
 
-        if (passengerMover != null) {
-            passengerMover.movePassengerToServicePoint(c, "Departure", -1); // -1 表示离开系统
-        }
+//        if (passengerMover != null) {
+//            passengerMover.movePassengerToServicePoint(c, "Departure", -1);
+//        }
 
         servedClients++;
     }

@@ -619,7 +619,7 @@ public class SimulatorController implements PassengerMover {
         }
 
         new AnimationTimer() {
-            private final double step = 0.02;
+            private final double step = 0.005;
             private double progress = 0;
 
 
