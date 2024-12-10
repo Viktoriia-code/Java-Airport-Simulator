@@ -116,7 +116,6 @@ public class MyEngine extends Engine {
         this.passengerMover = passengerMover;
     }
 
-
     /**
      * Generates first arrival in the system, creates Service Points according to given numbers,
      * creates CustomerCreator with proper percentages, resets ServiceTimeSum and id of Customer Class
@@ -409,6 +408,7 @@ public class MyEngine extends Engine {
      * Find the size of the longest queue
      * @return size of the longest queue
      */
+
 
     public int findLongestQueueSize(){
         int maxQueueSize = 0;

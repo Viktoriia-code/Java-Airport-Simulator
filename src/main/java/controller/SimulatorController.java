@@ -35,6 +35,8 @@ public class SimulatorController implements PassengerMover {
     // Input section (left part of the screen)
     // Service points settings
 
+    private boolean simulationEnded = false;
+
 
     @FXML
     private Label checkInLabel;
@@ -324,6 +326,16 @@ public class SimulatorController implements PassengerMover {
         // Display the error message or clear it
         inputErrorLabel.setText(errorMessage);
     }
+    private void clearPassengers() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+    }
+
+    public void results() {
+        Trace.out(Trace.Level.INFO, "Simulation completed.");
+        simulationEnded = true;
+        clearPassengers();
+    }
 
     @FXML
     private void startSimulation() {
@@ -343,6 +355,11 @@ public class SimulatorController implements PassengerMover {
         int securityTime = Integer.valueOf((int) securityTimeSlider.getValue());
         int borderTime = Integer.valueOf((int) borderTimeSlider.getValue());
         int onboardingTime = Integer.valueOf((int) onboardingTimeSlider.getValue());
+
+        if (simulationEnded) {
+            simulationEnded = false;
+        }
+        clearPassengers();
 
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
@@ -579,21 +596,40 @@ public class SimulatorController implements PassengerMover {
         logListView.getItems().add(textFlow);
     }
 
+    private double[] getQueuePosition(String type, int servicePointIndex, int queueIndex) {
+        double[] baseCoords = getServicePointCoordinates(type, servicePointIndex);
+        if (baseCoords == null) {
+            return null;
+        }
+        double offset = 6; // Vertical offset between queues
+        return new double[] { baseCoords[0], baseCoords[1] + queueIndex * offset };
+    }
+
+
     // PassengerMover interface implementation
     private double[] getServicePointCoordinates(String type, int index) {
-        List<double[]> coordsList = servicePointCoordinates.get(type);
-        if (coordsList == null) {
-            System.out.println("No coordinates list found for type: " + type);
+        List<double[]> coords = servicePointCoordinates.get(type);
+        if (coords == null || index < 0 || index >= coords.size()) {
+            System.out.println("Invalid service point coordinates for type: " + type + ", index: " + index);
             return null;
         }
-
-        if (index < 0 || index >= coordsList.size()) {
-            System.out.println("Index out of range for type: " + type + ", index: " + index);
-            return null;
-        }
-
-        return coordsList.get(index);
+        return coords.get(index);
     }
+
+//    private double[] getServicePointCoordinates(String type, int index) {
+//        List<double[]> coordsList = servicePointCoordinates.get(type);
+//        if (coordsList == null) {
+//            System.out.println("No coordinates list found for type: " + type);
+//            return null;
+//        }
+//
+//        if (index < 0 || index >= coordsList.size()) {
+//            System.out.println("Index out of range for type: " + type + ", index: " + index);
+//            return null;
+//        }
+//
+//        return coordsList.get(index);
+//    }
 
     @Override
     public void movePassengerToServicePoint(Customer customer, String type, int index) {
@@ -603,11 +639,16 @@ public class SimulatorController implements PassengerMover {
             return;
         }
 
-        animatePassengerMovement(customer, targetCoords, null);
+        animatePassengerMovement(customer, targetCoords, index,null);
+        customer.setCurrentPosition(targetCoords);
+        customer.setCurrentQueueIndex(index);
+        System.out.println("Customer #" + customer.getId() + " successfully moved to: " + type + ", index: " + index);
+
+
     }
 
 
-    private void animatePassengerMovement(Customer customer, double[] targetCoords, Runnable onFinish) {
+    private void animatePassengerMovement(Customer customer, double[] targetCoords,int targetIndex, Runnable onFinish) {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
 
         double[] currentPosition = customer.getCurrentPosition() != null ?
@@ -626,7 +667,7 @@ public class SimulatorController implements PassengerMover {
             @Override
             public void handle(long now) {
                 if (progress >= 1) {
-                    double radius = 2;
+                    double radius = 4;
                     gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
                     gc.setFill(Color.RED);
                     gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
@@ -634,6 +675,9 @@ public class SimulatorController implements PassengerMover {
                     customer.setCurrentPosition(targetCoords);
                     stop();
 
+                    if (simulationEnded) {
+                        clearPassengers();
+                    }
                     if (onFinish != null) {
                         onFinish.run();
                     }
@@ -641,7 +685,7 @@ public class SimulatorController implements PassengerMover {
                     double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
                     double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
 
-                    double radius = 2;
+                    double radius = 4;
                     gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
                     gc.setFill(Color.RED);
                     gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
