@@ -29,12 +29,16 @@ public class ServicePoint {
     private int servedCustomersHere;
     private double totalQueueTime;
 
+    private double cumulativeQueueSize; // Sum of queue sizes over time
+    private int queueSizeUpdates; // Count of updates to queue size
+
     /**
      * Create the service point with a waiting queue.
-     * @param name String reflecting the type of Service Point: only used for display
+     *
+     * @param name      String reflecting the type of Service Point: only used for display
      * @param generator Random number generator for service time simulation
      * @param eventList Simulator event list, needed for the insertion of service ready event
-     * @param type Event type for the service end event
+     * @param type      Event type for the service end event
      */
     public ServicePoint(String name, ContinuousGenerator generator, EventList eventList, EventType type) {
         this.uniqueId = idCounter++;
@@ -43,6 +47,8 @@ public class ServicePoint {
         this.generator = generator;
         this.eventTypeScheduled = type;
         this.longestQueueSize = 0;
+        this.cumulativeQueueSize = 0.0;
+        this.queueSizeUpdates = 0;
     }
 
     public int getUniqueId() {
@@ -57,6 +63,15 @@ public class ServicePoint {
     public int getQueueSize() {
         return this.queue.size();
     }
+
+    /**
+     * Updates the cumulative queue size and count of updates.
+     */
+    private void updateCumulativeQueueSize() {
+        this.cumulativeQueueSize += getQueueSize();
+        this.queueSizeUpdates++;
+    }
+
 
     /**
      * Sets the length of the longest queue size that's been seen in this specific Service Point
@@ -87,6 +102,7 @@ public class ServicePoint {
 
     /**
      * Get the name of the Service Point
+     *
      * @return Name String
      */
     public String getName() {
@@ -108,10 +124,12 @@ public class ServicePoint {
     public void addQueue(Customer a) {    // The first customer of the queue is always in service
         this.queue.add(a);
         a.setQueueEntryTime(Clock.getInstance().getClock());
-        if (getLongestQueueSize() < getQueueSize()){
+        if (getLongestQueueSize() < getQueueSize()) {
             setLongestQueueSize(getQueueSize());
         }
+        updateCumulativeQueueSize();
     }
+
 
     /**
      * Remove customer from the waiting queue.
@@ -124,12 +142,13 @@ public class ServicePoint {
         increaseServedCustomersHereByOne();
         Customer a = this.queue.poll();
         this.totalQueueTime += Clock.getInstance().getClock() - a.getQueueEntryTime();
+        updateCumulativeQueueSize(); // Update average queue size metrics
         return a;
     }
 
     /**
      * Begins a new service, customer is on the queue during the service
-     *
+     * <p>
      * Inserts a new event to the event list when the service should be ready.
      */
     public void beginService() {        // Begins a new service, customer is on the queue during the service
@@ -157,6 +176,7 @@ public class ServicePoint {
      *
      * @return logical value indicating queue status
      */
+
     public boolean isOnQueue() {
         return !queue.isEmpty();
     }
@@ -169,4 +189,6 @@ public class ServicePoint {
     public double getAverageQueueTime() {
         return totalQueueTime / servedCustomersHere;
     }
+
 }
+

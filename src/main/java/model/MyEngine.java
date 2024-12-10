@@ -50,6 +50,10 @@ public class MyEngine extends Engine {
     double borderControl_mean;
     double boarding_mean;
 
+    // Added fields for tracking average queue size
+    private double totalQueueSizeSum = 0;
+    private int queueMeasurementCount = 0;
+
     public MyEngine() {
         /* customer distribution percentages (0-100) */
         this.percentage_business_class = 40;
@@ -247,6 +251,7 @@ public class MyEngine extends Engine {
                     p.beginService();
                 }
             }
+            collectQueueSizes();
         }
     }
 
@@ -271,6 +276,7 @@ public class MyEngine extends Engine {
         Trace.out(Trace.Level.INFO, "Simulation ended at: " + Clock.getInstance().getClock());
         Trace.out(Trace.Level.INFO, "Mean service time: " + Customer.getServiceTimeSum() / getServedClients());
         Trace.out(Trace.Level.INFO, "Longest queue: " + getLongestQueueSize() + " customers at " + getLongestQueueSPName());
+        Trace.out(Trace.Level.INFO, "Average Queue Size: " + getAverageQueueSize());
     }
 
     /**
@@ -448,6 +454,27 @@ public class MyEngine extends Engine {
      */
     public void setSecurityMean(double mean){
         security_mean = mean;
+    }
+
+    /**
+     * Periodically collects queue sizes across all service points.
+     * This should be called during simulation ticks or at regular intervals.
+     */
+    private void collectQueueSizes() {
+        for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
+            for (ServicePoint p : servicePointList) {
+                totalQueueSizeSum += p.getQueueSize();
+            }
+        }
+        queueMeasurementCount++;
+    }
+
+    /**
+     * Computes the average queue size at the end of the simulation.
+     * @return the average queue size across all service points
+     */
+    public int getAverageQueueSize() {
+        return queueMeasurementCount == 0 ? 0 : (int)totalQueueSizeSum / queueMeasurementCount;
     }
 
     /**
