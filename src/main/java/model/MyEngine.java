@@ -4,6 +4,7 @@ import eduni.distributions.ContinuousGenerator;
 import eduni.distributions.Normal;
 import eduni.distributions.Negexp;
 import framework.*;
+import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +21,12 @@ public class MyEngine extends Engine {
     private int servedClients;
     private double simulationTime;
     private PassengerMover passengerMover; // 用于调用动画移动逻辑
+
+    private double animationSpeed = 1.0; // 默认速度为 1.0
+
+    public void setAnimationSpeed(double speed) {
+        this.animationSpeed = speed;
+    }
 
     ArrayList<ServicePoint> checkInPoints = new ArrayList<>();
 
@@ -182,16 +189,25 @@ public class MyEngine extends Engine {
             q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
             c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
 
+//            if (passengerMover != null) {
+//                passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+//            }
+
             if (passengerMover != null) {
-                passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex()));
             }
+
         } else {
             q = findShortestQueue(checkInPoints);
             c.setCurrentQueueIndex(checkInPoints.indexOf(q));
 
+//            if (passengerMover != null) {
+//                passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex());
+//            }
             if (passengerMover != null) {
-                passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex());
+                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex()));
             }
+
         }
         q.addQueue(c);
         arrivalProcess.generateNextEvent();
@@ -207,10 +223,15 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+//
+//        if (passengerMover != null) {
+//            passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+//        }
 
         if (passengerMover != null) {
-            passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex()));
         }
+
     }
 
     /**
@@ -228,7 +249,9 @@ public class MyEngine extends Engine {
 
         if (passengerMover != null) {
             String nextServiceType = c.isEUFlight() ? "BoardingInEU" : "BorderControl";
-            passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex());
+//            passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex());
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex()));
+
         }
     }
 
@@ -272,16 +295,58 @@ public class MyEngine extends Engine {
      * C-Phase Events: checks through every ServicePoint in the system and checks if they're currently
      * free and if there is someone in the queue. If so, ServicePoint's beginService() method is called.
      */
+
+//    protected void tryCEvents() {
+//        for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
+//            for (ServicePoint p : servicePointList) {
+//                if (!p.isReserved() && p.isOnQueue()) {
+//                    p.beginService();
+//                }
+//            }
+//        }
+//    }
+
+    private double baseInterval = 1.0; // 默认的事件处理间隔
+    public void setBaseInterval(double interval) {
+        this.baseInterval = interval;
+    }
+
     @Override
     protected void tryCEvents() {
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
             for (ServicePoint p : servicePointList) {
                 if (!p.isReserved() && p.isOnQueue()) {
-                    p.beginService();
+                    Platform.runLater(() -> p.beginService());
+                    try {
+                        Thread.sleep((long) (baseInterval / animationSpeed * 1000)); // 适当延迟
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
     }
+
+
+//    @Override
+//    protected void tryCEvents() {
+//        double scaledInterval = baseInterval / animationSpeed; // 根据速度调整间隔
+//
+//        for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
+//            for (ServicePoint p : servicePointList) {
+//                if (!p.isReserved() && p.isOnQueue()) {
+//                    // 模拟服务点处理乘客的时间延迟，使用 scaledInterval
+//                    try {
+//                        Thread.sleep((long) (scaledInterval * 1000));
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    p.beginService();
+//                }
+//            }
+//        }
+//    }
+
 
     /**
      * Displays Simulation results with Trace

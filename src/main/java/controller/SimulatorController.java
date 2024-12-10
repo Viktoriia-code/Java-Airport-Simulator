@@ -131,6 +131,11 @@ public class SimulatorController implements PassengerMover {
     private final Map<String, List<double[]>> servicePointCoordinates = new LinkedHashMap<>();
 
 
+    private double animationSpeed = 1.0;
+
+
+
+
     // Bottom part of the screen
     @FXML
     private Label inputErrorLabel;
@@ -182,6 +187,12 @@ public class SimulatorController implements PassengerMover {
         drawAllServicePoints();
 
         helpButton.setOnAction(event -> showInstructions());
+
+
+        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            animationSpeed = newValue.doubleValue();
+        });
+
 
         // Control for the time spinner
         SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 1000, 100);
@@ -339,6 +350,7 @@ public class SimulatorController implements PassengerMover {
         // Set time for the simulation
         sim.setSimulationTime(timeValue);
         // Set SPs for the simulation
+        sim.setAnimationSpeed(animationSpeed);
         sim.setAllServicePoints(
                 checkInPoints,
                 regularSecurityCheckPoints,
@@ -379,7 +391,9 @@ public class SimulatorController implements PassengerMover {
                 borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
                 onlineCheckInValue, euFlightValue, businessClassValue
         ));
-        sim.run();
+//        sim.run();
+        new Thread(() -> sim.run()).start();
+
 
         printResults(sim.getServedClients(), sim.getMeanServiceTime(), sim.getSimulationTime());
 
@@ -565,70 +579,277 @@ public class SimulatorController implements PassengerMover {
         logListView.getItems().add(textFlow);
     }
 
-//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
-//        double[] coords = getServicePointCoordinates(type, index);
-//        animatePassengerMovement(customer, coords);
-//    }
-
     @Override
     public void movePassengerToServicePoint(Customer customer, String type, int index) {
         double[] coords = getServicePointCoordinates(type, index);
-        animatePassengerMovement(customer, coords);
+        animatePassengerMovement(customer, coords, null); // 不使用阻塞逻辑
     }
 
-    // 获取服务点坐标
+
+//    @Override
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords, () -> {
+//            synchronized (this) {
+//                this.notify(); // 通知事件逻辑继续执行
+//            }
+//        });
+//
+//        // 等待动画完成
+//        synchronized (this) {
+//            try {
+//                this.wait(); // 阻塞直到动画完成
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+
     private double[] getServicePointCoordinates(String type, int index) {
-        List<double[]> coords = servicePointCoordinates.get(type);
-        return coords != null && index < coords.size() ? coords.get(index) : new double[] {0, 0};
+        return servicePointCoordinates.get(type).get(index);
     }
 
-
-    private void animatePassengerMovement(Customer customer, double[] targetCoords) {
+    private void animatePassengerMovement(Customer customer, double[] targetCoords, Runnable onFinish) {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
 
-        // 使用数组包装 currentPosition
         double[] currentPosition = customer.getCurrentPosition() != null ?
-                customer.getCurrentPosition() :
-                new double[]{targetCoords[0], targetCoords[1]};
-        customer.setCurrentPosition(currentPosition);
+                customer.getCurrentPosition() : targetCoords;
 
         new AnimationTimer() {
-            private final double step = 0.02; // 步长，值越小动画越平滑
-            private double progress = 0; // 当前进度
+            private final double step = 0.02;
+            private double progress = 0;
 
             @Override
             public void handle(long now) {
                 if (progress >= 1) {
-                    // 动画结束，绘制最终位置
-                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+                    double radius = 2;
+                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
                     gc.setFill(Color.RED);
-                    gc.fillOval(targetCoords[0] - 5, targetCoords[1] - 5, 10, 10);
+                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
 
-                    // 更新乘客当前位置
-                    currentPosition[0] = targetCoords[0];
-                    currentPosition[1] = targetCoords[1];
-                    customer.setCurrentPosition(currentPosition);
-                    stop(); // 停止动画
+                    customer.setCurrentPosition(targetCoords);
+                    stop();
+
+                    if (onFinish != null) {
+                        onFinish.run();
+                    }
                 } else {
-                    // 插值计算当前位置
                     double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
                     double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
 
-                    // 清除之前位置
-                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
-
-                    // 绘制新位置
+                    double radius = 2;
+                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
                     gc.setFill(Color.RED);
-                    gc.fillOval(x - 5, y - 5, 10, 10);
+                    gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 
-                    // 更新当前位置
                     currentPosition[0] = x;
                     currentPosition[1] = y;
-                    progress += step; // 增加进度
+                    progress += step;
                 }
             }
         }.start();
     }
+
+
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords);
+//    }
+//
+//    @Override
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords, () -> {
+//            synchronized (this) {
+//                this.notify(); // 通知事件逻辑继续执行
+//            }
+//        });
+//
+//        // 等待动画完成
+//        synchronized (this) {
+//            try {
+//                this.wait(); // 阻塞直到动画完成
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+//
+//    private void animatePassengerMovement(Customer customer, double[] targetCoords, Runnable onFinish) {
+//        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//        // 获取乘客的当前位置，默认初始位置为目标位置
+//        double[] currentPosition = customer.getCurrentPosition() != null ?
+//                customer.getCurrentPosition() : targetCoords;
+//
+//        new AnimationTimer() {
+//            private final double step = 0.02; // 步长
+//            private double progress = 0;     // 当前进度
+//
+//            @Override
+//            public void handle(long now) {
+//                if (progress >= 1) {
+//                    // 动画完成时绘制目标位置
+//                    double radius = 2;
+//                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
+//
+//                    // 更新乘客当前位置并停止动画
+//                    customer.setCurrentPosition(targetCoords);
+//                    stop();
+//
+//                    // 动画完成时回调通知
+//                    if (onFinish != null) {
+//                        onFinish.run();
+//                    }
+//                } else {
+//                    // 动画中逐帧更新当前位置
+//                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//
+//                    double radius = 2;
+//                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+//
+//                    // 更新当前位置和进度
+//                    currentPosition[0] = x;
+//                    currentPosition[1] = y;
+//                    progress += step;
+//                }
+//            }
+//        }.start();
+//    }
+//
+
+//    @Override
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords);
+//    }
+//
+//    // 获取服务点坐标
+//    private double[] getServicePointCoordinates(String type, int index) {
+//        List<double[]> coords = servicePointCoordinates.get(type);
+//        return coords != null && index < coords.size() ? coords.get(index) : new double[] {0, 0};
+//    }
+//
+//    private void animatePassengerMovement(Customer customer, double[] targetCoords) {
+//        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//        // 获取乘客的当前位置，默认初始位置为目标位置
+//        double[] currentPosition = customer.getCurrentPosition() != null ?
+//                customer.getCurrentPosition() : targetCoords;
+//
+//        // 使用 AnimationTimer 动画逐帧更新
+//        new AnimationTimer() {
+//            private final double step = 0.02; // 步长
+//            private double progress = 0;     // 当前进度
+//
+//            @Override
+//            public void handle(long now) {
+//                if (progress >= 1) {
+//// 动画完成时绘制目标位置
+//                    double radius = 2; // 将圆点的半径调整为更小的值，例如 3
+//                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
+//
+//
+//                    // 更新乘客当前位置并停止动画
+//                    customer.setCurrentPosition(targetCoords);
+//                    stop();
+//                } else {
+//                    // 动画中逐帧更新当前位置
+//                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//
+//                    // 清理旧位置并绘制新位置
+//// 动画完成时绘制目标位置
+//                    double radius = 2; // 将圆点的半径调整为更小的值，例如 3
+//                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
+//
+//
+//                    // 更新当前显示位置和进度
+//                    currentPosition[0] = x;
+//                    currentPosition[1] = y;
+//                    progress += step;
+//                }
+//            }
+//        }.start();
+//    }
+
+
+
+//    private void animatePassengerMovement(Customer customer, double[] targetCoords) {
+//        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//        // 使用数组包装 currentPosition
+//        double[] currentPosition = customer.getCurrentPosition() != null ?
+//                customer.getCurrentPosition() :
+//                new double[]{targetCoords[0], targetCoords[1]};
+//        customer.setCurrentPosition(currentPosition);
+//
+//        new AnimationTimer() {
+//            private final double step = 0.02; // 步长，值越小动画越平滑
+//            private double progress = 0; // 当前进度
+//
+//            @Override
+//            public void handle(long now) {
+//                if (progress >= 1) {
+//                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(targetCoords[0] - 5, targetCoords[1] - 5, 10, 10);
+//                    customer.setCurrentPosition(targetCoords);
+//                    stop(); // 停止动画
+//                } else {
+//                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(x - 5, y - 5, 10, 10);
+//                    customer.setCurrentPosition(new double[]{x, y}); // 同步更新
+//                    progress += step;
+//                }
+//            }
+//
+//
+////            @Override
+////            public void handle(long now) {
+////                if (progress >= 1) {
+////                    // 动画结束，绘制最终位置
+////                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+////                    gc.setFill(Color.RED);
+////                    gc.fillOval(targetCoords[0] - 5, targetCoords[1] - 5, 10, 10);
+////
+////                    // 更新乘客当前位置
+////                    currentPosition[0] = targetCoords[0];
+////                    currentPosition[1] = targetCoords[1];
+////                    customer.setCurrentPosition(currentPosition);
+////                    stop(); // 停止动画
+////                } else {
+////                    // 插值计算当前位置
+////                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+////                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+////
+////                    // 清除之前位置
+////                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+////
+////                    // 绘制新位置
+////                    gc.setFill(Color.RED);
+////                    gc.fillOval(x - 5, y - 5, 10, 10);
+////
+////                    // 更新当前位置
+////                    currentPosition[0] = x;
+////                    currentPosition[1] = y;
+////                    progress += step; // 增加进度
+////                }
+////            }
+//        }.start();
+//    }
 
 
 //    // 动画乘客移动

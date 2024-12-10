@@ -8,4 +8,8 @@ public interface PassengerMover {
      * @param index 服务点的索引 (如第几个服务点)
      */
     void movePassengerToServicePoint(Customer customer, String type, int index);
+
+
+
+
 }
