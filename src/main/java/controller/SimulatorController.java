@@ -579,35 +579,33 @@ public class SimulatorController implements PassengerMover {
         logListView.getItems().add(textFlow);
     }
 
+    // PassengerMover interface implementation
+    private double[] getServicePointCoordinates(String type, int index) {
+        List<double[]> coordsList = servicePointCoordinates.get(type);
+        if (coordsList == null) {
+            System.out.println("No coordinates list found for type: " + type);
+            return null;
+        }
+
+        if (index < 0 || index >= coordsList.size()) {
+            System.out.println("Index out of range for type: " + type + ", index: " + index);
+            return null;
+        }
+
+        return coordsList.get(index);
+    }
+
     @Override
     public void movePassengerToServicePoint(Customer customer, String type, int index) {
-        double[] coords = getServicePointCoordinates(type, index);
-        animatePassengerMovement(customer, coords, null); // 不使用阻塞逻辑
+        double[] targetCoords = getServicePointCoordinates(type, index);
+        if (targetCoords == null) {
+            System.out.println("Cannot proceed with animation because targetCoords is null for type: " + type + ", index: " + index);
+            return;
+        }
+
+        animatePassengerMovement(customer, targetCoords, null);
     }
 
-
-//    @Override
-//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
-//        double[] coords = getServicePointCoordinates(type, index);
-//        animatePassengerMovement(customer, coords, () -> {
-//            synchronized (this) {
-//                this.notify(); // 通知事件逻辑继续执行
-//            }
-//        });
-//
-//        // 等待动画完成
-//        synchronized (this) {
-//            try {
-//                this.wait(); // 阻塞直到动画完成
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-//        }
-//    }
-
-    private double[] getServicePointCoordinates(String type, int index) {
-        return servicePointCoordinates.get(type).get(index);
-    }
 
     private void animatePassengerMovement(Customer customer, double[] targetCoords, Runnable onFinish) {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
@@ -615,9 +613,15 @@ public class SimulatorController implements PassengerMover {
         double[] currentPosition = customer.getCurrentPosition() != null ?
                 customer.getCurrentPosition() : targetCoords;
 
+        if (currentPosition == null) {
+            System.out.println("Error: currentPosition is null, cannot start animation.");
+            return;
+        }
+
         new AnimationTimer() {
             private final double step = 0.02;
             private double progress = 0;
+
 
             @Override
             public void handle(long now) {
@@ -649,6 +653,36 @@ public class SimulatorController implements PassengerMover {
             }
         }.start();
     }
+
+
+
+}
+
+
+
+//    @Override
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords, () -> {
+//            synchronized (this) {
+//                this.notify(); // 通知事件逻辑继续执行
+//            }
+//        });
+//
+//        // 等待动画完成
+//        synchronized (this) {
+//            try {
+//                this.wait(); // 阻塞直到动画完成
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+
+//    private double[] getServicePointCoordinates(String type, int index) {
+//        return servicePointCoordinates.get(type).get(index);
+//    }
+
 
 
 //    public void movePassengerToServicePoint(Customer customer, String type, int index) {
@@ -898,6 +932,3 @@ public class SimulatorController implements PassengerMover {
 //            }
 //        }.start();
 //    }
-
-
-}

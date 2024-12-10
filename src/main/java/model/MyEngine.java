@@ -20,9 +20,9 @@ public class MyEngine extends Engine {
     private ArrivalProcess arrivalProcess;
     private int servedClients;
     private double simulationTime;
-    private PassengerMover passengerMover; // 用于调用动画移动逻辑
+    private PassengerMover passengerMover;
 
-    private double animationSpeed = 1.0; // 默认速度为 1.0
+    private double animationSpeed = 10.0;
 
     public void setAnimationSpeed(double speed) {
         this.animationSpeed = speed;
@@ -318,7 +318,7 @@ public class MyEngine extends Engine {
                 if (!p.isReserved() && p.isOnQueue()) {
                     Platform.runLater(() -> p.beginService());
                     try {
-                        Thread.sleep((long) (baseInterval / animationSpeed * 1000)); // 适当延迟
+                        Thread.sleep((long) (baseInterval / animationSpeed * 1000));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
