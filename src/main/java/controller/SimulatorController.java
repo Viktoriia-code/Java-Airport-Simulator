@@ -637,7 +637,7 @@ public class SimulatorController  implements PassengerMover {
     private double[] getServicePointCoordinates(String type, int index) {
         List<double[]> coords = servicePointCoordinates.get(type);
         if (coords == null || index < 0 || index >= coords.size()) {
-            System.out.println("No coordinates found for type: " + type);
+            System.err.println("Invalid coordinates for type: " + type + ", index: " + index);
             return null;
         }
         return coords.get(index);
@@ -727,3 +727,50 @@ public class SimulatorController  implements PassengerMover {
         }.start();
     }
 }
+
+
+//
+//private void animatePassengerMovement(Customer customer, double[] targetCoords, int targetIndex, Runnable onFinish) {
+//    GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//    double[] currentPosition = customer.getCurrentPosition() != null ?
+//            customer.getCurrentPosition() : targetCoords;
+//
+//    if (currentPosition == null || targetCoords == null) {
+//        System.out.println("Error: Invalid position for animation.");
+//        return;
+//    }
+//
+//    new AnimationTimer() {
+//        private final double step = 0.005; // Animation speed step
+//        private double progress = 0; // Animation progress
+//
+//        @Override
+//        public void handle(long now) {
+//            // Animation complete
+//            if (progress >= 1) {
+//                gc.setFill(Color.RED);
+//                gc.fillOval(targetCoords[0] - 2, targetCoords[1] - 2, 8, 8); // Final position
+//                customer.setCurrentPosition(targetCoords);
+//                stop();
+//                if (onFinish != null) onFinish.run();
+//            } else {
+//                // Calculate interpolated position
+//                double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//
+//                // Clear previous position
+//                gc.clearRect(currentPosition[0] - 4, currentPosition[1] - 4, 8, 8);
+//
+//                // Draw passenger
+//                gc.setFill(Color.RED);
+//                gc.fillOval(x - 2, y - 2, 4, 4);
+//
+//                // Update current position and progress
+//                currentPosition[0] = x;
+//                currentPosition[1] = y;
+//                progress += step * animationSpeed; // Adjust for speed
+//            }
+//        }
+//    }.start();
+//}
