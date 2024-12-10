@@ -19,6 +19,7 @@ public class MyEngine extends Engine {
     private ArrivalProcess arrivalProcess;
     private int servedClients;
     private double simulationTime;
+    private PassengerMover passengerMover; // 用于调用动画移动逻辑
 
     ArrayList<ServicePoint> checkInPoints = new ArrayList<>();
 
@@ -104,6 +105,11 @@ public class MyEngine extends Engine {
                 .orElse(servicePointArr.get(new Random().nextInt(servicePointArr.size())));
     }
 
+    public void setPassengerMover(PassengerMover passengerMover) {
+        this.passengerMover = passengerMover;
+    }
+
+
     /**
      * Generates first arrival in the system, creates Service Points according to given numbers,
      * creates CustomerCreator with proper percentages, resets ServiceTimeSum and id of Customer Class
@@ -175,9 +181,17 @@ public class MyEngine extends Engine {
         if (c.isOnlineCheckIn()) {
             q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
             c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+
+            if (passengerMover != null) {
+                passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+            }
         } else {
             q = findShortestQueue(checkInPoints);
             c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+
+            if (passengerMover != null) {
+                passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex());
+            }
         }
         q.addQueue(c);
         arrivalProcess.generateNextEvent();
@@ -193,6 +207,10 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+
+        if (passengerMover != null) {
+            passengerMover.movePassengerToServicePoint(c, "SecurityCheck", c.getCurrentQueueIndex());
+        }
     }
 
     /**
@@ -207,6 +225,11 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
+
+        if (passengerMover != null) {
+            String nextServiceType = c.isEUFlight() ? "BoardingInEU" : "BorderControl";
+            passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex());
+        }
     }
 
     /**
@@ -219,6 +242,11 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(boardingNotEUPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+
+        if (passengerMover != null) {
+            passengerMover.movePassengerToServicePoint(c, "BoardingNotEU", c.getCurrentQueueIndex());
+        }
+
     }
 
     /**
@@ -232,6 +260,11 @@ public class MyEngine extends Engine {
                 boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         c.setRemovalTime(Clock.getInstance().getClock());
         c.reportResults();
+
+        if (passengerMover != null) {
+            passengerMover.movePassengerToServicePoint(c, "Departure", -1); // -1 表示离开系统
+        }
+
         servedClients++;
     }
 

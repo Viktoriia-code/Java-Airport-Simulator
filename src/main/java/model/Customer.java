@@ -21,6 +21,9 @@ public class Customer {
 
 	private double queueEntryTime;
 
+	private double[] currentPosition; // 当前坐标
+
+
 	/**
 	 * Create a unique customer
 	 *
@@ -173,6 +176,14 @@ public class Customer {
 	 */
 	public static void resetServiceTimeSum() {
 		serviceTimeSum = 0;
+	}
+
+	public double[] getCurrentPosition() {
+		return currentPosition;
+	}
+
+	public void setCurrentPosition(double[] position) {
+		this.currentPosition = position;
 	}
 
 	/**

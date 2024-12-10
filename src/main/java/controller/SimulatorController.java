@@ -3,6 +3,8 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
+import model.Customer;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
@@ -13,19 +15,27 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.animation.AnimationTimer;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import model.PassengerMover;
 
-public class SimulatorController {
+public class SimulatorController implements PassengerMover {
     // Input section (left part of the screen)
     // Service points settings
+
+
     @FXML
     private Label checkInLabel;
     @FXML
@@ -110,12 +120,15 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
+    @FXML
+    private Canvas passengerCanvas;
 
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
+    private final Map<String, List<double[]>> servicePointCoordinates = new LinkedHashMap<>();
 
 
     // Bottom part of the screen
@@ -322,6 +335,7 @@ public class SimulatorController {
 
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
+        sim.setPassengerMover(this);
         // Set time for the simulation
         sim.setSimulationTime(timeValue);
         // Set SPs for the simulation
@@ -492,19 +506,23 @@ public class SimulatorController {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawServicePoints(gc, activatedPoints, totalPoints, y, pointType);
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
         }
     }
 
 
-
-    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart) {
+    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart, String type) {
         double pointDiameter = 10.0;
         double spacingX = 20.0;
         double spacingY = 30.0;
         int pointsPerRow = 26;
+
+        List<double[]> coords = servicePointCoordinates.computeIfAbsent(type, k -> new ArrayList<>());
+        // Clear the list of coordinates for the current service point type
+        coords.clear();
+
 
         int currentRow = 0;
         for (int i = 0; i < totalPoints; i++) {
@@ -515,6 +533,8 @@ public class SimulatorController {
 
             double x = spacingX * (rowPosition + 1);
             double yOffset = yStart  + spacingY * currentRow;
+
+            coords.add(new double[]{x, yOffset});
 
             if (i < activatedCount) {
                 gc.setFill(Color.BLUE);
@@ -544,4 +564,119 @@ public class SimulatorController {
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
     }
+
+//    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+//        double[] coords = getServicePointCoordinates(type, index);
+//        animatePassengerMovement(customer, coords);
+//    }
+
+    @Override
+    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+        double[] coords = getServicePointCoordinates(type, index);
+        animatePassengerMovement(customer, coords);
+    }
+
+    // 获取服务点坐标
+    private double[] getServicePointCoordinates(String type, int index) {
+        List<double[]> coords = servicePointCoordinates.get(type);
+        return coords != null && index < coords.size() ? coords.get(index) : new double[] {0, 0};
+    }
+
+
+    private void animatePassengerMovement(Customer customer, double[] targetCoords) {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+
+        // 使用数组包装 currentPosition
+        double[] currentPosition = customer.getCurrentPosition() != null ?
+                customer.getCurrentPosition() :
+                new double[]{targetCoords[0], targetCoords[1]};
+        customer.setCurrentPosition(currentPosition);
+
+        new AnimationTimer() {
+            private final double step = 0.02; // 步长，值越小动画越平滑
+            private double progress = 0; // 当前进度
+
+            @Override
+            public void handle(long now) {
+                if (progress >= 1) {
+                    // 动画结束，绘制最终位置
+                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+                    gc.setFill(Color.RED);
+                    gc.fillOval(targetCoords[0] - 5, targetCoords[1] - 5, 10, 10);
+
+                    // 更新乘客当前位置
+                    currentPosition[0] = targetCoords[0];
+                    currentPosition[1] = targetCoords[1];
+                    customer.setCurrentPosition(currentPosition);
+                    stop(); // 停止动画
+                } else {
+                    // 插值计算当前位置
+                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+
+                    // 清除之前位置
+                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+
+                    // 绘制新位置
+                    gc.setFill(Color.RED);
+                    gc.fillOval(x - 5, y - 5, 10, 10);
+
+                    // 更新当前位置
+                    currentPosition[0] = x;
+                    currentPosition[1] = y;
+                    progress += step; // 增加进度
+                }
+            }
+        }.start();
+    }
+
+
+//    // 动画乘客移动
+//    private void animatePassengerMovement(Customer customer, double[] targetCoords) {
+//        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//        double[] currentPosition = customer.getCurrentPosition();
+//        if (currentPosition == null) {
+//            // 如果当前位置为空，初始化为目标位置
+//            currentPosition = new double[]{targetCoords[0], targetCoords[1]};
+//            customer.setCurrentPosition(currentPosition);
+//        }
+//
+//        // 动画定时器
+//        new AnimationTimer() {
+//            private final double step = 0.02; // 步长，值越小动画越平滑
+//            private double progress = 0; // 当前进度
+//
+//            @Override
+//            public void handle(long now) {
+//                if (progress >= 1) {
+//                    // 动画结束，绘制最终位置
+//                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(targetCoords[0] - 5, targetCoords[1] - 5, 10, 10);
+//
+//                    // 更新乘客当前位置
+//                    customer.setCurrentPosition(targetCoords);
+//                    stop(); // 停止动画
+//                } else {
+//                    // 插值计算当前位置
+//                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//
+//                    // 清除之前位置
+//                    gc.clearRect(currentPosition[0] - 5, currentPosition[1] - 5, 10, 10);
+//
+//                    // 绘制新位置
+//                    gc.setFill(Color.RED);
+//                    gc.fillOval(x - 5, y - 5, 10, 10);
+//
+//                    // 更新当前位置
+//                    customer.setCurrentPosition(new double[]{x, y});
+//                    progress += step; // 增加进度
+//                }
+//            }
+//        }.start();
+//    }
+
+
 }
