@@ -468,7 +468,7 @@
                               </Label>
                            </children>
                         </HBox>
-                        <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
+                        <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="5.0" showTickLabels="true" showTickMarks="true" value="1.0" />
                      </children>
                   </VBox>
                </children>

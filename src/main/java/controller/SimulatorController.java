@@ -186,6 +186,27 @@ public class SimulatorController  implements PassengerMover {
 
         helpButton.setOnAction(event -> showInstructions());
 
+        // Configure the speed slider
+        speedSlider.setMin(0); // Start at 0
+        speedSlider.setMax(5.0); // End at 5.0
+        speedSlider.setValue(1.0); // Default value
+        speedSlider.setMajorTickUnit(1.0); // Major ticks at 1, 2, 3, 4, 5
+        speedSlider.setMinorTickCount(4); // No minor ticks
+        speedSlider.setSnapToTicks(true); // Snap to defined ticks
+        speedSlider.setShowTickMarks(true); // Show tick marks
+        speedSlider.setShowTickLabels(true); // Show tick labels
+
+        // Bind the slider's value to update the label and simulation speed
+        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            double speed = Math.round(newValue.doubleValue() * 10) / 10.0; // Round to 1 decimal
+            speedLabel.setText("Speed: " + speed + "x");
+            setSimulationSpeed(speed);
+        });
+
+
+
+
+
         // Control for the time spinner
         SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 1000, 100);
         timeSpinner.setValueFactory(timeValueFactory);
@@ -227,6 +248,39 @@ public class SimulatorController  implements PassengerMover {
 
         log("Welcome to the Airport simulation!");
     }
+
+
+    private void setSimulationSpeed(double speed) {
+        if (speed == 0.0) {
+            pauseSimulation(); // Pause when speed is 0
+        } else {
+            animationSpeed = speed; // Update the animation speed multiplier
+            adjustSimulationSpeed(); // Apply the new speed to the simulation engine
+        }
+    }
+
+    // Pause simulation logic
+    private void pauseSimulation() {
+        System.out.println("Simulation paused.");
+        animationSpeed = 0.0;
+        // Add logic to pause the animation timer or simulation engine
+    }
+
+    // Apply speed multiplier logic
+    private void adjustSimulationSpeed() {
+        System.out.println("Simulation speed adjusted to " + animationSpeed + "x.");
+        // Update the simulation engine with the new animation speed
+        // Example: pass `animationSpeed` to animation timers or engine logic
+    }
+
+
+
+
+
+
+
+
+
 
     /**
      * Binds a slider to a label and updates the label with the slider's value.
@@ -667,7 +721,7 @@ public class SimulatorController  implements PassengerMover {
                     currentPosition[0] = x;
                     currentPosition[1] = y;
                     drawAllServicePoints();
-                    progress += step;
+                    progress += step * animationSpeed; // Scale progress by animationSpeed
                 }
             }
         }.start();
