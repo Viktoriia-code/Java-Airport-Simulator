@@ -292,7 +292,6 @@ public class MyEngine extends Engine {
      * Find the name of the SP with the longest queue
      * @return string that consists of SP name + index in the array of similar SPs (e.g. "Check-In #4")
      */
-
     public String getLongestQueueSPName(){
         int maxQueueSize = 0;
         String longestQueueSPName = "";
@@ -313,7 +312,6 @@ public class MyEngine extends Engine {
      * Find the size of the longest queue
      * @return size of the longest queue
      */
-
     public int getLongestQueueSize(){
         int maxQueueSize = 0;
 
