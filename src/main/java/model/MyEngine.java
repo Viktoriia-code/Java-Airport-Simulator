@@ -54,6 +54,8 @@ public class MyEngine extends Engine {
     private double totalQueueSizeSum = 0;
     private int queueMeasurementCount = 0;
 
+    private StringBuilder servicePointResults = new StringBuilder();
+
     public MyEngine() {
         /* customer distribution percentages (0-100) */
         this.percentage_business_class = 40;
@@ -266,6 +268,9 @@ public class MyEngine extends Engine {
                 Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
                 Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
+
+                servicePointResults.append(p.getName()).append(" #").append(servicePointList.indexOf(p)+1).append(": ")
+                        .append(p.getServedCustomersHere()).append(" customers\n");
             }
         }
 
@@ -531,5 +536,13 @@ public class MyEngine extends Engine {
         setBorderControlMean(borderControl);
         setSecurityMean(security);
         setBoardingMean(boarding);
+    }
+
+    /**
+     * Get the results of the simulation (served passengers per service point)
+     * @return a string that contains the results of the simulation
+     */
+    public String getServicePointResults() {
+        return servicePointResults.toString();
     }
 }

@@ -137,6 +137,8 @@ public class SimulatorController {
     private Label longestQueueNameLabel;
     @FXML
     private Label longestQueueSizeLabel;
+    @FXML
+    private TextArea servicePointResultsTextArea;
 
     @FXML
     public void initialize() {
@@ -169,7 +171,7 @@ public class SimulatorController {
         helpButton.setOnAction(event -> showInstructions());
 
         // Control for the time spinner
-        SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 1000, 100);
+        SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 500, 100);
         timeSpinner.setValueFactory(timeValueFactory);
 
         // Control for the class slider
@@ -396,7 +398,8 @@ public class SimulatorController {
                 sim.getSimulationTime(),
                 sim.getAverageQueueSize(),
                 sim.getLongestQueueSPName(),
-                sim.getLongestQueueSize()
+                sim.getLongestQueueSize(),
+                sim.getServicePointResults()
         );
 
         // Save simulation results
@@ -409,13 +412,14 @@ public class SimulatorController {
         );
     }
 
-    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize) {
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
         simulationTimeLabel.setText(String.format("%.0f mins", simulationTime));
         avQueueLabel.setText(String.format(avQueueSize + " passengers"));
         longestQueueNameLabel.setText(longestQueueName);
         longestQueueSizeLabel.setText(String.format(longestQueueSize + " passengers"));
+        servicePointResultsTextArea.setText(servicePointResults);
     }
 
     private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
