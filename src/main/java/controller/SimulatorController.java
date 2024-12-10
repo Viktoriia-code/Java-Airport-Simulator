@@ -140,6 +140,8 @@ public class SimulatorController {
     @FXML
     private Label simulationTimeLabel;
     @FXML
+    private Label avQueueLabel;
+    @FXML
     private Label longestQueueNameLabel;
     @FXML
     private Label longestQueueSizeLabel;
@@ -371,7 +373,14 @@ public class SimulatorController {
         ));
         sim.run();
 
-        printResults(sim.getServedClients(), sim.getAvServiceTime(), sim.getSimulationTime(), sim.getLongestQueueSPName(), sim.getLongestQueueSize());
+        printResults(
+                sim.getServedClients(),
+                sim.getAvServiceTime(),
+                sim.getSimulationTime(),
+                sim.getAverageQueueSize(),
+                sim.getLongestQueueSPName(),
+                sim.getLongestQueueSize()
+        );
 
         // Save simulation results
         saveSimuResult(
@@ -383,10 +392,11 @@ public class SimulatorController {
         );
     }
 
-    public void printResults(int customersServed, double meanServiceTime, double simulationTime, String longestQueueName, int longestQueueSize) {
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
         simulationTimeLabel.setText(String.format("%.0f mins", simulationTime));
+        avQueueLabel.setText(String.format(avQueueSize + " passengers"));
         longestQueueNameLabel.setText(longestQueueName);
         longestQueueSizeLabel.setText(String.format(longestQueueSize + " passengers"));
     }
