@@ -557,7 +557,7 @@ public class SimulatorController  implements PassengerMover {
 
             gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
         }
-        System.out.println("Generated coordinates for type: " + type + ", totalPoints: " + totalPoints + ", coords: " + coords.size());
+        System.out.println("Drawing type: " + type + ", Activated Count: " + activatedCount + ", Total Points: " + totalPoints);
     }
 
     public void log(String s) {
@@ -666,6 +666,7 @@ public class SimulatorController  implements PassengerMover {
 
                     currentPosition[0] = x;
                     currentPosition[1] = y;
+                    drawAllServicePoints();
                     progress += step;
                 }
             }
