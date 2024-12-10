@@ -465,8 +465,8 @@ public class MyEngine extends Engine {
             for (ServicePoint p : servicePointList) {
                 totalQueueSizeSum += p.getQueueSize();
             }
+            queueMeasurementCount++;
         }
-        queueMeasurementCount++;
     }
 
     /**
