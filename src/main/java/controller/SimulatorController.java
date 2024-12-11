@@ -3,10 +3,12 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
+import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import model.Customer;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -16,14 +18,17 @@ import javafx.scene.control.Slider;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import model.PassengerMover;
 
-public class SimulatorController {
+public class SimulatorController  implements PassengerMover {
     // Input section (left part of the screen)
     // Service points settings
     @FXML
@@ -104,11 +109,26 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
+    @FXML
+    private Slider speedSlider;
+
+    @FXML
+    private Label speedLabel;
+
+    @FXML
+    private Canvas passengerCanvas;
+
+
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
+    private final Map<String, List<double[]>> servicePointCoordinates = new LinkedHashMap<>();
+
+
+
+    private double animationSpeed = 1.0;
 
     // Bottom part of the screen
     @FXML
@@ -170,6 +190,27 @@ public class SimulatorController {
 
         helpButton.setOnAction(event -> showInstructions());
 
+        // Configure the speed slider
+        speedSlider.setMin(0); // Start at 0
+        speedSlider.setMax(5.0); // End at 5.0
+        speedSlider.setValue(1.0); // Default value
+        speedSlider.setMajorTickUnit(1.0); // Major ticks at 1, 2, 3, 4, 5
+        speedSlider.setMinorTickCount(4); // No minor ticks
+        speedSlider.setSnapToTicks(true); // Snap to defined ticks
+        speedSlider.setShowTickMarks(true); // Show tick marks
+        speedSlider.setShowTickLabels(true); // Show tick labels
+
+        // Bind the slider's value to update the label and simulation speed
+        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            double speed = Math.round(newValue.doubleValue() * 10) / 10.0; // Round to 1 decimal
+            speedLabel.setText("Speed: " + speed + "x");
+            setSimulationSpeed(speed);
+        });
+
+
+
+
+
         // Control for the time spinner
         SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 500, 100);
         timeSpinner.setValueFactory(timeValueFactory);
@@ -218,6 +259,39 @@ public class SimulatorController {
 
         log("Welcome to the Airport simulation!");
     }
+
+
+    private void setSimulationSpeed(double speed) {
+        if (speed == 0.0) {
+            pauseSimulation(); // Pause when speed is 0
+        } else {
+            animationSpeed = speed; // Update the animation speed multiplier
+            adjustSimulationSpeed(); // Apply the new speed to the simulation engine
+        }
+    }
+
+    // Pause simulation logic
+    private void pauseSimulation() {
+        System.out.println("Simulation paused.");
+        animationSpeed = 0.0;
+        // Add logic to pause the animation timer or simulation engine
+    }
+
+    // Apply speed multiplier logic
+    private void adjustSimulationSpeed() {
+        System.out.println("Simulation speed adjusted to " + animationSpeed + "x.");
+        // Update the simulation engine with the new animation speed
+        // Example: pass `animationSpeed` to animation timers or engine logic
+    }
+
+
+
+
+
+
+
+
+
 
     /**
      * Binds a slider to a label and updates the label with the slider's value.
@@ -328,6 +402,9 @@ public class SimulatorController {
 
     @FXML
     private void startSimulation() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+
         int timeValue = timeSpinner.getValue();
         int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
         int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
@@ -376,6 +453,8 @@ public class SimulatorController {
                 borderTime,
                 onboardingTime
         );
+        // Set PassengerMover
+        sim.setPassengerMover(this);
 
         // Create Parameters object
         Parameters simulationParameters = new Parameters();
@@ -527,8 +606,11 @@ public class SimulatorController {
 
         for (Map.Entry<String, Integer> entry : maxServicePointsMap.entrySet()) {
             String pointType = entry.getKey();
-            int totalPoints = entry.getValue();
             int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
+            int totalPoints = activatedPoints; // Use activatedPoints instead of max possible
+
+//            int totalPoints = entry.getValue();
+//            int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
 
             double y = yStep * (typeIndex + 1);
 
@@ -538,7 +620,7 @@ public class SimulatorController {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawServicePoints(gc, activatedPoints, totalPoints, y, pointType);
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
         }
@@ -546,14 +628,17 @@ public class SimulatorController {
 
 
 
-    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart) {
+    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart, String type) {
         double pointDiameter = 10.0;
         double spacingX = 20.0;
         double spacingY = 30.0;
         int pointsPerRow = 26;
 
+        List<double[]> coords = servicePointCoordinates.computeIfAbsent(type, k -> new ArrayList<>());
+        coords.clear();
+
         int currentRow = 0;
-        for (int i = 0; i < totalPoints; i++) {
+        for (int i = 0; i < activatedCount; i++) {
             int rowPosition = i % pointsPerRow;
             if (i > 0 && rowPosition == 0) {
                 currentRow++;
@@ -561,6 +646,8 @@ public class SimulatorController {
 
             double x = spacingX * (rowPosition + 1);
             double yOffset = yStart  + spacingY * currentRow;
+
+            coords.add(new double[]{x, yOffset});
 
             if (i < activatedCount) {
                 gc.setFill(Color.BLUE);
@@ -570,6 +657,7 @@ public class SimulatorController {
 
             gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
         }
+        System.out.println("Drawing type: " + type + ", Activated Count: " + activatedCount + ", Total Points: " + totalPoints);
     }
 
     public void log(String s) {
@@ -590,4 +678,153 @@ public class SimulatorController {
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
     }
+
+    // PassengerMover interface implementation
+    private double[] getServicePointCoordinates(String type, int index) {
+        List<double[]> coords = servicePointCoordinates.get(type);
+        if (coords == null || index < 0 || index >= coords.size()) {
+            System.err.println("Invalid coordinates for type: " + type + ", index: " + index);
+            return null;
+        }
+        return coords.get(index);
+    }
+
+    private void clearPassengers() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+    }
+
+
+
+    @Override
+    public void movePassengerToServicePoint(Customer customer, String type, int index) {
+        System.out.println("Attempting to move customer #" + customer.getId() + " to type: " + type + ", index: " + index);
+
+        double[] targetCoords = getServicePointCoordinates(type, index);
+        if (targetCoords == null) {
+            System.out.println("Cannot proceed with animation because targetCoords is null for type: " + type + ", index: " + index);
+            return;
+        }
+
+//        animatePassengerMovement(customer, targetCoords, index, null);
+//        customer.setCurrentPosition(targetCoords);
+//        customer.setCurrentQueueIndex(index);
+//        System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
+//
+        animatePassengerMovement(customer, targetCoords, index, () -> {
+            customer.setCurrentPosition(targetCoords);
+            customer.setCurrentQueueIndex(index);
+            System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
+        });
+    }
+
+
+
+    private void animatePassengerMovement(Customer customer, double[] targetCoords,int targetIndex, Runnable onFinish) {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+
+        double[] currentPosition = customer.getCurrentPosition() != null ?
+                customer.getCurrentPosition() : targetCoords;
+
+        if (currentPosition == null) {
+            System.out.println("Error: currentPosition is null, cannot start animation.");
+            return;
+        }
+
+        if (targetCoords == null) {
+            System.out.println("Error: targetCoords is null, cannot start animation.");
+            return;
+        }
+
+
+        new AnimationTimer() {
+            private final double step = 0.005;
+            private double progress = 0;
+
+
+            @Override
+            public void handle(long now) {
+                double radius = 4;
+
+                if (progress >= 1) {
+                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+                    gc.setFill(Color.RED);
+                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
+
+//                    currentPosition[0] = targetCoords[0];
+//                    currentPosition[1] = targetCoords[1];
+                    customer.setCurrentPosition(targetCoords);
+                    stop();
+
+//                    if (simulationEnded) {
+//                        clearPassengers();
+//                    }
+                    if (onFinish != null) {
+                        onFinish.run();
+                    }
+                } else {
+                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+
+                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+
+                    gc.setFill(Color.RED);
+                    gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+
+                    currentPosition[0] = x;
+                    currentPosition[1] = y;
+
+//                    drawAllServicePoints();
+                    progress += step * animationSpeed; // Scale progress by animationSpeed
+                }
+            }
+        }.start();
+    }
 }
+
+
+//
+//private void animatePassengerMovement(Customer customer, double[] targetCoords, int targetIndex, Runnable onFinish) {
+//    GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+//
+//    double[] currentPosition = customer.getCurrentPosition() != null ?
+//            customer.getCurrentPosition() : targetCoords;
+//
+//    if (currentPosition == null || targetCoords == null) {
+//        System.out.println("Error: Invalid position for animation.");
+//        return;
+//    }
+//
+//    new AnimationTimer() {
+//        private final double step = 0.005; // Animation speed step
+//        private double progress = 0; // Animation progress
+//
+//        @Override
+//        public void handle(long now) {
+//            // Animation complete
+//            if (progress >= 1) {
+//                gc.setFill(Color.RED);
+//                gc.fillOval(targetCoords[0] - 2, targetCoords[1] - 2, 8, 8); // Final position
+//                customer.setCurrentPosition(targetCoords);
+//                stop();
+//                if (onFinish != null) onFinish.run();
+//            } else {
+//                // Calculate interpolated position
+//                double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
+//                double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
+//
+//                // Clear previous position
+//                gc.clearRect(currentPosition[0] - 4, currentPosition[1] - 4, 8, 8);
+//
+//                // Draw passenger
+//                gc.setFill(Color.RED);
+//                gc.fillOval(x - 2, y - 2, 4, 4);
+//
+//                // Update current position and progress
+//                currentPosition[0] = x;
+//                currentPosition[1] = y;
+//                progress += step * animationSpeed; // Adjust for speed
+//            }
+//        }
+//    }.start();
+//}

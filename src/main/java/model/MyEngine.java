@@ -4,6 +4,7 @@ import eduni.distributions.ContinuousGenerator;
 import eduni.distributions.Normal;
 import eduni.distributions.Negexp;
 import framework.*;
+import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,6 +20,7 @@ public class MyEngine extends Engine {
     private ArrivalProcess arrivalProcess;
     private int servedClients;
     private double simulationTime;
+    private PassengerMover passengerMover;
 
     ArrayList<ServicePoint> checkInPoints = new ArrayList<>();
 
@@ -193,12 +195,20 @@ public class MyEngine extends Engine {
         if (c.isOnlineCheckIn()) {
             q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
             c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+            if (passengerMover != null) {
+                String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
+                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
+            }
         } else {
             q = findShortestQueue(checkInPoints);
             c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+            if (passengerMover != null) {
+                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex()));
+            }
         }
         q.addQueue(c);
         arrivalProcess.generateNextEvent();
+
     }
 
     /**
@@ -212,6 +222,14 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+//        if (passengerMover != null) {
+//            String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
+//            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
+//        }
+        if (passengerMover != null) {
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "RegularSecurityCheck", c.getCurrentQueueIndex()));
+        }
+
     }
 
     /**
@@ -227,6 +245,11 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
+        if (passengerMover != null) {
+            String nextServiceType = c.isEUFlight() ? "EuOnboarding" : "BorderControl";
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex()));
+
+        }
     }
 
     /**
@@ -240,6 +263,9 @@ public class MyEngine extends Engine {
         ServicePoint q = findShortestQueue(boardingNotEUPoints);
         q.addQueue(c);
         c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+        if (passengerMover != null) {
+            passengerMover.movePassengerToServicePoint(c, "OutEuOnboarding", c.getCurrentQueueIndex());
+        }
     }
 
     /**
@@ -590,6 +616,14 @@ public class MyEngine extends Engine {
         setSecurityMean(security);
         setBoardingMean(boarding);
     }
+
+
+//    private PassengerMover passengerMover;
+
+    public void setPassengerMover(PassengerMover passengerMover) {
+        this.passengerMover = passengerMover;
+    }
+
 
     /**
      * Get the results of the simulation (served passengers per service point)

@@ -20,7 +20,7 @@ public class Customer {
 	private final boolean isOnlineCheckIn;
 
 	private double queueEntryTime;
-
+	private double[] currentPosition;
 	/**
 	 * Create a unique customer
 	 *
@@ -32,6 +32,7 @@ public class Customer {
 		this.isBusinessClass = isBusinessClass;
 		this.isEUFlight = isEUFlight;
 		this.isOnlineCheckIn = isOnlineCheckIn;
+		this.currentPosition = new double[] {0, 0};
 
 		id = i++;
 
@@ -193,4 +194,14 @@ public class Customer {
 				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
 	}
+
+	public double[] getCurrentPosition() {
+		return currentPosition;
+	}
+
+	public void setCurrentPosition(double[] position) {
+		this.currentPosition = position;
+	}
+
+
 }
