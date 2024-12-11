@@ -422,8 +422,18 @@ public class SimulatorController  implements PassengerMover {
         int borderTime = Integer.valueOf((int) borderTimeSlider.getValue());
         int onboardingTime = Integer.valueOf((int) onboardingTimeSlider.getValue());
 
+        log(String.format(
+                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                        " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                        " BusinessClass=%d%%, PassFrequency=%.2f",
+                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
+        ));
+
         Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
+
         // Set time for the simulation
         sim.setSimulationTime(timeValue);
         // Set SPs for the simulation
@@ -461,16 +471,13 @@ public class SimulatorController  implements PassengerMover {
                 euFlightValue,
                 businessClassValue
         );
-        log(String.format(
-                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
-                " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                " BusinessClass=%d%%, PassFrequency=%.2f",
-                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
-                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
-        ));
+
         sim.run();
 
+        finishSim(sim, simulationParameters);
+    }
+
+    private void finishSim(MyEngine sim, Parameters simulationParameters){
         printResults(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
@@ -481,6 +488,8 @@ public class SimulatorController  implements PassengerMover {
                 sim.getServicePointResults()
         );
 
+        log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
+
         // Save simulation results
         saveSimuResult(
                 sim.getServedClients(),
@@ -489,15 +498,15 @@ public class SimulatorController  implements PassengerMover {
                 sim.getLongestQueueSPName(),
                 simulationParameters // Pass the Parameters object
         );
-    }
+    };
 
-    public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize, String servicePointResults) {
+    public void printResults(int customersServed, double meanServiceTime, double simulationTime, double avQueueLength, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
         simulationTimeLabel.setText(String.format("%.0f mins", simulationTime));
-        avQueueLabel.setText(String.format(avQueueSize + " passengers"));
+        avQueueLabel.setText(String.format("%.0f mins", avQueueLength));
         longestQueueNameLabel.setText(longestQueueName);
-        longestQueueSizeLabel.setText(String.format(longestQueueSize + " passengers"));
+        longestQueueSizeLabel.setText(String.format(longestQueueSize + " passenger" + (longestQueueSize != 1 ? "s" : "")));
         servicePointResultsTextArea.setText(servicePointResults);
     }
 
