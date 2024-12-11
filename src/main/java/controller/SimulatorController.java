@@ -3,6 +3,7 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
@@ -149,6 +150,9 @@ public class SimulatorController {
     @FXML
     private Slider speedSlider;
 
+    @FXML
+    private Label speedLabel;
+
     boolean isPaused = false;
 
     @FXML
@@ -174,6 +178,8 @@ public class SimulatorController {
         bindSliderToLabel(securityTimeSlider, securityTimeLabel);
         bindSliderToLabel(borderTimeSlider, borderTimeLabel);
         bindSliderToLabel(onboardingTimeSlider, onboardingTimeLabel);
+
+        bindSliderToLabel(speedSlider, speedLabel);
 
         initializeSliders();
 
@@ -228,25 +234,34 @@ public class SimulatorController {
         passengerSelect.setValue("Normal (Every 5 seconds)");
 
         playButton.setDisable(true);
-        stopButton.setOnAction(event -> stopSim());
+        stopButton.setDisable(true);
+        speedSlider.setDisable(true);
 
         log("Welcome to the Airport simulation!");
     }
 
-    private void togglePause(MyEngine sim){
+    private void togglePause(MyEngine sim) {
         isPaused = !isPaused;
         sim.togglePause();
-        Trace.out(Trace.Level.INFO, String.format("*** PAUSE BUTTON PRESSED isPaused: %s sim.getPauseState(): %s ***", isPaused, sim.getPauseState()));
+        Trace.out(Trace.Level.INFO, "*** PAUSE BUTTON PRESSED ***");
+        if (isPaused){
+            log("Simulation paused");
+        } else {
+            log("Continued Simulation");
+        }
     }
 
-    private void stopSim(){
+    private void stopSim(MyEngine sim) {
         Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
+        sim.stopSimulation();
+        log("Simulation Stopped.");
     }
 
     /**
      * Binds a slider to a label and updates the label with the slider's value.
+     *
      * @param slider the slider to observe
-     * @param label the label to update
+     * @param label  the label to update
      */
     public static void bindSliderToLabel(Slider slider, Label label) {
         // Set the initial label value based on the slider's current value
@@ -260,6 +275,7 @@ public class SimulatorController {
 
     /**
      * Updates the label with the slider's current value.
+     *
      * @param value the slider's value
      * @param label the label to update
      */
@@ -372,14 +388,16 @@ public class SimulatorController {
             int borderTime = (int) borderTimeSlider.getValue();
             int onboardingTime = (int) onboardingTimeSlider.getValue();
 
-            log(String.format(
-                    "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
-                            " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                            " BusinessClass=%d%%, PassFrequency=%.2f",
-                    timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
-                    borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                    onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
-            ));
+            Platform.runLater(() -> {
+                log(String.format(
+                        "Simulation Started With: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                                " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                                " BusinessClass=%d%%, PassFrequency=%.2f",
+                        timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                        borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                        onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
+                ));
+            });
 
             Trace.setTraceLevel(Trace.Level.INFO);
 
@@ -421,13 +439,32 @@ public class SimulatorController {
 
             playButton.setDisable(false);
             playButton.setOnAction(event -> togglePause(sim));
+            stopButton.setDisable(false);
+            stopButton.setOnAction(event -> stopSim(sim));
+            speedSlider.setDisable(false);
+            speedSlider.setOnMouseReleased(event -> {
+                int speedMode = (int) speedSlider.getValue();
+                double millis = switch (speedMode) {
+                    case 1 -> 3000;
+                    case 2 -> 1000;
+                    case 4 -> 200;
+                    case 5 -> 100;
+                    default -> // or case 3
+                            500;
+                };
+                sim.setSimulationSpeed(millis);
+                log(String.format("Speed Mode %s%s", speedMode, millis == 100 ? ": no delay" : ": delay of "  + millis / 1000 + "seconds"));
+            });
+
             sim.run();
 
-            finishSim(sim, simulationParameters);
+            sim.stopSimulation();
+            Platform.runLater(() -> finishSim(sim, simulationParameters));
+
         }).start();
     }
 
-    private void finishSim(MyEngine sim, Parameters simulationParameters){
+    private void finishSim(MyEngine sim, Parameters simulationParameters) {
         printResults(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
@@ -438,9 +475,13 @@ public class SimulatorController {
                 sim.getServicePointResults()
         );
 
+        speedSlider.setDisable(true);
+        playButton.setDisable(true);
+        stopButton.setDisable(true);
+
         log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
 
-        // Save simulation results
+        //try {// Save simulation results
         saveSimuResult(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
@@ -448,7 +489,7 @@ public class SimulatorController {
                 sim.getLongestQueueSPName(),
                 simulationParameters // Pass the Parameters object
         );
-    };
+    }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime, double avQueueLength, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
@@ -574,8 +615,7 @@ public class SimulatorController {
     }
 
 
-
-    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart) {
+    private void drawServicePoints(GraphicsContext gc, int activatedCount, int totalPoints, double yStart) {
         double pointDiameter = 10.0;
         double spacingX = 20.0;
         double spacingY = 30.0;
@@ -589,7 +629,7 @@ public class SimulatorController {
             }
 
             double x = spacingX * (rowPosition + 1);
-            double yOffset = yStart  + spacingY * currentRow;
+            double yOffset = yStart + spacingY * currentRow;
 
             if (i < activatedCount) {
                 gc.setFill(Color.BLUE);

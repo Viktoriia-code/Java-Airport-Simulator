@@ -8,12 +8,12 @@ package framework;
  */
 public abstract class Engine {
     private double simulationTime = 0;    // time when the simulation will be stopped
-    private Clock clock;                // to simplify the code (clock.getClock() instead Clock.getInstance().getClock())
+    private final Clock clock;                // to simplify the code (clock.getClock() instead Clock.getInstance().getClock())
     protected EventList eventList;        // events to be processed are stored here
 
     private boolean isPaused = false;
     private boolean isStopped = false;
-    private double simulationSpeed = 1;
+    private double simulationSpeed = 1000;
 
     /**
      * Service Points are created in simu.model-package's class inheriting the Engine class
@@ -47,9 +47,10 @@ public abstract class Engine {
     /**
      * End simulation
      */
-    private void stopSimulation() {
+    public void stopSimulation() {
         isStopped = true;
         isPaused = false;
+
         synchronized (this) {
             notify();
         }
@@ -60,10 +61,6 @@ public abstract class Engine {
      */
     public void setSimulationSpeed(double speed) {
         simulationSpeed = speed;
-    }
-
-    public boolean getPauseState(){
-        return isPaused;
     }
 
     /**
@@ -92,12 +89,14 @@ public abstract class Engine {
             Trace.out(Trace.Level.INFO, "\nC-phase:");
             tryCEvents();
 
-            System.out.println("\n=====================");
-
-            try {
-                Thread.sleep((long) (1000 / simulationSpeed));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            synchronized (this) {
+                if (simulationSpeed != 100){
+                    try {
+                        Thread.sleep((long) (simulationSpeed));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         }
         results();

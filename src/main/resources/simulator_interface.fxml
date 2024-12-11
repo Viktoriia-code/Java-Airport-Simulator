@@ -473,7 +473,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
+                              <Slider fx:id="speedSlider" majorTickUnit="1.0" max="5.0" min="1.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="3.0" />
                            </children>
                         </VBox>
                      </children>
