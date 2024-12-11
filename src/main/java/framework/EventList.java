@@ -41,4 +41,10 @@ public class EventList {
 	public double getNextEventTime(){
 		return eventlist.peek().getTime();
 	}
+
+	public void clear() {
+		eventlist.clear();
+		Trace.out(Trace.Level.INFO, "Event list cleared.");
+	}
+
 }

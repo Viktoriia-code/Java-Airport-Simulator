@@ -373,6 +373,20 @@ public class SimulatorController  implements PassengerMover {
 
     @FXML
     private void startSimulation() {
+        passengerCanvas.getGraphicsContext2D().clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+        airportCanvas.getGraphicsContext2D().clearRect(0, 0, airportCanvas.getWidth(), airportCanvas.getHeight());
+        servicePointCoordinates.clear();
+        drawAllServicePoints(); // Redraw service points
+//        resetSimulationLabels();
+//
+//        if (currentEngine != null) {
+//            currentEngine.stop();
+//        }
+
+
+
+
+
         int timeValue = timeSpinner.getValue();
         int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
         int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
@@ -396,12 +410,18 @@ public class SimulatorController  implements PassengerMover {
         sim.setSimulationTime(timeValue);
         // Set SPs for the simulation
         sim.setAllServicePoints(
-                checkInPoints,
-                regularSecurityCheckPoints,
-                fastSecurityCheckPoints,
-                borderControlPoints,
-                euOnboardingPoints,
-                outEuOnboardingPoints
+//                checkInPoints,
+//                regularSecurityCheckPoints,
+//                fastSecurityCheckPoints,
+//                borderControlPoints,
+//                euOnboardingPoints,
+//                outEuOnboardingPoints
+                servicePointsMap.get("CheckIn"),
+                servicePointsMap.get("RegularSecurityCheck"),
+                servicePointsMap.get("FastSecurityCheck"),
+                servicePointsMap.get("BorderControl"),
+                servicePointsMap.get("EuOnboarding"),
+                servicePointsMap.get("OutEuOnboarding")
         );
         // Set time for SP
         sim.setAllTimingMeans(
@@ -457,6 +477,7 @@ public class SimulatorController  implements PassengerMover {
                 simulationParameters // Pass the Parameters object
         );
     }
+
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime, int avQueueSize, String longestQueueName, int longestQueueSize) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
@@ -652,18 +673,15 @@ public class SimulatorController  implements PassengerMover {
 
     @Override
     public void movePassengerToServicePoint(Customer customer, String type, int index) {
-        System.out.println("Attempting to move customer #" + customer.getId() + " to type: " + type + ", index: " + index);
 
         double[] targetCoords = getServicePointCoordinates(type, index);
         if (targetCoords == null) {
-            System.out.println("Cannot proceed with animation because targetCoords is null for type: " + type + ", index: " + index);
             return;
         }
 
         animatePassengerMovement(customer, targetCoords, index, null);
         customer.setCurrentPosition(targetCoords);
         customer.setCurrentQueueIndex(index);
-        System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
     }
 
 

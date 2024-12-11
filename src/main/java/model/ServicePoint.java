@@ -190,5 +190,16 @@ public class ServicePoint {
         return totalQueueTime / servedCustomersHere;
     }
 
+    private boolean isActive;
+
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+
 }
 

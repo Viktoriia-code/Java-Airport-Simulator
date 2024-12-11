@@ -8,7 +8,9 @@ import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Main simulator engine.
@@ -104,11 +106,25 @@ public class MyEngine extends Engine {
      * @param servicePointArr ArrayList of Service Points that the ServicePoint should be from
      * @return Service Point with either the shortest queue or a random one if shortest can't be found
      */
+//    public ServicePoint findShortestQueue(ArrayList<ServicePoint> servicePointArr) {
+//        return servicePointArr.stream()
+//                .min(Comparator.comparingInt(ServicePoint::getQueueSize))
+//                .orElse(servicePointArr.get(new Random().nextInt(servicePointArr.size())));
+//    }
     public ServicePoint findShortestQueue(ArrayList<ServicePoint> servicePointArr) {
-        return servicePointArr.stream()
+        List<ServicePoint> activePoints = servicePointArr.stream()
+                .filter(ServicePoint::isActive) // 只保留激活的服务点
+                .collect(Collectors.toList());
+
+        if (activePoints.isEmpty()) {
+            throw new IllegalStateException("No active service points available.");
+        }
+
+        return activePoints.stream()
                 .min(Comparator.comparingInt(ServicePoint::getQueueSize))
-                .orElse(servicePointArr.get(new Random().nextInt(servicePointArr.size())));
+                .orElseThrow(() -> new IllegalStateException("No service points found."));
     }
+
 
     /**
      * Generates first arrival in the system, creates Service Points according to given numbers,
@@ -116,6 +132,23 @@ public class MyEngine extends Engine {
      */
     @Override
     protected void initialize() {
+        checkInPoints.clear();
+        securityPoints.clear();
+        securityFastTrackPoints.clear();
+        borderControlPoints.clear();
+        boardingInEUPoints.clear();
+        boardingNotEUPoints.clear();
+        allServicePoints.clear();
+        servedClients = 0;
+        simulationTime = 0;
+        totalQueueSizeSum = 0;
+        queueMeasurementCount = 0;
+
+        eventList.clear();
+
+        Customer.resetId();
+        Customer.resetServiceTimeSum();
+
         /* creating and adding ServicePoints to the appropriate lists with varying service time */
         this.checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(checkIn_mean, 6), EventType.DEP_CHECKIN));
 
@@ -126,6 +159,27 @@ public class MyEngine extends Engine {
 
         this.boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(boarding_mean, 3), EventType.DEP_BOARDING));
         this.boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(boarding_mean, 3), EventType.DEP_BOARDING));
+
+
+
+        for (int i = 0; i < checkInPoints.size(); i++) {
+            checkInPoints.get(i).setActive(i < num_checkin);
+        }
+        for (int i = 0; i < securityPoints.size(); i++) {
+            securityPoints.get(i).setActive(i < num_security);
+        }
+        for (int i = 0; i < securityFastTrackPoints.size(); i++) {
+            securityFastTrackPoints.get(i).setActive(i < num_security_fast);
+        }
+        for (int i = 0; i < borderControlPoints.size(); i++) {
+            borderControlPoints.get(i).setActive(i < num_border_control);
+        }
+        for (int i = 0; i < boardingInEUPoints.size(); i++) {
+            boardingInEUPoints.get(i).setActive(i < num_in_EU_boarding);
+        }
+        for (int i = 0; i < boardingNotEUPoints.size(); i++) {
+            boardingNotEUPoints.get(i).setActive(i < num_out_EU_boarding);
+        }
 
         /* creating the customerCreator according to the percentages */
         CustomerCreator customerCreator = new CustomerCreator(this.percentage_business_class, this.percentage_inside_EU, this.percentage_online_checkin);
@@ -178,24 +232,66 @@ public class MyEngine extends Engine {
     private void handleArrival(Event t) {
         Customer c = t.getCustomer();
         ServicePoint q;
+
         if (c.isOnlineCheckIn()) {
-            q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
-            c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+            q = findShortestQueue(
+                    c.isBusinessClass() ?
+                            (ArrayList<ServicePoint>) securityFastTrackPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList()) :
+                            (ArrayList<ServicePoint>) securityPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList())
+            );
+
+            if (q == null) {
+                throw new IllegalStateException("No active security points available for customer #" + c.getId());
+            }
+
+            c.setCurrentQueueIndex(
+                    c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q)
+            );
+
             if (passengerMover != null) {
                 String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
                 Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
             }
         } else {
-            q = findShortestQueue(checkInPoints);
+            q = findShortestQueue(
+                    (ArrayList<ServicePoint>) checkInPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList())
+            );
+
+            if (q == null) {
+                throw new IllegalStateException("No active check-in points available for customer #" + c.getId());
+            }
+
             c.setCurrentQueueIndex(checkInPoints.indexOf(q));
             if (passengerMover != null) {
                 Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex()));
             }
         }
+
         q.addQueue(c);
         arrivalProcess.generateNextEvent();
-
     }
+
+//    private void handleArrival(Event t) {
+//        Customer c = t.getCustomer();
+//        ServicePoint q;
+//        if (c.isOnlineCheckIn()) {
+//            q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
+//            c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+//            if (passengerMover != null) {
+//                String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
+//                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
+//            }
+//        } else {
+//            q = findShortestQueue(checkInPoints);
+//            c.setCurrentQueueIndex(checkInPoints.indexOf(q));
+//            if (passengerMover != null) {
+//                Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "CheckIn", c.getCurrentQueueIndex()));
+//            }
+//        }
+//        q.addQueue(c);
+//        arrivalProcess.generateNextEvent();
+//
+//    }
 
     /**
      * Handling of DEP_CHECKIN. Customer is removed from the Check-In queue and placed
@@ -204,66 +300,162 @@ public class MyEngine extends Engine {
      */
     private void handleDepCheckin(Event t) {
         Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-        ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
+
+        if (c == null || c != t.getCustomer()) {
+            throw new IllegalStateException("Mismatch between event customer and service point queue.");
+        }
+
+        ServicePoint q = findShortestQueue(
+                c.isBusinessClass() ?
+                        (ArrayList<ServicePoint>) securityFastTrackPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList()) :
+                        (ArrayList<ServicePoint>) securityPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList())
+        );
+
+        if (q == null) {
+            throw new IllegalStateException("No active security points available for customer #" + c.getId());
+        }
+
         q.addQueue(c);
-        c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
-//        if (passengerMover != null) {
-//            String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
-//            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
-//        }
+        c.setCurrentQueueIndex(
+                c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q)
+        );
+
         if (passengerMover != null) {
             Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "RegularSecurityCheck", c.getCurrentQueueIndex()));
         }
-
     }
+
+//    private void handleDepCheckin(Event t) {
+//        Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+//        ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
+//        q.addQueue(c);
+//        c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
+////       if (passengerMover != null) {
+////            String securityType = c.isBusinessClass() ? "FastSecurityCheck" : "RegularSecurityCheck";
+////            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, securityType, c.getCurrentQueueIndex()));
+////        }
+//        if (passengerMover != null) {
+//            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "RegularSecurityCheck", c.getCurrentQueueIndex()));
+//        }
+//
+//    }
 
     /**
      * Handling of DEP_SECURITY. Removes Customer from the right queue and places them to
      * In-EU Boarding or Border Control, depending on if their destination is in or out of EU.
      * @param t The event that is being handled
      */
+//    private void handleDepSecurity(Event t) {
+//        Customer c = t.getCustomer().isBusinessClass() ?
+//                securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
+//                securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+//        ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
+//        q.addQueue(c);
+//        c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
+//        if (passengerMover != null) {
+//            String nextServiceType = c.isEUFlight() ? "EuOnboarding" : "BorderControl";
+//            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex()));
+//
+//        }
+//    }
     private void handleDepSecurity(Event t) {
         Customer c = t.getCustomer().isBusinessClass() ?
                 securityFastTrackPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
                 securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-        ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
+
+        if (c == null || c != t.getCustomer()) {
+            throw new IllegalStateException("Mismatch between event customer and service point queue.");
+        }
+
+        ServicePoint q = findShortestQueue(
+                c.isEUFlight() ?
+                        (ArrayList<ServicePoint>) boardingInEUPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList()) :
+                        (ArrayList<ServicePoint>) borderControlPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList())
+        );
+
+        if (q == null) {
+            throw new IllegalStateException("No active boarding or border control points available for customer #" + c.getId());
+        }
+
         q.addQueue(c);
-        c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
+        c.setCurrentQueueIndex(
+                c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q)
+        );
+
         if (passengerMover != null) {
             String nextServiceType = c.isEUFlight() ? "EuOnboarding" : "BorderControl";
             Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, nextServiceType, c.getCurrentQueueIndex()));
-
         }
     }
+
 
     /**
      * Handling of DEP_BORDERCTRL. Removes Customer from Border Control queue, places them
      * in out of EU Boarding.
      * @param t The event that is being handled
      */
+//    private void handleDepBorderCtrl(Event t) {
+//        Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+//        ServicePoint q = findShortestQueue(boardingNotEUPoints);
+//        q.addQueue(c);
+//        c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+//        if (passengerMover != null) {
+//            passengerMover.movePassengerToServicePoint(c, "OutEuOnboarding", c.getCurrentQueueIndex());
+//        }
+//    }
     private void handleDepBorderCtrl(Event t) {
         Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
-        ServicePoint q = findShortestQueue(boardingNotEUPoints);
+
+        if (c == null || c != t.getCustomer()) {
+            throw new IllegalStateException("Mismatch between event customer and service point queue.");
+        }
+
+        ServicePoint q = findShortestQueue(
+                (ArrayList<ServicePoint>) boardingNotEUPoints.stream().filter(ServicePoint::isActive).collect(Collectors.toList())
+        );
+
+        if (q == null) {
+            throw new IllegalStateException("No active out-of-EU boarding points available for customer #" + c.getId());
+        }
+
         q.addQueue(c);
         c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+
         if (passengerMover != null) {
-            passengerMover.movePassengerToServicePoint(c, "OutEuOnboarding", c.getCurrentQueueIndex());
+            Platform.runLater(() -> passengerMover.movePassengerToServicePoint(c, "OutEuOnboarding", c.getCurrentQueueIndex()));
         }
     }
+
 
     /**
      * Handling of DEP_BOARDING. Removes Customer from the boarding queue, sets the Customer's removal
      * time to the current time, adds +1 to the total served clients in this simulation run.
      * @param t The event that is being handled
      */
+//    private void handleDepBoarding(Event t) {
+//        Customer c = t.getCustomer().isEUFlight() ?
+//                boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
+//                boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+//        c.setRemovalTime(Clock.getInstance().getClock());
+//        c.reportResults();
+//        servedClients++;
+//    }
     private void handleDepBoarding(Event t) {
         Customer c = t.getCustomer().isEUFlight() ?
                 boardingInEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue() :
                 boardingNotEUPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
+
+        if (c == null || c != t.getCustomer()) {
+            throw new IllegalStateException("Mismatch between event customer and service point queue.");
+        }
+
         c.setRemovalTime(Clock.getInstance().getClock());
         c.reportResults();
         servedClients++;
+
+        System.out.println("Customer #" + c.getId() + " has completed boarding.");
     }
+
 
     /**
      * C-Phase Events: checks through every ServicePoint in the system and checks if they're currently
@@ -522,16 +714,41 @@ public class MyEngine extends Engine {
      * @param amount_of_IN_EU_boarding amount of boarding (inside EU) service points
      * @param amount_of_OUT_EU_boarding amount of boarding (outside EU) service points
      */
-    public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
-                                    int amount_of_fast_security, int amount_of_border_control,
-                                    int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
-        setCheckInPoints(amount_of_check_in_points);
-        setRegularSecurityPoints(amount_of_regular_security);
-        setFastSecurityPoints(amount_of_fast_security);
-        setBorderControlPoints(amount_of_border_control);
-        setInEUBoardingPoints(amount_of_IN_EU_boarding);
-        setOutEUBoardingPoints(amount_of_OUT_EU_boarding);
+//    public void setAllServicePoints(int amount_of_check_in_points, int amount_of_regular_security,
+//                                    int amount_of_fast_security, int amount_of_border_control,
+//                                    int amount_of_IN_EU_boarding, int amount_of_OUT_EU_boarding) {
+//        setCheckInPoints(amount_of_check_in_points);
+//        setRegularSecurityPoints(amount_of_regular_security);
+//        setFastSecurityPoints(amount_of_fast_security);
+//        setBorderControlPoints(amount_of_border_control);
+//        setInEUBoardingPoints(amount_of_IN_EU_boarding);
+//        setOutEUBoardingPoints(amount_of_OUT_EU_boarding);
+//    }
+    private List<ServicePoint> checkInPointsList = new ArrayList<>();
+    private List<ServicePoint> securityPointsList = new ArrayList<>();
+    private List<ServicePoint> fastSecurityPointsList = new ArrayList<>();
+    private List<ServicePoint> borderControlPointsList = new ArrayList<>();
+    private List<ServicePoint> euOnboardingPointsList = new ArrayList<>();
+    private List<ServicePoint> outEuOnboardingPointsList = new ArrayList<>();
+
+    public void setAllServicePoints(int checkInPoints, int regularSecurityPoints, int fastSecurityPoints, int borderControlPoints, int euOnboardingPoints, int outEuOnboardingPoints) {
+        activateServicePoints(checkInPoints, checkInPointsList);
+        activateServicePoints(regularSecurityPoints, securityPointsList);
+        activateServicePoints(fastSecurityPoints, fastSecurityPointsList);
+        activateServicePoints(borderControlPoints, borderControlPointsList);
+        activateServicePoints(euOnboardingPoints, euOnboardingPointsList);
+        activateServicePoints(outEuOnboardingPoints, outEuOnboardingPointsList);
     }
+
+    private void activateServicePoints(int activatedCount, List<ServicePoint> servicePoints) {
+        for (int i = 0; i < servicePoints.size(); i++) {
+            boolean isActive = i < activatedCount;
+            servicePoints.get(i).setActive(isActive);
+            System.out.println("ServicePoint " + servicePoints.get(i).getName() + " set to active: " + isActive);
+        }
+    }
+
+
 
     /**
      * Sets all Customer related percentages at once. Note that values should be between 0-100.
