@@ -141,6 +141,17 @@ public class SimulatorController {
     private TextArea servicePointResultsTextArea;
 
     @FXML
+    private Button playButton;
+
+    @FXML
+    private Button stopButton;
+
+    @FXML
+    private Slider speedSlider;
+
+    boolean isPaused = false;
+
+    @FXML
     public void initialize() {
         servicePointsMap.put("CheckIn", (int) checkInSlider.getValue());
         servicePointsMap.put("RegularSecurityCheck", (int) regularSecurityCheckSlider.getValue());
@@ -216,7 +227,20 @@ public class SimulatorController {
         // Set default selection
         passengerSelect.setValue("Normal (Every 5 seconds)");
 
+        playButton.setDisable(true);
+        stopButton.setOnAction(event -> stopSim());
+
         log("Welcome to the Airport simulation!");
+    }
+
+    private void togglePause(MyEngine sim){
+        isPaused = !isPaused;
+        sim.togglePause();
+        Trace.out(Trace.Level.INFO, String.format("*** PAUSE BUTTON PRESSED isPaused: %s sim.getPauseState(): %s ***", isPaused, sim.getPauseState()));
+    }
+
+    private void stopSim(){
+        Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
     }
 
     /**
@@ -328,74 +352,79 @@ public class SimulatorController {
 
     @FXML
     private void startSimulation() {
-        int timeValue = timeSpinner.getValue();
-        int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
-        int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
-        int fastSecurityCheckPoints = Integer.valueOf((int) fastSecurityCheckSlider.getValue());
-        int borderControlPoints = Integer.valueOf((int) borderControlSlider.getValue());
-        int euOnboardingPoints = Integer.valueOf((int) euOnboardingSlider.getValue());
-        int outEuOnboardingPoints = Integer.valueOf((int) outEuOnboardingSlider.getValue());
-
-        int businessClassValue = 100 - Integer.valueOf((int) classSlider.getValue());
-        int euFlightValue = Integer.valueOf((int) euFlightSlider.getValue());
-        int onlineCheckInValue = Integer.valueOf((int) onlineCheckInSlider.getValue());
-
-        int checkInTime = Integer.valueOf((int) checkInTimeSlider.getValue());
-        int securityTime = Integer.valueOf((int) securityTimeSlider.getValue());
-        int borderTime = Integer.valueOf((int) borderTimeSlider.getValue());
-        int onboardingTime = Integer.valueOf((int) onboardingTimeSlider.getValue());
-
-        log(String.format(
-                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
-                        " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                        " BusinessClass=%d%%, PassFrequency=%.2f",
-                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
-                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
-        ));
-
-        Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
 
-        // Set time for the simulation
-        sim.setSimulationTime(timeValue);
-        // Set SPs for the simulation
-        sim.setAllServicePoints(
-                checkInPoints,
-                regularSecurityCheckPoints,
-                fastSecurityCheckPoints,
-                borderControlPoints,
-                euOnboardingPoints,
-                outEuOnboardingPoints
-        );
-        // Set time for SP
-        sim.setAllTimingMeans(
-                getSelectedFrequency(),
-                checkInTime,
-                securityTime,
-                borderTime,
-                onboardingTime
-        );
+        new Thread(() -> {
+            int timeValue = timeSpinner.getValue();
+            int checkInPoints = (int) checkInSlider.getValue();
+            int regularSecurityCheckPoints = (int) regularSecurityCheckSlider.getValue();
+            int fastSecurityCheckPoints = (int) fastSecurityCheckSlider.getValue();
+            int borderControlPoints = (int) borderControlSlider.getValue();
+            int euOnboardingPoints = (int) euOnboardingSlider.getValue();
+            int outEuOnboardingPoints = (int) outEuOnboardingSlider.getValue();
 
-        // Create Parameters object
-        Parameters simulationParameters = new Parameters();
-        simulationParameters.setCheck_in(checkInPoints);
-        simulationParameters.setSecurity_check(regularSecurityCheckPoints);
-        simulationParameters.setFasttrack(fastSecurityCheckPoints);
-        simulationParameters.setBorder_control(borderControlPoints);
-        simulationParameters.setEU_boarding(euOnboardingPoints);
-        simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+            int businessClassValue = 100 - (int) classSlider.getValue();
+            int euFlightValue = (int) euFlightSlider.getValue();
+            int onlineCheckInValue = (int) onlineCheckInSlider.getValue();
 
-        // Set customer percentages for the simulation
-        sim.setAllCustomerPercentages(
-                onlineCheckInValue,
-                euFlightValue,
-                businessClassValue
-        );
+            int checkInTime = (int) checkInTimeSlider.getValue();
+            int securityTime = (int) securityTimeSlider.getValue();
+            int borderTime = (int) borderTimeSlider.getValue();
+            int onboardingTime = (int) onboardingTimeSlider.getValue();
 
-        sim.run();
+            log(String.format(
+                    "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                            " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                            " BusinessClass=%d%%, PassFrequency=%.2f",
+                    timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                    borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                    onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
+            ));
 
-        finishSim(sim, simulationParameters);
+            Trace.setTraceLevel(Trace.Level.INFO);
+
+            // Set time for the simulation
+            sim.setSimulationTime(timeValue);
+            // Set SPs for the simulation
+            sim.setAllServicePoints(
+                    checkInPoints,
+                    regularSecurityCheckPoints,
+                    fastSecurityCheckPoints,
+                    borderControlPoints,
+                    euOnboardingPoints,
+                    outEuOnboardingPoints
+            );
+            // Set time for SP
+            sim.setAllTimingMeans(
+                    getSelectedFrequency(),
+                    checkInTime,
+                    securityTime,
+                    borderTime,
+                    onboardingTime
+            );
+
+            // Create Parameters object
+            Parameters simulationParameters = new Parameters();
+            simulationParameters.setCheck_in(checkInPoints);
+            simulationParameters.setSecurity_check(regularSecurityCheckPoints);
+            simulationParameters.setFasttrack(fastSecurityCheckPoints);
+            simulationParameters.setBorder_control(borderControlPoints);
+            simulationParameters.setEU_boarding(euOnboardingPoints);
+            simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+
+            // Set customer percentages for the simulation
+            sim.setAllCustomerPercentages(
+                    onlineCheckInValue,
+                    euFlightValue,
+                    businessClassValue
+            );
+
+            playButton.setDisable(false);
+            playButton.setOnAction(event -> togglePause(sim));
+            sim.run();
+
+            finishSim(sim, simulationParameters);
+        }).start();
     }
 
     private void finishSim(MyEngine sim, Parameters simulationParameters){
