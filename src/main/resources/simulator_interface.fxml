@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
@@ -17,567 +18,574 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
-   <left>
-      <VBox prefHeight="489.0" prefWidth="320.0" spacing="2.0" style="-fx-border-color: silver; -fx-border-radius: 5px; -fx-background-color: fafafa;" BorderPane.alignment="TOP_CENTER">
-         <children>
-            <Label alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: lightGrey;" text="Parameters">
-               <font>
-                  <Font name="System Bold" size="15.0" />
-               </font>
-               <padding>
-                  <Insets bottom="2.0" top="1.0" />
-               </padding>
-            </Label>
-            <VBox prefHeight="200.0">
+
+<ScrollPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
+   <content>
+      <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1100.0">
+         <left>
+            <VBox prefHeight="489.0" prefWidth="320.0" spacing="2.0" style="-fx-border-color: silver; -fx-border-radius: 5px; -fx-background-color: fafafa;" BorderPane.alignment="TOP_CENTER">
                <children>
-                  <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                  <Label alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: lightGrey;" text="Parameters">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="2.0" top="1.0" />
+                     </padding>
+                  </Label>
+                  <VBox prefHeight="200.0">
                      <children>
-                        <Pane minWidth="190.0" prefHeight="200.0">
+                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                            <children>
-                              <Label prefHeight="20.0" style="-fx-background-color: #A0B8F7;" text="Number of Points">
+                              <Pane minWidth="190.0" prefHeight="200.0">
+                                 <children>
+                                    <Label prefHeight="20.0" style="-fx-background-color: #A0B8F7;" text="Number of Points">
+                                       <font>
+                                          <Font name="System Bold Italic" size="14.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
+                                       </padding>
+                                    </Label>
+                                 </children>
+                              </Pane>
+                              <Label style="-fx-background-color: #A0B8F7;" text="Service Time">
                                  <font>
                                     <Font name="System Bold Italic" size="14.0" />
                                  </font>
-                                 <padding>
+                                 <HBox.margin>
                                     <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
+                                 </HBox.margin>
+                                 <padding>
+                                    <Insets left="4.0" right="4.0" />
                                  </padding>
                               </Label>
                            </children>
-                        </Pane>
-                        <Label style="-fx-background-color: #A0B8F7;" text="Service Time">
-                           <font>
-                              <Font name="System Bold Italic" size="14.0" />
-                           </font>
-                           <HBox.margin>
-                              <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
-                           </HBox.margin>
-                           <padding>
-                              <Insets left="4.0" right="4.0" />
-                           </padding>
-                        </Label>
-                     </children>
-                  </HBox>
-                  <HBox prefHeight="100.0" spacing="10.0">
-                     <children>
-                        <VBox prefHeight="200.0">
+                        </HBox>
+                        <HBox prefHeight="100.0" spacing="10.0">
                            <children>
-                              <HBox alignment="CENTER" prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                              <VBox prefHeight="200.0">
                                  <children>
-                                    <Label maxWidth="-Infinity" text="Check-in" HBox.hgrow="ALWAYS">
-                                       <font>
-                                          <Font name="System Bold" size="13.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="checkInLabel" text="32">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="points">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
+                                    <HBox alignment="CENTER" prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                                       <children>
+                                          <Label maxWidth="-Infinity" text="Check-in" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="checkInLabel" text="32">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="points">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="checkInSlider" blockIncrement="1.0" max="65.0" min="1.0" minWidth="190.0" showTickLabels="true" showTickMarks="true" value="32.0" VBox.vgrow="ALWAYS" />
                                  </children>
-                              </HBox>
-                              <Slider fx:id="checkInSlider" blockIncrement="1.0" max="65.0" min="1.0" minWidth="190.0" showTickLabels="true" showTickMarks="true" value="32.0" VBox.vgrow="ALWAYS" />
+                              </VBox>
+                              <VBox prefHeight="200.0">
+                                 <children>
+                                    <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                                       <children>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="checkInTimeLabel" text="15">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="mins">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="checkInTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                 </children>
+                              </VBox>
                            </children>
-                        </VBox>
-                        <VBox prefHeight="200.0">
+                        </HBox>
+                        <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <VBox.margin>
+                              <Insets bottom="3.0" top="3.0" />
+                           </VBox.margin>
+                        </Separator>
+                        <HBox prefHeight="100.0" spacing="5.0">
                            <children>
-                              <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                              <VBox minWidth="195.0">
                                  <children>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="checkInTimeLabel" text="15">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="mins">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label text="Regular Security Check">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="regularSecurityCheckLabel" text="7">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text=" points">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="regularSecurityCheckSlider" blockIncrement="1.0" max="14.0" min="1.0" minWidth="195.0" showTickLabels="true" showTickMarks="true" value="7.0" />
                                  </children>
-                              </HBox>
-                              <Slider fx:id="checkInTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                              </VBox>
+                              <VBox prefHeight="200.0">
+                                 <children>
+                                    <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                                       <children>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="securityTimeLabel" text="5">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="mins">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="securityTimeSlider" blockIncrement="1.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
+                                 </children>
+                              </VBox>
                            </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <VBox.margin>
-                        <Insets bottom="3.0" top="3.0" />
-                     </VBox.margin>
-                  </Separator>
-                  <HBox prefHeight="100.0" spacing="5.0">
-                     <children>
-                        <VBox minWidth="195.0">
+                        </HBox>
+                        <HBox alignment="CENTER" maxWidth="190.0" minWidth="190.0" prefWidth="190.0">
                            <children>
-                              <HBox alignment="CENTER">
-                                 <children>
-                                    <Label text="Regular Security Check">
-                                       <font>
-                                          <Font name="System Bold" size="13.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="regularSecurityCheckLabel" text="7">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text=" points">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="regularSecurityCheckSlider" blockIncrement="1.0" max="14.0" min="1.0" minWidth="195.0" showTickLabels="true" showTickMarks="true" value="7.0" />
-                           </children>
-                        </VBox>
-                        <VBox prefHeight="200.0">
-                           <children>
-                              <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
-                                 <children>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="securityTimeLabel" text="5">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="mins">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="securityTimeSlider" blockIncrement="1.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER" maxWidth="190.0" minWidth="190.0" prefWidth="190.0">
-                     <children>
-                        <Label text="Fast Security Check">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </Label>
-                        <Pane HBox.hgrow="ALWAYS" />
-                        <Label fx:id="fastSecurityCheckLabel" text="3">
-                           <font>
-                              <Font name="System Bold" size="12.0" />
-                           </font>
-                        </Label>
-                        <Label text=" points">
-                           <font>
-                              <Font name="System Bold" size="12.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </HBox>
-                  <Slider fx:id="fastSecurityCheckSlider" blockIncrement="1.0" max="5.0" maxWidth="190.0" min="1.0" showTickLabels="true" showTickMarks="true" value="3.0" />
-                  <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
-                     <VBox.margin>
-                        <Insets bottom="3.0" top="3.0" />
-                     </VBox.margin>
-                  </Separator>
-                  <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
-                     <children>
-                        <VBox minWidth="190.0">
-                           <children>
-                              <HBox alignment="CENTER" prefHeight="17.0" prefWidth="200.0">
-                                 <children>
-                                    <Label text="Border Control">
-                                       <font>
-                                          <Font name="System Bold" size="13.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="borderControlLabel" text="14">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text=" points">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="borderControlSlider" blockIncrement="1.0" max="26.0" min="1.0" showTickLabels="true" showTickMarks="true" value="14.0" />
-                           </children>
-                        </VBox>
-                        <VBox prefHeight="200.0">
-                           <children>
-                              <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
-                                 <children>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="borderTimeLabel" text="15">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="mins">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="borderTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
-                     <VBox.margin>
-                        <Insets bottom="3.0" top="3.0" />
-                     </VBox.margin>
-                  </Separator>
-                  <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
-                     <children>
-                        <VBox minWidth="190.0" prefHeight="200.0">
-                           <children>
-                              <HBox alignment="CENTER" fillHeight="false" prefHeight="34.0" prefWidth="146.0">
-                                 <children>
-                                    <Label prefHeight="30.0" text="Onboarding (in EU)" wrapText="true">
-                                       <font>
-                                          <Font name="System Bold" size="13.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="euOnboardingLabel" prefHeight="18.0" prefWidth="17.0" text="12" HBox.hgrow="ALWAYS">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="points">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="euOnboardingSlider" blockIncrement="1.0" max="24.0" min="1.0" showTickLabels="true" showTickMarks="true" value="12.0" />
-                           </children>
-                        </VBox>
-                        <VBox prefHeight="200.0">
-                           <children>
-                              <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
-                                 <children>
-                                    <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="onboardingTimeLabel" text="15">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label text="mins">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="onboardingTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox maxWidth="190.0" minWidth="190.0" prefWidth="190.0">
-                     <children>
-                        <Label text="Onboarding (out EU)">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </Label>
-                        <Pane HBox.hgrow="ALWAYS" />
-                        <Label fx:id="outEuOnboardingLabel" text="10">
-                           <font>
-                              <Font name="System Bold" size="12.0" />
-                           </font>
-                        </Label>
-                        <Label text=" points">
-                           <font>
-                              <Font name="System Bold" size="12.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </HBox>
-                  <Slider fx:id="outEuOnboardingSlider" blockIncrement="1.0" max="22.0" maxWidth="190.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
-               </children>
-               <padding>
-                  <Insets left="5.0" right="5.0" />
-               </padding>
-            </VBox>
-            <Separator minHeight="1.0" prefWidth="200.0" style="-fx-border-color: silver;">
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
-            </Separator>
-            <VBox prefWidth="165.0" spacing="3.0">
-               <children>
-                  <Label style="-fx-background-color: #A0B8F7;" text="Clients">
-                     <font>
-                        <Font name="System Bold Italic" size="14.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
-                     </padding>
-                  </Label>
-                  <HBox spacing="15.0">
-                     <children>
-                        <VBox>
-                           <children>
-                              <Label text="Passenger amount" />
-                              <ChoiceBox fx:id="passengerSelect" prefWidth="150" />
-                           </children>
-                        </VBox>
-                        <VBox>
-                           <children>
-                              <HBox>
-                                 <children>
-                                    <Label text="Econom class" wrapText="true" />
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label text="Business class" />
-                                 </children>
-                              </HBox>
-                              <HBox prefWidth="200.0">
-                                 <children>
-                                    <Label fx:id="economClassPercLabel" text="80%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="businessClassPercLabel" text="20%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="classSlider" blockIncrement="1.0" majorTickUnit="5.0" maxWidth="1.7976931348623157E308" value="80.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-                  <HBox spacing="15.0">
-                     <children>
-                        <VBox>
-                           <children>
-                              <HBox prefWidth="200.0">
-                                 <children>
-                                    <Label text="In EU flight" />
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label text="Out EU flight" />
-                                 </children>
-                              </HBox>
-                              <HBox prefWidth="200.0">
-                                 <children>
-                                    <Label fx:id="euFlightPercLabel" text="70%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="outEuFlightPercLabel" text="30%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="euFlightSlider" blockIncrement="1.0" majorTickUnit="5.0" value="70.0" />
-                           </children>
-                        </VBox>
-                        <VBox>
-                           <children>
-                              <HBox prefWidth="200.0">
-                                 <children>
-                                    <Label prefWidth="75.0" text="Online Check In" wrapText="true" />
-                                    <Pane minWidth="10.0" HBox.hgrow="ALWAYS" />
-                                    <Label prefWidth="84.0" text="Offline Check In " textAlignment="RIGHT" wrapText="true" />
-                                 </children>
-                              </HBox>
-                              <HBox prefWidth="200.0">
-                                 <children>
-                                    <Label fx:id="onlineCheckInPercLabel" text="50%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Pane HBox.hgrow="ALWAYS" />
-                                    <Label fx:id="offlineCheckInPercLabel" text="50%">
-                                       <font>
-                                          <Font name="System Bold" size="12.0" />
-                                       </font>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <Slider fx:id="onlineCheckInSlider" blockIncrement="1.0" majorTickUnit="5.0" value="50.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-               </children>
-               <padding>
-                  <Insets left="5.0" right="5.0" />
-               </padding>
-            </VBox>
-            <Separator />
-            <Label style="-fx-background-color: #A0B8F7;" text="Time">
-               <font>
-                  <Font name="System Bold Italic" size="14.0" />
-               </font>
-               <VBox.margin>
-                  <Insets left="5.0" />
-               </VBox.margin>
-               <padding>
-                  <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
-               </padding>
-            </Label>
-            <HBox spacing="10.0">
-               <children>
-                  <VBox>
-                     <children>
-                        <Label text="Simulation time (min)" />
-                        <Spinner fx:id="timeSpinner" editable="true" VBox.vgrow="NEVER" />
-                     </children>
-                  </VBox>
-                  <VBox>
-                     <children>
-                        <HBox>
-                           <children>
-                              <Label text="Speed" />
+                              <Label text="Fast Security Check">
+                                 <font>
+                                    <Font name="System Bold" size="13.0" />
+                                 </font>
+                              </Label>
                               <Pane HBox.hgrow="ALWAYS" />
-                              <Label fx:id="speedLabel" text="0">
+                              <Label fx:id="fastSecurityCheckLabel" text="3">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <Label text=" points">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
                            </children>
                         </HBox>
-                        <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
+                        <Slider fx:id="fastSecurityCheckSlider" blockIncrement="1.0" max="5.0" maxWidth="190.0" min="1.0" showTickLabels="true" showTickMarks="true" value="3.0" />
+                        <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
+                           <VBox.margin>
+                              <Insets bottom="3.0" top="3.0" />
+                           </VBox.margin>
+                        </Separator>
+                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                           <children>
+                              <VBox minWidth="190.0">
+                                 <children>
+                                    <HBox alignment="CENTER" prefHeight="17.0" prefWidth="200.0">
+                                       <children>
+                                          <Label text="Border Control">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="borderControlLabel" text="14">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text=" points">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="borderControlSlider" blockIncrement="1.0" max="26.0" min="1.0" showTickLabels="true" showTickMarks="true" value="14.0" />
+                                 </children>
+                              </VBox>
+                              <VBox prefHeight="200.0">
+                                 <children>
+                                    <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                                       <children>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="borderTimeLabel" text="15">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="mins">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="borderTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <Separator minHeight="1.0" prefWidth="200.0" style="-fx-background-color: grey;">
+                           <VBox.margin>
+                              <Insets bottom="3.0" top="3.0" />
+                           </VBox.margin>
+                        </Separator>
+                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                           <children>
+                              <VBox minWidth="190.0" prefHeight="200.0">
+                                 <children>
+                                    <HBox alignment="CENTER" fillHeight="false" prefHeight="34.0" prefWidth="146.0">
+                                       <children>
+                                          <Label prefHeight="30.0" text="Onboarding (in EU)" wrapText="true">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="euOnboardingLabel" prefHeight="18.0" prefWidth="17.0" text="12" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="points">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="euOnboardingSlider" blockIncrement="1.0" max="24.0" min="1.0" showTickLabels="true" showTickMarks="true" value="12.0" />
+                                 </children>
+                              </VBox>
+                              <VBox prefHeight="200.0">
+                                 <children>
+                                    <HBox prefHeight="17.0" prefWidth="158.0" spacing="5.0">
+                                       <children>
+                                          <Pane prefHeight="200.0" HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="onboardingTimeLabel" text="15">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="mins">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="onboardingTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <HBox maxWidth="190.0" minWidth="190.0" prefWidth="190.0">
+                           <children>
+                              <Label text="Onboarding (out EU)">
+                                 <font>
+                                    <Font name="System Bold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <Pane HBox.hgrow="ALWAYS" />
+                              <Label fx:id="outEuOnboardingLabel" text="10">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <Label text=" points">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <Slider fx:id="outEuOnboardingSlider" blockIncrement="1.0" max="22.0" maxWidth="190.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
                      </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
                   </VBox>
+                  <Separator minHeight="1.0" prefWidth="200.0" style="-fx-border-color: silver;">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </Separator>
+                  <VBox prefWidth="165.0" spacing="3.0">
+                     <children>
+                        <Label style="-fx-background-color: #A0B8F7;" text="Clients">
+                           <font>
+                              <Font name="System Bold Italic" size="14.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                           <padding>
+                              <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
+                           </padding>
+                        </Label>
+                        <HBox spacing="15.0">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label text="Passenger amount" />
+                                    <ChoiceBox fx:id="passengerSelect" prefWidth="150" />
+                                 </children>
+                              </VBox>
+                              <VBox>
+                                 <children>
+                                    <HBox>
+                                       <children>
+                                          <Label text="Econom class" wrapText="true" />
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label text="Business class" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefWidth="200.0">
+                                       <children>
+                                          <Label fx:id="economClassPercLabel" text="80%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="businessClassPercLabel" text="20%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="classSlider" blockIncrement="1.0" majorTickUnit="5.0" maxWidth="1.7976931348623157E308" value="80.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <HBox spacing="15.0">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <HBox prefWidth="200.0">
+                                       <children>
+                                          <Label text="In EU flight" />
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label text="Out EU flight" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefWidth="200.0">
+                                       <children>
+                                          <Label fx:id="euFlightPercLabel" text="70%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="outEuFlightPercLabel" text="30%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="euFlightSlider" blockIncrement="1.0" majorTickUnit="5.0" value="70.0" />
+                                 </children>
+                              </VBox>
+                              <VBox>
+                                 <children>
+                                    <HBox prefWidth="200.0">
+                                       <children>
+                                          <Label prefWidth="75.0" text="Online Check In" wrapText="true" />
+                                          <Pane minWidth="10.0" HBox.hgrow="ALWAYS" />
+                                          <Label prefWidth="84.0" text="Offline Check In " textAlignment="RIGHT" wrapText="true" />
+                                       </children>
+                                    </HBox>
+                                    <HBox prefWidth="200.0">
+                                       <children>
+                                          <Label fx:id="onlineCheckInPercLabel" text="50%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Pane HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="offlineCheckInPercLabel" text="50%">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <Slider fx:id="onlineCheckInSlider" blockIncrement="1.0" majorTickUnit="5.0" value="50.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                  </VBox>
+                  <Separator />
+                  <Label style="-fx-background-color: #A0B8F7;" text="Time">
+                     <font>
+                        <Font name="System Bold Italic" size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="5.0" />
+                     </VBox.margin>
+                     <padding>
+                        <Insets bottom="1.0" left="5.0" right="5.0" top="1.0" />
+                     </padding>
+                  </Label>
+                  <HBox spacing="10.0">
+                     <children>
+                        <VBox>
+                           <children>
+                              <Label text="Simulation time (min)" />
+                              <Spinner fx:id="timeSpinner" editable="true" VBox.vgrow="NEVER" />
+                           </children>
+                        </VBox>
+                        <VBox>
+                           <children>
+                              <HBox>
+                                 <children>
+                                    <Label text="Speed" />
+                                    <Pane HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="speedLabel" text="0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <Slider fx:id="speedSlider" blockIncrement="0.1" majorTickUnit="5.0" max="10.0" min="-10.0" showTickLabels="true" showTickMarks="true" />
+                           </children>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                  </HBox>
+                  <Button mnemonicParsing="false" onAction="#startSimulation" style="-fx-background-color: FFF187; -fx-border-color: lightGrey;" text="Start">
+                     <font>
+                        <Font name="System Bold Italic" size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="5.0" />
+                     </VBox.margin>
+                  </Button>
                </children>
-               <padding>
-                  <Insets left="5.0" right="5.0" />
-               </padding>
-            </HBox>
-            <Button mnemonicParsing="false" onAction="#startSimulation" style="-fx-background-color: FFF187; -fx-border-color: lightGrey;" text="Start">
-               <font>
-                  <Font name="System Bold Italic" size="14.0" />
-               </font>
-               <VBox.margin>
-                  <Insets left="5.0" />
-               </VBox.margin>
-            </Button>
-         </children>
-      </VBox>
-   </left>
-   <right>
-      <VBox prefWidth="155.0" spacing="3.0" style="-fx-border-color: silver; -fx-border-radius: 5px; -fx-background-color: fafafa;" BorderPane.alignment="CENTER">
-         <children>
-            <Label alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: lightGrey;" text="Results">
-               <font>
-                  <Font name="System Bold" size="15.0" />
-               </font>
-               <padding>
-                  <Insets bottom="2.0" top="1.0" />
-               </padding></Label>
-            <VBox prefHeight="200.0" prefWidth="100.0" spacing="1.0">
-               <children>
-                  <Label text="Served passengers" />
-                  <Label fx:id="totalPassengersServedLabel" text="0" />
-                  <Separator prefWidth="200.0" />
-                  <Label text="Simulation time" />
-                  <Label fx:id="simulationTimeLabel" text="0 mins" />
-                  <Separator prefWidth="200.0" />
-                  <Label text="Average service time" />
-                  <Label fx:id="avServiceTimeLabel" text="0 mins" />
-                  <Separator prefWidth="200.0" />
-                  <Label text="Average queue lenght" />
-                  <Label fx:id="avQueueLabel" text="0 passengers" />
-                  <Separator prefWidth="200.0" />
-                  <Label text="Longest queue lenght" />
-                  <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="Point name" wrapText="true" />
-                  <Label fx:id="longestQueueSizeLabel" text="0 passengers" />
-                  <Separator prefWidth="200.0" />
-                  <Label text="Served passengers by SP" />
-               </children>
-               <padding>
-                  <Insets left="5.0" right="5.0" />
-               </padding>
             </VBox>
-            <TextArea fx:id="servicePointResultsTextArea" VBox.vgrow="ALWAYS">
-               <font>
-                  <Font size="11.0" />
-               </font>
-            </TextArea>
-         </children>
-         <BorderPane.margin>
-            <Insets left="5.0" />
-         </BorderPane.margin>
-      </VBox>
-   </right>
-   <padding>
-      <Insets bottom="8.0" left="8.0" right="8.0" top="10.0" />
-   </padding>
-   <top>
-      <Label text="Airport Simulator" BorderPane.alignment="CENTER">
-         <font>
-            <Font name="Britannic Bold" size="28.0" />
-         </font>
-         <BorderPane.margin>
-            <Insets bottom="5.0" />
-         </BorderPane.margin>
+         </left>
+         <right>
+            <VBox prefWidth="155.0" spacing="3.0" style="-fx-border-color: silver; -fx-border-radius: 5px; -fx-background-color: fafafa;" BorderPane.alignment="CENTER">
+               <children>
+                  <Label alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: lightGrey;" text="Results">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="2.0" top="1.0" />
+                     </padding>
+                  </Label>
+                  <VBox prefHeight="200.0" prefWidth="100.0" spacing="1.0">
+                     <children>
+                        <Label text="Served passengers" />
+                        <Label fx:id="totalPassengersServedLabel" text="0" />
+                        <Separator prefWidth="200.0" />
+                        <Label text="Simulation time" />
+                        <Label fx:id="simulationTimeLabel" text="0 mins" />
+                        <Separator prefWidth="200.0" />
+                        <Label text="Average service time" />
+                        <Label fx:id="avServiceTimeLabel" text="0 mins" />
+                        <Separator prefWidth="200.0" />
+                        <Label text="Average queue lenght" />
+                        <Label fx:id="avQueueLabel" text="0 passengers" />
+                        <Separator prefWidth="200.0" />
+                        <Label text="Longest queue lenght" />
+                        <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="Point name" wrapText="true" />
+                        <Label fx:id="longestQueueSizeLabel" text="0 passengers" />
+                        <Separator prefWidth="200.0" />
+                        <Label text="Served passengers by SP" />
+                     </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                  </VBox>
+                  <TextArea fx:id="servicePointResultsTextArea" VBox.vgrow="ALWAYS">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </TextArea>
+               </children>
+               <BorderPane.margin>
+                  <Insets left="5.0" />
+               </BorderPane.margin>
+            </VBox>
+         </right>
          <padding>
-            <Insets left="10.0" right="10.0" />
+            <Insets bottom="8.0" left="8.0" right="8.0" top="10.0" />
          </padding>
-      </Label>
-   </top>
-   <bottom>
-      <HBox alignment="CENTER_LEFT" prefHeight="32.0" prefWidth="770.0" BorderPane.alignment="CENTER_LEFT">
-         <children>
-            <Label fx:id="inputErrorLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" textFill="RED" />
-            <Pane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin></Pane>
-            <Button fx:id="helpButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" style="-fx-background-radius: 100%; -fx-border-radius: 100%;" text="?">
+         <top>
+            <Label text="Airport Simulator" BorderPane.alignment="CENTER">
                <font>
-                  <Font name="System Bold" size="14.0" />
+                  <Font name="Britannic Bold" size="28.0" />
                </font>
-            </Button>
-         </children>
-         <BorderPane.margin>
-            <Insets top="3.0" />
-         </BorderPane.margin>
-      </HBox>
-   </bottom>
-   <center>
-      <AnchorPane prefHeight="727.0" prefWidth="581.0" BorderPane.alignment="CENTER">
-         <BorderPane.margin>
-            <Insets left="10.0" right="10.0" />
-         </BorderPane.margin>
-         <children>
-            <Canvas fx:id="airportCanvas" height="572.0" width="577.0" />
-            <ListView fx:id="logListView" layoutX="-1.0" layoutY="573.0" prefHeight="138.0" prefWidth="579.0" style="-fx-border-radius: 5px;" />
-         </children>
-      </AnchorPane>
-   </center>
-</BorderPane>
+               <BorderPane.margin>
+                  <Insets bottom="5.0" />
+               </BorderPane.margin>
+               <padding>
+                  <Insets left="10.0" right="10.0" />
+               </padding>
+            </Label>
+         </top>
+         <bottom>
+            <HBox alignment="CENTER_LEFT" prefHeight="32.0" prefWidth="770.0" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Label fx:id="inputErrorLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" textFill="RED" />
+                  <Pane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Pane>
+                  <Button fx:id="helpButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" style="-fx-background-radius: 100%; -fx-border-radius: 100%;" text="?">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+               </children>
+               <BorderPane.margin>
+                  <Insets top="3.0" />
+               </BorderPane.margin>
+            </HBox>
+         </bottom>
+         <center>
+            <AnchorPane prefHeight="727.0" prefWidth="581.0" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets left="10.0" right="10.0" />
+               </BorderPane.margin>
+               <children>
+                  <Canvas fx:id="airportCanvas" height="572.0" width="577.0" />
+                  <ListView fx:id="logListView" layoutX="-1.0" layoutY="573.0" prefHeight="138.0" prefWidth="579.0" style="-fx-border-radius: 5px;" />
+               </children>
+            </AnchorPane>
+         </center>
+      </BorderPane>
+   </content>
+</ScrollPane>
