@@ -660,10 +660,16 @@ public class SimulatorController  implements PassengerMover {
             return;
         }
 
-        animatePassengerMovement(customer, targetCoords, index, null);
-        customer.setCurrentPosition(targetCoords);
-        customer.setCurrentQueueIndex(index);
-        System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
+//        animatePassengerMovement(customer, targetCoords, index, null);
+//        customer.setCurrentPosition(targetCoords);
+//        customer.setCurrentQueueIndex(index);
+//        System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
+//
+        animatePassengerMovement(customer, targetCoords, index, () -> {
+            customer.setCurrentPosition(targetCoords);
+            customer.setCurrentQueueIndex(index);
+            System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
+        });
     }
 
 
@@ -692,14 +698,15 @@ public class SimulatorController  implements PassengerMover {
 
             @Override
             public void handle(long now) {
+                double radius = 4;
+
                 if (progress >= 1) {
-                    double radius = 4;
                     gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
                     gc.setFill(Color.RED);
                     gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
 
-                    currentPosition[0] = targetCoords[0];
-                    currentPosition[1] = targetCoords[1];
+//                    currentPosition[0] = targetCoords[0];
+//                    currentPosition[1] = targetCoords[1];
                     customer.setCurrentPosition(targetCoords);
                     stop();
 
@@ -713,14 +720,15 @@ public class SimulatorController  implements PassengerMover {
                     double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
                     double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
 
-                    double radius = 4;
                     gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
+
                     gc.setFill(Color.RED);
                     gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 
                     currentPosition[0] = x;
                     currentPosition[1] = y;
-                    drawAllServicePoints();
+
+//                    drawAllServicePoints();
                     progress += step * animationSpeed; // Scale progress by animationSpeed
                 }
             }
