@@ -373,6 +373,9 @@ public class SimulatorController  implements PassengerMover {
 
     @FXML
     private void startSimulation() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+
         int timeValue = timeSpinner.getValue();
         int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
         int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
