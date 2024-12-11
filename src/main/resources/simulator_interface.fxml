@@ -18,7 +18,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <ScrollPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SimulatorController">
    <content>
       <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1100.0">
@@ -482,14 +481,29 @@
                         <Insets left="5.0" right="5.0" />
                      </padding>
                   </HBox>
-                  <Button mnemonicParsing="false" onAction="#startSimulation" style="-fx-background-color: FFF187; -fx-border-color: lightGrey;" text="Start">
-                     <font>
-                        <Font name="System Bold Italic" size="14.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets left="5.0" />
-                     </VBox.margin>
-                  </Button>
+                  <HBox spacing="10.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#startSimulation" style="-fx-background-color: FFF187; -fx-border-color: DarkGray; -fx-border-radius: 2px;" text="Start">
+                           <font>
+                              <Font name="System Bold Italic" size="14.0" />
+                           </font>
+                        </Button>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Button fx:id="playButton" mnemonicParsing="false" style="-fx-background-color: lightGrey; -fx-border-color: DarkGray; -fx-border-radius: 2px;" text="Play / Pause">
+                           <font>
+                              <Font name="System Italic" size="13.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="stopButton" mnemonicParsing="false" style="-fx-background-color: lightGrey; -fx-border-color: DarkGray; -fx-border-radius: 2px;" text="Stop">
+                           <font>
+                              <Font name="System Italic" size="13.0" />
+                           </font>
+                        </Button>
+                     </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                  </HBox>
                </children>
             </VBox>
          </left>
@@ -512,11 +526,11 @@
                         <Label text="Simulation time" />
                         <Label fx:id="simulationTimeLabel" text="0 mins" />
                         <Separator prefWidth="200.0" />
-                        <Label text="Average service time" />
+                        <Label minHeight="-Infinity" text="Average service time per passenger" wrapText="true" />
                         <Label fx:id="avServiceTimeLabel" text="0 mins" />
                         <Separator prefWidth="200.0" />
-                        <Label text="Average queue lenght" />
-                        <Label fx:id="avQueueLabel" text="0 passengers" />
+                        <Label minHeight="-Infinity" text="Average queue time per passenger" wrapText="true" />
+                        <Label fx:id="avQueueLabel" text="0 mins" />
                         <Separator prefWidth="200.0" />
                         <Label text="Longest queue lenght" />
                         <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="Point name" wrapText="true" />
@@ -528,14 +542,14 @@
                         <Insets left="5.0" right="5.0" />
                      </padding>
                   </VBox>
-                  <TextArea fx:id="servicePointResultsTextArea" VBox.vgrow="ALWAYS">
+                  <TextArea fx:id="servicePointResultsTextArea" style="-fx-border-radius: 5px;" VBox.vgrow="ALWAYS">
                      <font>
                         <Font size="11.0" />
                      </font>
                   </TextArea>
                </children>
                <BorderPane.margin>
-                  <Insets left="5.0" />
+                  <Insets />
                </BorderPane.margin>
             </VBox>
          </right>
