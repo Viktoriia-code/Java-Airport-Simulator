@@ -481,7 +481,7 @@ public class SimulatorController {
 
         log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
 
-        //try {// Save simulation results
+        // Save simulation results
         saveSimuResult(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
