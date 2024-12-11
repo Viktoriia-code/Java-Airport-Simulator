@@ -597,8 +597,11 @@ public class SimulatorController  implements PassengerMover {
 
         for (Map.Entry<String, Integer> entry : maxServicePointsMap.entrySet()) {
             String pointType = entry.getKey();
-            int totalPoints = entry.getValue();
             int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
+            int totalPoints = activatedPoints; // Use activatedPoints instead of max possible
+
+//            int totalPoints = entry.getValue();
+//            int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
 
             double y = yStep * (typeIndex + 1);
 
@@ -626,7 +629,7 @@ public class SimulatorController  implements PassengerMover {
         coords.clear();
 
         int currentRow = 0;
-        for (int i = 0; i < totalPoints; i++) {
+        for (int i = 0; i < activatedCount; i++) {
             int rowPosition = i % pointsPerRow;
             if (i > 0 && rowPosition == 0) {
                 currentRow++;
