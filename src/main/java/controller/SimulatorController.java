@@ -17,12 +17,14 @@ import javafx.scene.control.Slider;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import model.ServicePoint;
 
 public class SimulatorController {
     // Input section (left part of the screen)
@@ -123,7 +125,7 @@ public class SimulatorController {
     @FXML
     private Canvas airportCanvas;
     @FXML
-    private ListView logListView;
+    private ListView<TextFlow> logListView;
 
     // Results section (right part of the screen)
     @FXML
@@ -244,8 +246,9 @@ public class SimulatorController {
         isPaused = !isPaused;
         sim.togglePause();
         Trace.out(Trace.Level.INFO, "*** PAUSE BUTTON PRESSED ***");
-        if (isPaused){
+        if (isPaused) {
             log("Simulation paused");
+            log(String.format("%.0f minutes simulated: %s completely handled", sim.getCurrentTime(), sim.getServedClients()));
         } else {
             log("Continued Simulation");
         }
@@ -392,10 +395,10 @@ public class SimulatorController {
                 log(String.format(
                         "Simulation Started With: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
                                 " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                                " BusinessClass=%d%%, PassFrequency=%.2f",
+                                " BusinessClass=%d%%, PassFrequency=%.2f, SpeedMode=%s",
                         timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
                         borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                        onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
+                        onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency(), speedSlider.getValue()
                 ));
             });
 
@@ -421,6 +424,8 @@ public class SimulatorController {
                     onboardingTime
             );
 
+            setSpeed(sim);
+
             // Create Parameters object
             Parameters simulationParameters = new Parameters();
             simulationParameters.setCheck_in(checkInPoints);
@@ -442,19 +447,7 @@ public class SimulatorController {
             stopButton.setDisable(false);
             stopButton.setOnAction(event -> stopSim(sim));
             speedSlider.setDisable(false);
-            speedSlider.setOnMouseReleased(event -> {
-                int speedMode = (int) speedSlider.getValue();
-                double millis = switch (speedMode) {
-                    case 1 -> 3000;
-                    case 2 -> 1000;
-                    case 4 -> 200;
-                    case 5 -> 100;
-                    default -> // or case 3
-                            500;
-                };
-                sim.setSimulationSpeed(millis);
-                log(String.format("Speed Mode %s%s", speedMode, millis == 100 ? ": no delay" : ": delay of "  + millis / 1000 + "seconds"));
-            });
+            speedSlider.setOnMouseReleased(event -> setSpeed(sim));
 
             sim.run();
 
@@ -464,7 +457,23 @@ public class SimulatorController {
         }).start();
     }
 
+    private void setSpeed(MyEngine sim){
+        int speedMode = (int) speedSlider.getValue();
+        double millis = switch (speedMode) {
+            case 1 -> 2000;
+            case 2 -> 500;
+            case 4 -> 100;
+            case 5 -> 0;
+            default -> // including case 3
+                    200;
+        };
+        sim.setSimulationSpeed(millis);
+        log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s"));
+    }
+
     private void finishSim(MyEngine sim, Parameters simulationParameters) {
+        log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
+
         printResults(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
@@ -478,8 +487,6 @@ public class SimulatorController {
         speedSlider.setDisable(true);
         playButton.setDisable(true);
         stopButton.setDisable(true);
-
-        log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
 
         // Save simulation results
         saveSimuResult(
@@ -560,8 +567,7 @@ public class SimulatorController {
             em.close();
             emf.close();
         }
-        log("Simulation ended");
-
+        log("Simulation ended: results on the right side");
     }
 
     private void initializeSliders() {

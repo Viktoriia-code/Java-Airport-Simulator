@@ -90,7 +90,7 @@ public abstract class Engine {
             tryCEvents();
 
             synchronized (this) {
-                if (simulationSpeed != 100){
+                if (simulationSpeed != 0){
                     try {
                         Thread.sleep((long) (simulationSpeed));
                     } catch (InterruptedException e) {
@@ -111,6 +111,14 @@ public abstract class Engine {
             runEvent(eventList.remove());
         }
     }
+
+	/**
+	 * get current time in simulation (minutes)
+	 * @return current time double
+	 */
+	public double getCurrentTime(){
+		return clock.getClock();
+	}
 
     /**
      * @return Earliest event time at the event list

@@ -105,7 +105,7 @@
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Slider fx:id="checkInTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                    <Slider fx:id="checkInTimeSlider" blockIncrement="0.5" majorTickUnit="4.0" max="10.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
                                  </children>
                               </VBox>
                            </children>
@@ -162,7 +162,7 @@
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Slider fx:id="securityTimeSlider" blockIncrement="1.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
+                                    <Slider fx:id="securityTimeSlider" blockIncrement="0.5" majorTickUnit="4.0" max="10.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
                                  </children>
                               </VBox>
                            </children>
@@ -237,7 +237,7 @@
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Slider fx:id="borderTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                    <Slider fx:id="borderTimeSlider" blockIncrement="0.5" majorTickUnit="4.0" max="10.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
                                  </children>
                               </VBox>
                            </children>
@@ -291,7 +291,7 @@
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Slider fx:id="onboardingTimeSlider" blockIncrement="1.0" max="40.0" min="1.0" showTickLabels="true" showTickMarks="true" value="15.0" />
+                                    <Slider fx:id="onboardingTimeSlider" blockIncrement="0.5" majorTickUnit="4.0" max="10.0" min="1.0" showTickLabels="true" showTickMarks="true" value="5.0" />
                                  </children>
                               </VBox>
                            </children>
@@ -532,7 +532,7 @@
                         <Label minHeight="-Infinity" text="Average queue time per passenger" wrapText="true" />
                         <Label fx:id="avQueueLabel" text="0 mins" />
                         <Separator prefWidth="200.0" />
-                        <Label text="Longest queue lenght" />
+                        <Label text="Longest queue length" />
                         <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="Point name" wrapText="true" />
                         <Label fx:id="longestQueueSizeLabel" text="0 passengers" />
                         <Separator prefWidth="200.0" />
