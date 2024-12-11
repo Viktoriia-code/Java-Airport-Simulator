@@ -109,6 +109,11 @@ public class SimulatorController  implements PassengerMover {
     @FXML
     private Spinner<Integer> timeSpinner;
 
+    @FXML
+    private Slider speedSlider;
+
+    @FXML
+    private Label speedLabel;
 
     @FXML
     private Canvas passengerCanvas;
