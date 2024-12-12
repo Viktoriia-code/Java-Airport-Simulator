@@ -237,7 +237,6 @@ public class SimulatorController {
 
         playButton.setDisable(true);
         stopButton.setDisable(true);
-        speedSlider.setDisable(true);
 
         log("Welcome to the Airport simulation!");
     }
@@ -446,7 +445,7 @@ public class SimulatorController {
             playButton.setOnAction(event -> togglePause(sim));
             stopButton.setDisable(false);
             stopButton.setOnAction(event -> stopSim(sim));
-            speedSlider.setDisable(false);
+
             speedSlider.setOnMouseReleased(event -> setSpeed(sim));
 
             sim.run();
@@ -468,7 +467,7 @@ public class SimulatorController {
                     200;
         };
         sim.setSimulationSpeed(millis);
-        log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s"));
+        Platform.runLater(() ->         log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s")));
     }
 
     private void finishSim(MyEngine sim, Parameters simulationParameters) {
@@ -484,7 +483,6 @@ public class SimulatorController {
                 sim.getServicePointResults()
         );
 
-        speedSlider.setDisable(true);
         playButton.setDisable(true);
         stopButton.setDisable(true);
 
@@ -558,11 +556,12 @@ public class SimulatorController {
             em.persist(simulationResults);
 
             em.getTransaction().commit();
+            Trace.out(Trace.Level.INFO, "Results saved to the database");
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            Trace.out(Trace.Level.INFO, String.format("Results not saved to database (%s)", e.getMessage()));
         } finally {
             em.close();
             emf.close();

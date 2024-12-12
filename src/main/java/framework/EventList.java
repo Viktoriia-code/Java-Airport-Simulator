@@ -7,7 +7,7 @@ import java.util.PriorityQueue;
  * Event with the smallest time will be retrieved first.
  */
 public class EventList {
-	private PriorityQueue<Event> eventlist;
+	private final PriorityQueue<Event> eventlist;
 	
 	public EventList() {
 		eventlist = new PriorityQueue<>();

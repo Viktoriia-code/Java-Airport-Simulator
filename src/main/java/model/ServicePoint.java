@@ -7,17 +7,16 @@ import java.util.LinkedList;
 
 /**
  * Service Point implements the functionalities, calculations and reporting.
- *
- *
+ * <p>
  * Service point has a queue where customers are waiting to be serviced.
  * Service point simulated the servicing time using the given random number generator which
  * generated the given event (customer serviced) for that time.
- *
+ * <p>
  * Service point collects measurement parameters.
  */
 public class ServicePoint {
     private final String name;
-    private int uniqueId = 0;
+    private int uniqueId;
     private static int idCounter = 0;
     private final LinkedList<Customer> queue = new LinkedList<>(); // Data Structure used
     private final ContinuousGenerator generator;
@@ -49,10 +48,6 @@ public class ServicePoint {
         this.longestQueueSize = 0;
         this.cumulativeQueueSize = 0.0;
         this.queueSizeUpdates = 0;
-    }
-
-    public int getUniqueId() {
-        return uniqueId;
     }
 
     /**
@@ -158,7 +153,7 @@ public class ServicePoint {
             double serviceTime = generator.sample();
             eventList.add(new Event(eventTypeScheduled, Clock.getInstance().getClock() + serviceTime, queue.getLast()));
         } catch (NullPointerException e) {
-            Trace.out(Trace.Level.WAR, "[WARNING] Tried to do ServicePoint.beginService() while queue was empty.");
+            Trace.out(Trace.Level.ERR, "NullPointerException: Tried to do ServicePoint.beginService() while queue was empty");
         }
     }
 
