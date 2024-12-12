@@ -7,11 +7,11 @@ import java.util.LinkedList;
 
 /**
  * Service Point implements the functionalities, calculations and reporting.
- * <p>
+ *
  * Service point has a queue where customers are waiting to be serviced.
  * Service point simulated the servicing time using the given random number generator which
  * generated the given event (customer serviced) for that time.
- * <p>
+ *
  * Service point collects measurement parameters.
  */
 public class ServicePoint {
@@ -66,7 +66,6 @@ public class ServicePoint {
         this.cumulativeQueueSize += getQueueSize();
         this.queueSizeUpdates++;
     }
-
 
     /**
      * Sets the length of the longest queue size that's been seen in this specific Service Point
@@ -125,7 +124,6 @@ public class ServicePoint {
         updateCumulativeQueueSize();
     }
 
-
     /**
      * Remove customer from the waiting queue.
      * Here we calculate also the appropriate measurement values.
@@ -142,8 +140,7 @@ public class ServicePoint {
     }
 
     /**
-     * Begins a new service, customer is on the queue during the service
-     * <p>
+     * Begins a new service, customer is on the queue during the service.
      * Inserts a new event to the event list when the service should be ready.
      */
     public void beginService() {        // Begins a new service, customer is on the queue during the service
@@ -171,7 +168,6 @@ public class ServicePoint {
      *
      * @return logical value indicating queue status
      */
-
     public boolean isOnQueue() {
         return !queue.isEmpty();
     }
@@ -184,6 +180,4 @@ public class ServicePoint {
     public double getAverageQueueTime() {
         return totalQueueTime / servedCustomersHere;
     }
-
 }
-

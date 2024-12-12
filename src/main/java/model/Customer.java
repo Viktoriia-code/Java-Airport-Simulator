@@ -3,8 +3,7 @@ package model;
 import framework.*;
 
 /**
- * Customer in a simulator
- *
+ * Customer in the simulator
  */
 public class Customer {
 	private double arrivalTime;
@@ -20,6 +19,7 @@ public class Customer {
 	private final boolean isOnlineCheckIn;
 
 	private double queueEntryTime;
+
 	/**
 	 * Create a unique customer
 	 *

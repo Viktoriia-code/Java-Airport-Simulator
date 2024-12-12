@@ -2,9 +2,8 @@ package framework;
 
 /**
  * Engine implement three-phase simulator. See <a href="https://www.jstor.org/stable/2584330">Three-Phase Simulator</a>
- * <p>
- * This is a skeleton of a three-phase simulator. You need to implement abstract methods for your
- * purpose.
+ *
+ * This is a skeleton of a three-phase simulator. You need to implement abstract methods for your purpose.
  */
 public abstract class Engine {
     private double simulationTime = 0;    // time when the simulation will be stopped

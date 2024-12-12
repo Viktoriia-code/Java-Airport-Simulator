@@ -6,7 +6,6 @@ import java.util.Random;
  * Customer Creator ensures that new created customers are distributed along the given
  * percentages for their types (business/economic class, in/out EU, online/on-site checkIn)
  */
-
 public class CustomerCreator {
     private final double businessClassPercentage;
     private final double euFlightPercentage;

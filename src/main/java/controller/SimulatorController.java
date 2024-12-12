@@ -26,6 +26,10 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import model.ServicePoint;
 
+/**
+ * Controller class for the Airport Simulator application.
+ * Handles user input, simulation setup, and results display.
+ */
 public class SimulatorController {
     // Input section (left part of the screen)
     // Service points settings
@@ -157,6 +161,9 @@ public class SimulatorController {
 
     boolean isPaused = false;
 
+    /**
+     * Initializes the Airport Simulator application.
+     */
     @FXML
     public void initialize() {
         servicePointsMap.put("CheckIn", (int) checkInSlider.getValue());
@@ -241,6 +248,9 @@ public class SimulatorController {
         log("Welcome to the Airport simulation!");
     }
 
+    /**
+     * Toggles the pause state of the simulation.
+     */
     private void togglePause(MyEngine sim) {
         isPaused = !isPaused;
         sim.togglePause();
@@ -253,6 +263,9 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Stops the simulation.
+     */
     private void stopSim(MyEngine sim) {
         Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
         sim.stopSimulation();
@@ -309,8 +322,10 @@ public class SimulatorController {
         gc.fillText(pointType, xLeftEdge, y);
     }
 
+    /**
+     * Shows the instructions for the Airport Simulator.
+     */
     private void showInstructions() {
-        // Create a simple alert with instructions
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Info");
         alert.setHeaderText("Airport Simulator Instructions");
@@ -326,6 +341,15 @@ public class SimulatorController {
         alert.showAndWait();  // Show the alert and wait for user interaction
     }
 
+    /**
+     * Validates the input for a spinner and checks if it falls within the specified range.
+     *
+     * @param spinner the spinner component whose input is being validated
+     * @param newValue the value entered by the user in the spinner's text field
+     * @param min the minimum acceptable value for the spinner
+     * @param max the maximum acceptable value for the spinner
+     * @param labelName the name of the label associated with the spinner, used for error message formatting
+     */
     private void validateInput(Spinner<Integer> spinner, String newValue, int min, int max, String labelName) {
         String errorMessage = "";
 
@@ -350,6 +374,18 @@ public class SimulatorController {
         inputErrorLabel.setText(errorMessage);
     }
 
+    /**
+     * Retrieves the frequency corresponding to the selected passenger arrival rate option.
+     *
+     * This method converts the selected option from a dropdown (such as "Fast", "Moderate",
+     * "Normal", "Slow", or "Very Slow") into a frequency value, where the frequency is expressed
+     * in minutes per cycle. The available options represent different time intervals for how often
+     * passengers arrive, with each option corresponding to a specific time interval in seconds,
+     * converted to minutes.
+     *
+     * @return the frequency in minutes corresponding to the selected option.
+     * @throws IllegalArgumentException if the selected option does not match any of the predefined options.
+     */
     private double getSelectedFrequency() {
         String selectedOption = passengerSelect.getValue(); // Get the selected item
         switch (selectedOption) {

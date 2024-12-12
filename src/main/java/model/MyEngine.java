@@ -304,7 +304,6 @@ public class MyEngine extends Engine {
      *
      * @return all Service Points: notice it returns 6 ArrayLists inside one ArrayList
      */
-
     public ArrayList<ArrayList<ServicePoint>> getAllServicePoints() {
         return allServicePoints;
     }
