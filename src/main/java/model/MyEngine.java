@@ -129,15 +129,15 @@ public class MyEngine extends Engine {
         this.boardingNotEUPoints.clear();
 
         /* creating and adding ServicePoints to the appropriate lists with varying service time */
-        this.checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(checkIn_mean, 1), EventType.DEP_CHECKIN));
+        this.checkInPoints.addAll(createServicePoints("Check-in", num_checkin, new Normal(checkIn_mean, checkIn_mean / 2), EventType.DEP_CHECKIN));
 
-        this.securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(security_mean, 2), EventType.DEP_SECURITY));
-        this.securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(security_mean, 2), EventType.DEP_SECURITY));
+        this.securityPoints.addAll(createServicePoints("Security check", num_security, new Normal(security_mean, security_mean / 2), EventType.DEP_SECURITY));
+        this.securityFastTrackPoints.addAll(createServicePoints("Security check (Fast Track)", num_security_fast, new Normal(security_mean, security_mean / 2), EventType.DEP_SECURITY));
 
-        this.borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(borderControl_mean, 1), EventType.DEP_BORDERCTRL));
+        this.borderControlPoints.addAll(createServicePoints("Border control", num_border_control, new Normal(borderControl_mean, borderControl_mean / 2), EventType.DEP_BORDERCTRL));
 
-        this.boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(boarding_mean, 1), EventType.DEP_BOARDING));
-        this.boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(boarding_mean, 1), EventType.DEP_BOARDING));
+        this.boardingInEUPoints.addAll(createServicePoints("Boarding (inside EU)", num_in_EU_boarding, new Normal(boarding_mean, boarding_mean / 2), EventType.DEP_BOARDING));
+        this.boardingNotEUPoints.addAll(createServicePoints("Boarding (outside EU)", num_out_EU_boarding, new Normal(boarding_mean, boarding_mean / 2), EventType.DEP_BOARDING));
 
         /* creating the customerCreator according to the percentages */
         CustomerCreator customerCreator = new CustomerCreator(this.percentage_business_class, this.percentage_inside_EU, this.percentage_online_checkin);
@@ -311,8 +311,8 @@ public class MyEngine extends Engine {
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
                 Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
 
-                servicePointResults.append(p.getName()).append(" #").append(servicePointList.indexOf(p) + 1).append(": ")
-                        .append(p.getServedCustomersHere()).append(" customers\n");
+                servicePointResults.append(p.getName()).append(" #").append(servicePointList.indexOf(p) + 1).append(": \n")
+                        .append(p.getServedCustomersHere()).append(" customers\n\n");
             }
         }
 

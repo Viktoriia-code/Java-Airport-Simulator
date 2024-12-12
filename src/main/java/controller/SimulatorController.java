@@ -3,12 +3,11 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
-import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import model.Customer;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -20,15 +19,14 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import model.PassengerMover;
+import model.ServicePoint;
 
-public class SimulatorController  implements PassengerMover {
+public class SimulatorController {
     // Input section (left part of the screen)
     // Service points settings
     @FXML
@@ -109,26 +107,11 @@ public class SimulatorController  implements PassengerMover {
     @FXML
     private Spinner<Integer> timeSpinner;
 
-    @FXML
-    private Slider speedSlider;
-
-    @FXML
-    private Label speedLabel;
-
-    @FXML
-    private Canvas passengerCanvas;
-
-
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
-    private final Map<String, List<double[]>> servicePointCoordinates = new LinkedHashMap<>();
-
-
-
-    private double animationSpeed = 1.0;
 
     // Bottom part of the screen
     @FXML
@@ -142,7 +125,7 @@ public class SimulatorController  implements PassengerMover {
     @FXML
     private Canvas airportCanvas;
     @FXML
-    private ListView logListView;
+    private ListView<TextFlow> logListView;
 
     // Results section (right part of the screen)
     @FXML
@@ -159,6 +142,20 @@ public class SimulatorController  implements PassengerMover {
     private Label longestQueueSizeLabel;
     @FXML
     private TextArea servicePointResultsTextArea;
+
+    @FXML
+    private Button playButton;
+
+    @FXML
+    private Button stopButton;
+
+    @FXML
+    private Slider speedSlider;
+
+    @FXML
+    private Label speedLabel;
+
+    boolean isPaused = false;
 
     @FXML
     public void initialize() {
@@ -184,32 +181,13 @@ public class SimulatorController  implements PassengerMover {
         bindSliderToLabel(borderTimeSlider, borderTimeLabel);
         bindSliderToLabel(onboardingTimeSlider, onboardingTimeLabel);
 
+        bindSliderToLabel(speedSlider, speedLabel);
+
         initializeSliders();
 
         drawAllServicePoints();
 
         helpButton.setOnAction(event -> showInstructions());
-
-        // Configure the speed slider
-        speedSlider.setMin(0); // Start at 0
-        speedSlider.setMax(5.0); // End at 5.0
-        speedSlider.setValue(1.0); // Default value
-        speedSlider.setMajorTickUnit(1.0); // Major ticks at 1, 2, 3, 4, 5
-        speedSlider.setMinorTickCount(4); // No minor ticks
-        speedSlider.setSnapToTicks(true); // Snap to defined ticks
-        speedSlider.setShowTickMarks(true); // Show tick marks
-        speedSlider.setShowTickLabels(true); // Show tick labels
-
-        // Bind the slider's value to update the label and simulation speed
-        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            double speed = Math.round(newValue.doubleValue() * 10) / 10.0; // Round to 1 decimal
-            speedLabel.setText("Speed: " + speed + "x");
-            setSimulationSpeed(speed);
-        });
-
-
-
-
 
         // Control for the time spinner
         SpinnerValueFactory<Integer> timeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30000, 500, 100);
@@ -257,46 +235,36 @@ public class SimulatorController  implements PassengerMover {
         // Set default selection
         passengerSelect.setValue("Normal (Every 5 seconds)");
 
+        playButton.setDisable(true);
+        stopButton.setDisable(true);
+        speedSlider.setDisable(true);
+
         log("Welcome to the Airport simulation!");
     }
 
-
-    private void setSimulationSpeed(double speed) {
-        if (speed == 0.0) {
-            pauseSimulation(); // Pause when speed is 0
+    private void togglePause(MyEngine sim) {
+        isPaused = !isPaused;
+        sim.togglePause();
+        Trace.out(Trace.Level.INFO, "*** PAUSE BUTTON PRESSED ***");
+        if (isPaused) {
+            log("Simulation paused");
+            log(String.format("%.0f minutes simulated: %s completely handled", sim.getCurrentTime(), sim.getServedClients()));
         } else {
-            animationSpeed = speed; // Update the animation speed multiplier
-            adjustSimulationSpeed(); // Apply the new speed to the simulation engine
+            log("Continued Simulation");
         }
     }
 
-    // Pause simulation logic
-    private void pauseSimulation() {
-        System.out.println("Simulation paused.");
-        animationSpeed = 0.0;
-        // Add logic to pause the animation timer or simulation engine
+    private void stopSim(MyEngine sim) {
+        Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
+        sim.stopSimulation();
+        log("Simulation Stopped.");
     }
-
-    // Apply speed multiplier logic
-    private void adjustSimulationSpeed() {
-        System.out.println("Simulation speed adjusted to " + animationSpeed + "x.");
-        // Update the simulation engine with the new animation speed
-        // Example: pass `animationSpeed` to animation timers or engine logic
-    }
-
-
-
-
-
-
-
-
-
 
     /**
      * Binds a slider to a label and updates the label with the slider's value.
+     *
      * @param slider the slider to observe
-     * @param label the label to update
+     * @param label  the label to update
      */
     public static void bindSliderToLabel(Slider slider, Label label) {
         // Set the initial label value based on the slider's current value
@@ -310,6 +278,7 @@ public class SimulatorController  implements PassengerMover {
 
     /**
      * Updates the label with the slider's current value.
+     *
      * @param value the slider's value
      * @param label the label to update
      */
@@ -402,82 +371,109 @@ public class SimulatorController  implements PassengerMover {
 
     @FXML
     private void startSimulation() {
-        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
-
-        int timeValue = timeSpinner.getValue();
-        int checkInPoints = Integer.valueOf((int) checkInSlider.getValue());
-        int regularSecurityCheckPoints = Integer.valueOf((int) regularSecurityCheckSlider.getValue());
-        int fastSecurityCheckPoints = Integer.valueOf((int) fastSecurityCheckSlider.getValue());
-        int borderControlPoints = Integer.valueOf((int) borderControlSlider.getValue());
-        int euOnboardingPoints = Integer.valueOf((int) euOnboardingSlider.getValue());
-        int outEuOnboardingPoints = Integer.valueOf((int) outEuOnboardingSlider.getValue());
-
-        int businessClassValue = 100 - Integer.valueOf((int) classSlider.getValue());
-        int euFlightValue = Integer.valueOf((int) euFlightSlider.getValue());
-        int onlineCheckInValue = Integer.valueOf((int) onlineCheckInSlider.getValue());
-
-        int checkInTime = Integer.valueOf((int) checkInTimeSlider.getValue());
-        int securityTime = Integer.valueOf((int) securityTimeSlider.getValue());
-        int borderTime = Integer.valueOf((int) borderTimeSlider.getValue());
-        int onboardingTime = Integer.valueOf((int) onboardingTimeSlider.getValue());
-
-        log(String.format(
-                "Simulation started with: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
-                        " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
-                        " BusinessClass=%d%%, PassFrequency=%.2f",
-                timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
-                borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
-                onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency()
-        ));
-
-        Trace.setTraceLevel(Trace.Level.INFO);
         MyEngine sim = new MyEngine();
 
-        // Set time for the simulation
-        sim.setSimulationTime(timeValue);
-        // Set SPs for the simulation
-        sim.setAllServicePoints(
-                checkInPoints,
-                regularSecurityCheckPoints,
-                fastSecurityCheckPoints,
-                borderControlPoints,
-                euOnboardingPoints,
-                outEuOnboardingPoints
-        );
-        // Set time for SP
-        sim.setAllTimingMeans(
-                getSelectedFrequency(),
-                checkInTime,
-                securityTime,
-                borderTime,
-                onboardingTime
-        );
-        // Set PassengerMover
-        sim.setPassengerMover(this);
+        new Thread(() -> {
+            int timeValue = timeSpinner.getValue();
+            int checkInPoints = (int) checkInSlider.getValue();
+            int regularSecurityCheckPoints = (int) regularSecurityCheckSlider.getValue();
+            int fastSecurityCheckPoints = (int) fastSecurityCheckSlider.getValue();
+            int borderControlPoints = (int) borderControlSlider.getValue();
+            int euOnboardingPoints = (int) euOnboardingSlider.getValue();
+            int outEuOnboardingPoints = (int) outEuOnboardingSlider.getValue();
 
-        // Create Parameters object
-        Parameters simulationParameters = new Parameters();
-        simulationParameters.setCheck_in(checkInPoints);
-        simulationParameters.setSecurity_check(regularSecurityCheckPoints);
-        simulationParameters.setFasttrack(fastSecurityCheckPoints);
-        simulationParameters.setBorder_control(borderControlPoints);
-        simulationParameters.setEU_boarding(euOnboardingPoints);
-        simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+            int businessClassValue = 100 - (int) classSlider.getValue();
+            int euFlightValue = (int) euFlightSlider.getValue();
+            int onlineCheckInValue = (int) onlineCheckInSlider.getValue();
 
-        // Set customer percentages for the simulation
-        sim.setAllCustomerPercentages(
-                onlineCheckInValue,
-                euFlightValue,
-                businessClassValue
-        );
+            int checkInTime = (int) checkInTimeSlider.getValue();
+            int securityTime = (int) securityTimeSlider.getValue();
+            int borderTime = (int) borderTimeSlider.getValue();
+            int onboardingTime = (int) onboardingTimeSlider.getValue();
 
-        sim.run();
+            Platform.runLater(() -> {
+                log(String.format(
+                        "Simulation Started With: Time=%d, CheckIn=%d, RegularSec=%d, FastSec=%d,\n" +
+                                " BorderControl=%d, EUOnboard=%d, OutEUOnboard=%d, OnlineCheckIn=%d%%, EUFlights=%d%%,\n" +
+                                " BusinessClass=%d%%, PassFrequency=%.2f, SpeedMode=%s",
+                        timeValue, checkInPoints, regularSecurityCheckPoints, fastSecurityCheckPoints,
+                        borderControlPoints, euOnboardingPoints, outEuOnboardingPoints,
+                        onlineCheckInValue, euFlightValue, businessClassValue, getSelectedFrequency(), speedSlider.getValue()
+                ));
+            });
 
-        finishSim(sim, simulationParameters);
+            Trace.setTraceLevel(Trace.Level.INFO);
+
+            // Set time for the simulation
+            sim.setSimulationTime(timeValue);
+            // Set SPs for the simulation
+            sim.setAllServicePoints(
+                    checkInPoints,
+                    regularSecurityCheckPoints,
+                    fastSecurityCheckPoints,
+                    borderControlPoints,
+                    euOnboardingPoints,
+                    outEuOnboardingPoints
+            );
+            // Set time for SP
+            sim.setAllTimingMeans(
+                    getSelectedFrequency(),
+                    checkInTime,
+                    securityTime,
+                    borderTime,
+                    onboardingTime
+            );
+
+            setSpeed(sim);
+
+            // Create Parameters object
+            Parameters simulationParameters = new Parameters();
+            simulationParameters.setCheck_in(checkInPoints);
+            simulationParameters.setSecurity_check(regularSecurityCheckPoints);
+            simulationParameters.setFasttrack(fastSecurityCheckPoints);
+            simulationParameters.setBorder_control(borderControlPoints);
+            simulationParameters.setEU_boarding(euOnboardingPoints);
+            simulationParameters.setNon_EU_Boarding(outEuOnboardingPoints);
+
+            // Set customer percentages for the simulation
+            sim.setAllCustomerPercentages(
+                    onlineCheckInValue,
+                    euFlightValue,
+                    businessClassValue
+            );
+
+            playButton.setDisable(false);
+            playButton.setOnAction(event -> togglePause(sim));
+            stopButton.setDisable(false);
+            stopButton.setOnAction(event -> stopSim(sim));
+            speedSlider.setDisable(false);
+            speedSlider.setOnMouseReleased(event -> setSpeed(sim));
+
+            sim.run();
+
+            sim.stopSimulation();
+            Platform.runLater(() -> finishSim(sim, simulationParameters));
+
+        }).start();
     }
 
-    private void finishSim(MyEngine sim, Parameters simulationParameters){
+    private void setSpeed(MyEngine sim){
+        int speedMode = (int) speedSlider.getValue();
+        double millis = switch (speedMode) {
+            case 1 -> 2000;
+            case 2 -> 500;
+            case 4 -> 100;
+            case 5 -> 0;
+            default -> // including case 3
+                    200;
+        };
+        sim.setSimulationSpeed(millis);
+        log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s"));
+    }
+
+    private void finishSim(MyEngine sim, Parameters simulationParameters) {
+        log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
+
         printResults(
                 sim.getServedClients(),
                 sim.getAvServiceTime(),
@@ -488,7 +484,9 @@ public class SimulatorController  implements PassengerMover {
                 sim.getServicePointResults()
         );
 
-        log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
+        speedSlider.setDisable(true);
+        playButton.setDisable(true);
+        stopButton.setDisable(true);
 
         // Save simulation results
         saveSimuResult(
@@ -498,7 +496,7 @@ public class SimulatorController  implements PassengerMover {
                 sim.getLongestQueueSPName(),
                 simulationParameters // Pass the Parameters object
         );
-    };
+    }
 
     public void printResults(int customersServed, double meanServiceTime, double simulationTime, double avQueueLength, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
@@ -569,8 +567,7 @@ public class SimulatorController  implements PassengerMover {
             em.close();
             emf.close();
         }
-        log("Simulation ended");
-
+        log("Simulation ended: results on the right side");
     }
 
     private void initializeSliders() {
@@ -606,11 +603,8 @@ public class SimulatorController  implements PassengerMover {
 
         for (Map.Entry<String, Integer> entry : maxServicePointsMap.entrySet()) {
             String pointType = entry.getKey();
+            int totalPoints = entry.getValue();
             int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
-            int totalPoints = activatedPoints; // Use activatedPoints instead of max possible
-
-//            int totalPoints = entry.getValue();
-//            int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
 
             double y = yStep * (typeIndex + 1);
 
@@ -620,34 +614,28 @@ public class SimulatorController  implements PassengerMover {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y, pointType);
+            drawServicePoints(gc, activatedPoints, totalPoints, y);
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
         }
     }
 
 
-
-    private void drawServicePoints(GraphicsContext gc,  int activatedCount, int totalPoints, double yStart, String type) {
+    private void drawServicePoints(GraphicsContext gc, int activatedCount, int totalPoints, double yStart) {
         double pointDiameter = 10.0;
         double spacingX = 20.0;
         double spacingY = 30.0;
         int pointsPerRow = 26;
 
-        List<double[]> coords = servicePointCoordinates.computeIfAbsent(type, k -> new ArrayList<>());
-        coords.clear();
-
         int currentRow = 0;
-        for (int i = 0; i < activatedCount; i++) {
+        for (int i = 0; i < totalPoints; i++) {
             int rowPosition = i % pointsPerRow;
             if (i > 0 && rowPosition == 0) {
                 currentRow++;
             }
 
             double x = spacingX * (rowPosition + 1);
-            double yOffset = yStart  + spacingY * currentRow;
-
-            coords.add(new double[]{x, yOffset});
+            double yOffset = yStart + spacingY * currentRow;
 
             if (i < activatedCount) {
                 gc.setFill(Color.BLUE);
@@ -657,7 +645,6 @@ public class SimulatorController  implements PassengerMover {
 
             gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
         }
-        System.out.println("Drawing type: " + type + ", Activated Count: " + activatedCount + ", Total Points: " + totalPoints);
     }
 
     public void log(String s) {
@@ -678,153 +665,4 @@ public class SimulatorController  implements PassengerMover {
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
     }
-
-    // PassengerMover interface implementation
-    private double[] getServicePointCoordinates(String type, int index) {
-        List<double[]> coords = servicePointCoordinates.get(type);
-        if (coords == null || index < 0 || index >= coords.size()) {
-            System.err.println("Invalid coordinates for type: " + type + ", index: " + index);
-            return null;
-        }
-        return coords.get(index);
-    }
-
-    private void clearPassengers() {
-        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
-    }
-
-
-
-    @Override
-    public void movePassengerToServicePoint(Customer customer, String type, int index) {
-        System.out.println("Attempting to move customer #" + customer.getId() + " to type: " + type + ", index: " + index);
-
-        double[] targetCoords = getServicePointCoordinates(type, index);
-        if (targetCoords == null) {
-            System.out.println("Cannot proceed with animation because targetCoords is null for type: " + type + ", index: " + index);
-            return;
-        }
-
-//        animatePassengerMovement(customer, targetCoords, index, null);
-//        customer.setCurrentPosition(targetCoords);
-//        customer.setCurrentQueueIndex(index);
-//        System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
-//
-        animatePassengerMovement(customer, targetCoords, index, () -> {
-            customer.setCurrentPosition(targetCoords);
-            customer.setCurrentQueueIndex(index);
-            System.out.println("Customer #" + customer.getId() + " moved to: " + type + ", index: " + index);
-        });
-    }
-
-
-
-    private void animatePassengerMovement(Customer customer, double[] targetCoords,int targetIndex, Runnable onFinish) {
-        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
-
-        double[] currentPosition = customer.getCurrentPosition() != null ?
-                customer.getCurrentPosition() : targetCoords;
-
-        if (currentPosition == null) {
-            System.out.println("Error: currentPosition is null, cannot start animation.");
-            return;
-        }
-
-        if (targetCoords == null) {
-            System.out.println("Error: targetCoords is null, cannot start animation.");
-            return;
-        }
-
-
-        new AnimationTimer() {
-            private final double step = 0.005;
-            private double progress = 0;
-
-
-            @Override
-            public void handle(long now) {
-                double radius = 4;
-
-                if (progress >= 1) {
-                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
-                    gc.setFill(Color.RED);
-                    gc.fillOval(targetCoords[0] - radius, targetCoords[1] - radius, radius * 2, radius * 2);
-
-//                    currentPosition[0] = targetCoords[0];
-//                    currentPosition[1] = targetCoords[1];
-                    customer.setCurrentPosition(targetCoords);
-                    stop();
-
-//                    if (simulationEnded) {
-//                        clearPassengers();
-//                    }
-                    if (onFinish != null) {
-                        onFinish.run();
-                    }
-                } else {
-                    double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
-                    double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
-
-                    gc.clearRect(currentPosition[0] - radius - 1, currentPosition[1] - radius - 1, radius * 2 + 2, radius * 2 + 2);
-
-                    gc.setFill(Color.RED);
-                    gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
-
-                    currentPosition[0] = x;
-                    currentPosition[1] = y;
-
-//                    drawAllServicePoints();
-                    progress += step * animationSpeed; // Scale progress by animationSpeed
-                }
-            }
-        }.start();
-    }
 }
-
-
-//
-//private void animatePassengerMovement(Customer customer, double[] targetCoords, int targetIndex, Runnable onFinish) {
-//    GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
-//
-//    double[] currentPosition = customer.getCurrentPosition() != null ?
-//            customer.getCurrentPosition() : targetCoords;
-//
-//    if (currentPosition == null || targetCoords == null) {
-//        System.out.println("Error: Invalid position for animation.");
-//        return;
-//    }
-//
-//    new AnimationTimer() {
-//        private final double step = 0.005; // Animation speed step
-//        private double progress = 0; // Animation progress
-//
-//        @Override
-//        public void handle(long now) {
-//            // Animation complete
-//            if (progress >= 1) {
-//                gc.setFill(Color.RED);
-//                gc.fillOval(targetCoords[0] - 2, targetCoords[1] - 2, 8, 8); // Final position
-//                customer.setCurrentPosition(targetCoords);
-//                stop();
-//                if (onFinish != null) onFinish.run();
-//            } else {
-//                // Calculate interpolated position
-//                double x = currentPosition[0] + progress * (targetCoords[0] - currentPosition[0]);
-//                double y = currentPosition[1] + progress * (targetCoords[1] - currentPosition[1]);
-//
-//                // Clear previous position
-//                gc.clearRect(currentPosition[0] - 4, currentPosition[1] - 4, 8, 8);
-//
-//                // Draw passenger
-//                gc.setFill(Color.RED);
-//                gc.fillOval(x - 2, y - 2, 4, 4);
-//
-//                // Update current position and progress
-//                currentPosition[0] = x;
-//                currentPosition[1] = y;
-//                progress += step * animationSpeed; // Adjust for speed
-//            }
-//        }
-//    }.start();
-//}
