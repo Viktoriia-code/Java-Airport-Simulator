@@ -23,6 +23,7 @@ import javafx.animation.AnimationTimer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -317,7 +318,7 @@ public class SimulatorController {
     private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
         double xLeftEdge = 5;
         gc.setFill(Color.BLACK);
-        gc.fillText(pointType, xLeftEdge, y);
+        gc.fillText(pointType, xLeftEdge, y-15);
     }
 
     /**
@@ -666,28 +667,32 @@ public class SimulatorController {
 
             double y = yStep * (typeIndex + 1);
 
+//            if (pointType.equals("CheckIn") && typeIndex > 0) {
+//                y += 2;
+//            } else if (typeIndex > 0) {
+//                y += yStep;
+//            }
             if (pointType.equals("CheckIn") && typeIndex > 0) {
                 y += 2;
+            } else if (pointType.equals("EuOnboarding") && typeIndex > 0) {
+                y += 85;
             } else if (typeIndex > 0) {
                 y += yStep;
             }
+
 
             drawServicePoints(gc, pointType, activatedPoints, totalPoints, y);
 
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
         }
-        System.out.println("Available service point keys and positions:");
-        for (Map.Entry<String, Point2D> entry : servicePointPositions.entrySet()) {
-            System.out.println("Key: " + entry.getKey() + ", Position: " + entry.getValue());
-        }
     }
 
 
     private void drawServicePoints(GraphicsContext gc, String pointType, int activatedCount, int totalPoints, double yStart) {
-        double rectWidth = 10.0;
+        double rectWidth = 15.0;
         double rectHeight = 10.0;
-        double spacingX = 25.0;
+        double spacingX = 28.0;
         double spacingY = 30.0;
         int pointsPerRow = 20;
 
@@ -716,6 +721,63 @@ public class SimulatorController {
 
         }
     }
+
+    @FXML
+    private Canvas labelCanvas;
+
+    private void drawQueueLabels() {
+        GraphicsContext gc = labelCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, labelCanvas.getWidth(), labelCanvas.getHeight()); // 清除标签区域
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(javafx.scene.text.Font.font("Arial", 12)); // 设置字体
+
+        for (Map.Entry<String, Point2D> entry : servicePointPositions.entrySet()) {
+            String spKey = entry.getKey();
+            int queueSize = getQueueSizeForServicePoint(spKey);
+            Point2D position = entry.getValue();
+
+            if (queueSize > 0) {
+                double x = position.getX();
+                double y = position.getY() - 15;
+                gc.fillText(String.valueOf(queueSize), x - 10, y);
+            }
+        }
+    }
+
+
+    private static final Map<String, String> normalizedKeyMap = new HashMap<>();
+    static {
+        normalizedKeyMap.put("Check-in", "checkin");
+        normalizedKeyMap.put("Security check", "regularsecuritycheck");
+        normalizedKeyMap.put("Border control", "bordercontrol");
+        normalizedKeyMap.put("Security check (Fast Track)", "fastsecuritycheck");
+        normalizedKeyMap.put("Boarding (inside EU)", "euonboarding");
+        normalizedKeyMap.put("Boarding (outside EU)", "outeuonboarding");
+    }
+
+
+
+    private int getQueueSizeForServicePoint(String spKey) {
+        for (ArrayList<ServicePoint> servicePointList : sim.getAllServicePoints()) {
+            for (ServicePoint sp : servicePointList) {
+//                String fullKey = sp.getName() + "#" + servicePointList.indexOf(sp);
+                String normalizedFullKey = normalizedKeyMap.getOrDefault(sp.getName(), sp.getName().toLowerCase()) + "#" + servicePointList.indexOf(sp);
+                if (spKey.toLowerCase().equals(normalizedFullKey)) {
+                    return sp.getQueueSize();
+                    }
+
+            }
+        }
+        return 0;
+    }
+
+
+
+
+
+
+
     /**
      * Logs a message to the log list view.
      *
@@ -743,19 +805,21 @@ public class SimulatorController {
 
 
 
-    private void pauseAnimation() {
-        if (animationTimer != null) {
-            animationTimer.stop();
-            log("Passenger animation paused.");
-        }
-    }
 
-    private void resumeAnimation() {
-        if (animationTimer != null) {
-            animationTimer.start();
-            log("Passenger animation resumed.");
-        }
-    }
+
+//    private void pauseAnimation() {
+//        if (animationTimer != null) {
+//            animationTimer.stop();
+//            log("Passenger animation paused.");
+//        }
+//    }
+//
+//    private void resumeAnimation() {
+//        if (animationTimer != null) {
+//            animationTimer.start();
+//            log("Passenger animation resumed.");
+//        }
+//    }
 
     @FXML
     private Canvas passengerCanvas;
@@ -766,7 +830,7 @@ public class SimulatorController {
 
         for (Customer c : sim.getAllCustomers()) {
             gc.setFill(Color.RED); // Set the customer color
-            gc.fillOval(c.getX() - 5, c.getY() - 5, 10, 10); // Draw the customer dot
+            gc.fillOval(c.getX() - 5, c.getY() - 5, 8, 8); // Draw the customer dot
 
         }
     }
@@ -791,11 +855,13 @@ public class SimulatorController {
 
         animationTimer = new AnimationTimer() {
             private long lastUpdateTime = 0;
+
             @Override
             public void handle(long now) {
                 if (now - lastUpdateTime >= 33_000_000) {
                     updatePassengerPositions();
                     drawPassengers();
+                    drawQueueLabels();
                     lastUpdateTime = now;
                 }
             }
