@@ -3,28 +3,29 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import model.Customer;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.geometry.Point2D;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import model.ServicePoint;
 
 public class SimulatorController {
     // Input section (left part of the screen)
@@ -113,6 +114,15 @@ public class SimulatorController {
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
 
+    private Map<String, Point2D> servicePointPositions = new LinkedHashMap<String, Point2D>();
+
+    private MyEngine sim;
+
+    private AnimationTimer animationTimer;
+    private long lastUpdateTime = 0;
+
+
+
     // Bottom part of the screen
     @FXML
     private Label inputErrorLabel;
@@ -124,6 +134,8 @@ public class SimulatorController {
     private SplitPane splitPane;
     @FXML
     private Canvas airportCanvas;
+    @FXML
+    private Canvas passengerCanvas;
     @FXML
     private ListView<TextFlow> logListView;
 
@@ -244,6 +256,16 @@ public class SimulatorController {
     private void togglePause(MyEngine sim) {
         isPaused = !isPaused;
         sim.togglePause();
+
+
+        if (isPaused) {
+            pauseAnimation();
+        } else {
+            resumeAnimation();
+        }
+
+
+
         Trace.out(Trace.Level.INFO, "*** PAUSE BUTTON PRESSED ***");
         if (isPaused) {
             log("Simulation paused");
@@ -253,11 +275,17 @@ public class SimulatorController {
         }
     }
 
+
     private void stopSim(MyEngine sim) {
         Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
+        isPaused = true;
         sim.stopSimulation();
-        log("Simulation Stopped.");
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
     }
+
+
 
     /**
      * Binds a slider to a label and updates the label with the slider's value.
@@ -283,24 +311,6 @@ public class SimulatorController {
      */
     private static void updateLabel(int value, Label label) {
         label.setText(String.valueOf(value));
-    }
-
-    private double lastCanvasHeight = -1;
-    private double lastCanvasWidth = -1;
-
-    private void adjustCanvasSize() {
-        double canvasHeight = splitPane.getDividerPositions()[0] * splitPane.getHeight();
-        double canvasWidth = splitPane.getWidth();
-
-        if (canvasHeight != lastCanvasHeight || canvasWidth != lastCanvasWidth) {
-            airportCanvas.setHeight(canvasHeight);
-            airportCanvas.setWidth(canvasWidth);
-
-            lastCanvasHeight = canvasHeight;
-            lastCanvasWidth = canvasWidth;
-
-            drawAllServicePoints();
-        }
     }
 
     private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
@@ -370,7 +380,7 @@ public class SimulatorController {
 
     @FXML
     private void startSimulation() {
-        MyEngine sim = new MyEngine();
+        sim = new MyEngine();
 
         new Thread(() -> {
             int timeValue = timeSpinner.getValue();
@@ -423,6 +433,10 @@ public class SimulatorController {
                     onboardingTime
             );
 
+            sim.setPositionProvider(key -> servicePointPositions.get(key));
+
+
+
             setSpeed(sim);
 
             // Create Parameters object
@@ -448,10 +462,17 @@ public class SimulatorController {
 
             speedSlider.setOnMouseReleased(event -> setSpeed(sim));
 
+            Platform.runLater(() -> {
+                log("Simulation started...");
+                startAnimation();
+            });
+
+
             sim.run();
 
             sim.stopSimulation();
             Platform.runLater(() -> finishSim(sim, simulationParameters));
+
 
         }).start();
     }
@@ -613,18 +634,24 @@ public class SimulatorController {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawServicePoints(gc, pointType, activatedPoints, totalPoints, y);
+
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
+        }
+        System.out.println("Available service point keys and positions:");
+        for (Map.Entry<String, Point2D> entry : servicePointPositions.entrySet()) {
+            System.out.println("Key: " + entry.getKey() + ", Position: " + entry.getValue());
         }
     }
 
 
-    private void drawServicePoints(GraphicsContext gc, int activatedCount, int totalPoints, double yStart) {
-        double pointDiameter = 10.0;
-        double spacingX = 20.0;
+    private void drawServicePoints(GraphicsContext gc, String pointType, int activatedCount, int totalPoints, double yStart) {
+        double rectWidth = 10.0;
+        double rectHeight = 10.0;
+        double spacingX = 25.0;
         double spacingY = 30.0;
-        int pointsPerRow = 26;
+        int pointsPerRow = 20;
 
         int currentRow = 0;
         for (int i = 0; i < totalPoints; i++) {
@@ -642,9 +669,14 @@ public class SimulatorController {
                 gc.setFill(Color.DARKGRAY);
             }
 
-            gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
-        }
-    }
+            gc.fillRect(x - rectWidth / 2, yOffset - rectHeight / 2, rectWidth, rectHeight);
+
+            // Store the service point coordinates in the Map
+            String key = pointType + "#" + i;
+            servicePointPositions.put(key, new Point2D(x, yOffset));
+
+
+        }}
 
     public void log(String s) {
         // Get the current time in HH:mm:ss format
@@ -664,4 +696,79 @@ public class SimulatorController {
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
     }
+
+
+    public void startAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+
+        animationTimer = new AnimationTimer() {
+            private long lastUpdateTime = 0;
+
+            @Override
+            public void handle(long now) {
+                if (sim != null && !isPaused) {
+                    double simulationSpeed = sim.getSimulationSpeed();
+
+                    if (now - lastUpdateTime >= simulationSpeed * 1_000_000) {
+                        updatePassengerPositions();
+                        drawPassengers();
+                        lastUpdateTime = now;
+                    }
+                }
+            }
+        };
+
+        animationTimer.start();
+    }
+
+    private void pauseAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+            log("Passenger animation paused.");
+        }
+    }
+
+    private void resumeAnimation() {
+        if (animationTimer != null) {
+            animationTimer.start();
+            log("Passenger animation resumed.");
+        }
+    }
+
+    private void drawPassengers() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+
+        System.out.println("Drawing passengers...");
+        for (Customer c : sim.getAllCustomers()) {
+            if (!c.isVisible()) {
+                continue; // Skip invisible customers
+            }
+
+            gc.setFill(Color.RED); // Set the customer color
+            gc.fillOval(c.getX() - 5, c.getY() - 5, 10, 10); // Draw the customer dot
+
+        }
+    }
+
+    private void updatePassengerPositions() {
+        if (sim == null) {
+            System.err.println("Simulation engine (sim) is null.");
+            return;
+        }
+
+        for (Customer c : sim.getAllCustomers()) {
+            if (!c.isVisible()) {
+                continue;
+            }
+
+            c.updatePosition();
+
+        }
+    }
+
+
+
 }
