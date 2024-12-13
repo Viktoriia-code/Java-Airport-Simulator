@@ -160,6 +160,9 @@ public class SimulatorController {
     @FXML
     private TextArea servicePointResultsTextArea;
 
+
+    private MyEngine sim;
+
     /**
      * Initializes the Airport Simulator application.
      */
@@ -397,7 +400,7 @@ public class SimulatorController {
      */
     @FXML
     private void startSimulation() {
-        MyEngine sim = new MyEngine();
+        sim = new MyEngine();
 
         new Thread(() -> {
             int timeValue = timeSpinner.getValue();
