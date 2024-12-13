@@ -111,6 +111,19 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
+    // Speed control settings
+    @FXML
+    private Button playButton;
+    @FXML
+    private Button stopButton;
+    @FXML
+    private Slider speedSlider;
+    @FXML
+    private Label speedLabel;
+
+    boolean isPaused = false;
+
+    // Maps to store the number of service points for each type
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
@@ -146,20 +159,6 @@ public class SimulatorController {
     private Label longestQueueSizeLabel;
     @FXML
     private TextArea servicePointResultsTextArea;
-
-    @FXML
-    private Button playButton;
-
-    @FXML
-    private Button stopButton;
-
-    @FXML
-    private Slider speedSlider;
-
-    @FXML
-    private Label speedLabel;
-
-    boolean isPaused = false;
 
     /**
      * Initializes the Airport Simulator application.
@@ -298,24 +297,13 @@ public class SimulatorController {
         label.setText(String.valueOf(value));
     }
 
-    private double lastCanvasHeight = -1;
-    private double lastCanvasWidth = -1;
-
-    private void adjustCanvasSize() {
-        double canvasHeight = splitPane.getDividerPositions()[0] * splitPane.getHeight();
-        double canvasWidth = splitPane.getWidth();
-
-        if (canvasHeight != lastCanvasHeight || canvasWidth != lastCanvasWidth) {
-            airportCanvas.setHeight(canvasHeight);
-            airportCanvas.setWidth(canvasWidth);
-
-            lastCanvasHeight = canvasHeight;
-            lastCanvasWidth = canvasWidth;
-
-            drawAllServicePoints();
-        }
-    }
-
+    /**
+     * Draws a label for a specific point type on the canvas.
+     *
+     * @param gc the {@link GraphicsContext} used to draw on the canvas.
+     * @param pointType the label text representing the type of the point to be drawn.
+     * @param y the vertical position (Y-coordinate) on the canvas where the label will be drawn.
+     */
     private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
         double xLeftEdge = 5;
         gc.setFill(Color.BLACK);
@@ -404,6 +392,9 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Starts the simulation with the specified settings.
+     */
     @FXML
     private void startSimulation() {
         MyEngine sim = new MyEngine();
@@ -492,6 +483,11 @@ public class SimulatorController {
         }).start();
     }
 
+    /**
+     * Sets the speed of the simulation based on the selected speed mode.
+     *
+     * @param sim the simulation engine
+     */
     private void setSpeed(MyEngine sim){
         int speedMode = (int) speedSlider.getValue();
         double millis = switch (speedMode) {
@@ -506,6 +502,12 @@ public class SimulatorController {
         Platform.runLater(() ->         log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s")));
     }
 
+    /**
+     * Finishes the simulation and displays the results.
+     *
+     * @param sim the simulation engine
+     * @param simulationParameters the parameters used for the simulation
+     */
     private void finishSim(MyEngine sim, Parameters simulationParameters) {
         log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
 
@@ -532,6 +534,17 @@ public class SimulatorController {
         );
     }
 
+    /**
+     * Prints the simulation results to the screen.
+     *
+     * @param customersServed
+     * @param meanServiceTime
+     * @param simulationTime
+     * @param avQueueLength
+     * @param longestQueueName
+     * @param longestQueueSize
+     * @param servicePointResults
+     */
     public void printResults(int customersServed, double meanServiceTime, double simulationTime, double avQueueLength, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
@@ -571,6 +584,18 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Saves the simulation results to a MariaDB database using JPA.
+     *
+     * This method records the results of a simulation. It creates a new Result entity, populates it with the provided data,
+     * and persists it to the database.
+     *
+     * @param servedClients the total number of clients served during the simulation.
+     * @param meanServiceTime the mean service time of the clients during the simulation.
+     * @param simulationTime the total time the simulation ran, in seconds or minutes (depending on the context).
+     * @param longestQueuename the name of the queue that had the longest waiting time during the simulation.
+     * @param parameters the Parameters entity associated with the simulation run.
+     */
     private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, String longestQueuename, Parameters parameters) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();
@@ -605,6 +630,9 @@ public class SimulatorController {
         log("Simulation ended: results on the right side");
     }
 
+    /**
+     * Initializes the sliders for the service points.
+     */
     private void initializeSliders() {
         setupSlider(checkInSlider, checkInLabel, "CheckIn");
         setupSlider(regularSecurityCheckSlider, regularSecurityCheckLabel, "RegularSecurityCheck");
@@ -614,6 +642,13 @@ public class SimulatorController {
         setupSlider(outEuOnboardingSlider, outEuOnboardingLabel, "OutEuOnboarding");
     }
 
+    /**
+     * Sets up a slider with a label and a point type.
+     *
+     * @param slider
+     * @param label
+     * @param pointType
+     */
     private void setupSlider(Slider slider, Label label, String pointType) {
         int defaultValue = (int) slider.getValue();
         int maxPoints = maxServicePointsMap.getOrDefault(pointType, 0);
@@ -682,6 +717,11 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Logs a message to the log list view.
+     *
+     * @param s the message to log
+     */
     public void log(String s) {
         // Get the current time in HH:mm:ss format
         LocalTime currentTime = LocalTime.now();
