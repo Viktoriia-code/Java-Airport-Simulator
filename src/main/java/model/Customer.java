@@ -20,6 +20,13 @@ public class Customer {
 
 	private double queueEntryTime;
 
+
+	private double x; // x and y coordinates of the customer
+	private double y;
+	private double targetX; // x and y coordinates of the target
+	private double targetY;
+	private double speed = 45.0; // speed of the customer
+
 	/**
 	 * Create a unique customer
 	 *
@@ -192,4 +199,66 @@ public class Customer {
 				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
 	}
+
+
+	/**
+	 * Sets the customer's current position to the specified coordinates.
+	 * This method also aligns the customer's target position with the given coordinates,
+	 * effectively placing the customer directly at their target destination without requiring any movement.
+	 *
+	 * @param x the x-coordinate of the new position
+	 * @param y the y-coordinate of the new position
+	 */
+	public void setPosition(double x, double y) {
+		this.x = x;
+		this.y = y;
+		this.targetX = x;
+		this.targetY = y;
+	}
+
+	/**
+	 * Set the target position of the customer
+	 *
+	 * @param tx
+	 * @param ty
+	 */
+	public void setTargetPosition(double tx, double ty) {
+		this.targetX = tx;
+		this.targetY = ty;
+	}
+
+	/**
+	 * Update the position of the customer
+	 */
+	public void updatePosition() {
+		double dx = targetX - x;
+		double dy = targetY - y;
+		double dist = Math.sqrt(dx * dx + dy * dy);
+		if (dist > speed) {
+			x += speed * (dx / dist);
+			y += speed * (dy / dist);
+		} else {
+			x = targetX;
+			y = targetY;
+		}
+	}
+
+	/**
+	 * Get the x coordinate of the customer
+	 *
+	 * @return x coordinate
+	 */
+	public double getX() {
+		return x;
+	}
+
+	/**
+	 * Get the y coordinate of the customer
+	 *
+	 * @return y coordinate
+	 */
+	public double getY() {
+		return y;
+	}
+
 }

@@ -3,17 +3,22 @@ package controller;
 import entity.Parameters;
 import entity.Result;
 import framework.Trace;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import model.Customer;
 import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+
+import javafx.animation.AnimationTimer;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -129,6 +134,8 @@ public class SimulatorController {
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
 
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
+    private AnimationTimer animationTimer;
+    private Map<String, Point2D> servicePointPositions = new LinkedHashMap<String, Point2D>();
 
     // Bottom part of the screen
     @FXML
@@ -453,6 +460,8 @@ public class SimulatorController {
                     onboardingTime
             );
 
+            sim.setPositionProvider(key -> servicePointPositions.get(key));
+
             setSpeed(sim);
 
             // Create Parameters object
@@ -477,6 +486,11 @@ public class SimulatorController {
             stopButton.setOnAction(event -> stopSim(sim));
 
             speedSlider.setOnMouseReleased(event -> setSpeed(sim));
+
+            Platform.runLater(() -> {
+                log("Simulation started...");
+                startAnimation();
+            });
 
             sim.run();
 
@@ -658,18 +672,24 @@ public class SimulatorController {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawServicePoints(gc, pointType, activatedPoints, totalPoints, y);
+
             drawTypeLabel(gc, pointType, y - 15);
             typeIndex++;
+        }
+        System.out.println("Available service point keys and positions:");
+        for (Map.Entry<String, Point2D> entry : servicePointPositions.entrySet()) {
+            System.out.println("Key: " + entry.getKey() + ", Position: " + entry.getValue());
         }
     }
 
 
-    private void drawServicePoints(GraphicsContext gc, int activatedCount, int totalPoints, double yStart) {
-        double pointDiameter = 10.0;
-        double spacingX = 20.0;
+    private void drawServicePoints(GraphicsContext gc, String pointType, int activatedCount, int totalPoints, double yStart) {
+        double rectWidth = 10.0;
+        double rectHeight = 10.0;
+        double spacingX = 25.0;
         double spacingY = 30.0;
-        int pointsPerRow = 26;
+        int pointsPerRow = 20;
 
         int currentRow = 0;
         for (int i = 0; i < totalPoints; i++) {
@@ -687,10 +707,15 @@ public class SimulatorController {
                 gc.setFill(Color.DARKGRAY);
             }
 
-            gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
+            gc.fillRect(x - rectWidth / 2, yOffset - rectHeight / 2, rectWidth, rectHeight);
+
+            // Store the service point coordinates in the Map
+            String key = pointType + "#" + i;
+            servicePointPositions.put(key, new Point2D(x, yOffset));
+
+
         }
     }
-
     /**
      * Logs a message to the log list view.
      *
@@ -714,4 +739,70 @@ public class SimulatorController {
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
     }
+
+
+
+
+    private void pauseAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+            log("Passenger animation paused.");
+        }
+    }
+
+    private void resumeAnimation() {
+        if (animationTimer != null) {
+            animationTimer.start();
+            log("Passenger animation resumed.");
+        }
+    }
+
+    @FXML
+    private Canvas passengerCanvas;
+
+    private void drawPassengers() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+
+        for (Customer c : sim.getAllCustomers()) {
+            gc.setFill(Color.RED); // Set the customer color
+            gc.fillOval(c.getX() - 5, c.getY() - 5, 10, 10); // Draw the customer dot
+
+        }
+    }
+
+    private void updatePassengerPositions() {
+        if (sim == null) {
+            System.err.println("Simulation engine (sim) is null.");
+            return;
+        }
+
+        for (Customer c : sim.getAllCustomers()) {
+
+            c.updatePosition();
+
+        }
+    }
+
+    public void startAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+
+        animationTimer = new AnimationTimer() {
+            private long lastUpdateTime = 0;
+            @Override
+            public void handle(long now) {
+                if (sim != null && !isPaused) {
+                    updatePassengerPositions();
+                    drawPassengers();
+                }
+            }
+
+        };
+
+
+        animationTimer.start();
+    }
+
 }

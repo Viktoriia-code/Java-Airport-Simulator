@@ -5,9 +5,10 @@ import eduni.distributions.Normal;
 import eduni.distributions.Negexp;
 import framework.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Random;
+import java.util.*;
+import java.util.function.Function;
+
+import javafx.geometry.Point2D;
 
 /**
  * Main simulator engine.
@@ -187,6 +188,7 @@ public class MyEngine extends Engine {
      */
     private void handleArrival(Event t) {
         Customer c = t.getCustomer();
+        allCustomers.add(c);
         ServicePoint q;
         if (c.isOnlineCheckIn()) {
             q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
@@ -196,6 +198,12 @@ public class MyEngine extends Engine {
             c.setCurrentQueueIndex(checkInPoints.indexOf(q));
         }
         q.addQueue(c);
+        Point2D targetPosition = getServicePointPosition(q.getName(), c.getCurrentQueueIndex());
+        if (targetPosition != null) {
+            c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
+        } else {
+            throw new IllegalStateException("Target position not found for service point: " + q.getName());
+        }
         arrivalProcess.generateNextEvent();
 
     }
@@ -210,8 +218,14 @@ public class MyEngine extends Engine {
         Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         ServicePoint q = findShortestQueue(c.isBusinessClass() ? securityFastTrackPoints : securityPoints);
         q.addQueue(c);
-        c.setCurrentQueueIndex(c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q));
-    }
+        int targetIndex = c.isBusinessClass() ? securityFastTrackPoints.indexOf(q) : securityPoints.indexOf(q);
+        c.setCurrentQueueIndex(targetIndex);
+        Point2D targetPosition = getServicePointPosition(q.getName(), targetIndex);
+        if (targetPosition != null) {
+            c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
+        } else {
+            throw new IllegalStateException("Target position not found for service point: " + q.getName());
+        }    }
 
     /**
      * Handling of DEP_SECURITY. Removes Customer from the right queue and places them to
@@ -225,8 +239,14 @@ public class MyEngine extends Engine {
                 securityPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         ServicePoint q = findShortestQueue(c.isEUFlight() ? boardingInEUPoints : borderControlPoints);
         q.addQueue(c);
-        c.setCurrentQueueIndex(c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q));
-    }
+        int targetIndex = c.isEUFlight() ? boardingInEUPoints.indexOf(q) : borderControlPoints.indexOf(q);
+        c.setCurrentQueueIndex(targetIndex);
+        Point2D targetPosition = getServicePointPosition(q.getName(), targetIndex);
+        if (targetPosition != null) {
+            c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
+        } else {
+            throw new IllegalStateException("Target position not found for service point: " + q.getName());
+        }    }
 
     /**
      * Handling of DEP_BORDERCTRL. Removes Customer from Border Control queue, places them
@@ -238,7 +258,14 @@ public class MyEngine extends Engine {
         Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
         ServicePoint q = findShortestQueue(boardingNotEUPoints);
         q.addQueue(c);
-        c.setCurrentQueueIndex(boardingNotEUPoints.indexOf(q));
+        int targetIndex = boardingNotEUPoints.indexOf(q);
+        c.setCurrentQueueIndex(targetIndex);
+        Point2D targetPosition = getServicePointPosition(q.getName(), targetIndex);
+        if (targetPosition != null) {
+            c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
+        } else {
+            throw new IllegalStateException("Target position not found for service point: " + q.getName());
+        }
     }
 
     /**
@@ -254,6 +281,7 @@ public class MyEngine extends Engine {
         c.setRemovalTime(Clock.getInstance().getClock());
         c.reportResults();
         servedClients++;
+        removeCustomer(c);
     }
 
     /**
@@ -595,4 +623,54 @@ public class MyEngine extends Engine {
     public String getServicePointResults() {
         return servicePointResults.toString();
     }
+
+    // ANIMATION
+    private Function<String, Point2D> positionProvider;
+
+    public void setPositionProvider(Function<String, Point2D> provider) {
+        this.positionProvider = provider;
+    }
+
+
+    private Point2D getServicePointPosition(String name, int index) {
+        if (positionProvider == null) {
+            throw new IllegalStateException("Position provider not set");
+        }
+
+        String mappedName = servicePointNameMapping.getOrDefault(name, name);
+
+        String key = mappedName + "#" + index;
+        System.out.println("Looking for key: " + key);
+
+        Point2D position = positionProvider.apply(key);
+        if (position == null) {
+            System.out.println("Key not found: " + key);
+            throw new IllegalStateException("Target position not found for service point: " + key);
+        }
+        return position;
+    }
+
+
+    private List<Customer> allCustomers = new ArrayList<>();
+
+    public List<Customer> getAllCustomers() {
+        return allCustomers;
+    }
+
+    public void removeCustomer(Customer c) {
+        allCustomers.remove(c);
+    }
+
+
+    private static final Map<String, String> servicePointNameMapping = Map.of(
+            "Security check", "RegularSecurityCheck",
+            "Security check (Fast Track)", "FastSecurityCheck",
+            "Check-in", "CheckIn",
+            "Border control", "BorderControl",
+            "Boarding (inside EU)", "EuOnboarding",
+            "Boarding (outside EU)", "OutEuOnboarding"
+    );
+
+
+
 }
