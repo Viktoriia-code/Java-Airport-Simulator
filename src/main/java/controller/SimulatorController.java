@@ -26,6 +26,10 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import model.ServicePoint;
 
+/**
+ * Controller class for the Airport Simulator application.
+ * Handles user input, simulation setup, and results display.
+ */
 public class SimulatorController {
     // Input section (left part of the screen)
     // Service points settings
@@ -107,6 +111,19 @@ public class SimulatorController {
     @FXML
     private Spinner<Integer> timeSpinner;
 
+    // Speed control settings
+    @FXML
+    private Button playButton;
+    @FXML
+    private Button stopButton;
+    @FXML
+    private Slider speedSlider;
+    @FXML
+    private Label speedLabel;
+
+    boolean isPaused = false;
+
+    // Maps to store the number of service points for each type
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
 
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
@@ -143,20 +160,9 @@ public class SimulatorController {
     @FXML
     private TextArea servicePointResultsTextArea;
 
-    @FXML
-    private Button playButton;
-
-    @FXML
-    private Button stopButton;
-
-    @FXML
-    private Slider speedSlider;
-
-    @FXML
-    private Label speedLabel;
-
-    boolean isPaused = false;
-
+    /**
+     * Initializes the Airport Simulator application.
+     */
     @FXML
     public void initialize() {
         servicePointsMap.put("CheckIn", (int) checkInSlider.getValue());
@@ -241,6 +247,9 @@ public class SimulatorController {
         log("Welcome to the Airport simulation!");
     }
 
+    /**
+     * Toggles the pause state of the simulation.
+     */
     private void togglePause(MyEngine sim) {
         isPaused = !isPaused;
         sim.togglePause();
@@ -253,6 +262,9 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Stops the simulation.
+     */
     private void stopSim(MyEngine sim) {
         Trace.out(Trace.Level.INFO, "*** STOP BUTTON PRESSED ***");
         sim.stopSimulation();
@@ -285,32 +297,23 @@ public class SimulatorController {
         label.setText(String.valueOf(value));
     }
 
-    private double lastCanvasHeight = -1;
-    private double lastCanvasWidth = -1;
-
-    private void adjustCanvasSize() {
-        double canvasHeight = splitPane.getDividerPositions()[0] * splitPane.getHeight();
-        double canvasWidth = splitPane.getWidth();
-
-        if (canvasHeight != lastCanvasHeight || canvasWidth != lastCanvasWidth) {
-            airportCanvas.setHeight(canvasHeight);
-            airportCanvas.setWidth(canvasWidth);
-
-            lastCanvasHeight = canvasHeight;
-            lastCanvasWidth = canvasWidth;
-
-            drawAllServicePoints();
-        }
-    }
-
+    /**
+     * Draws a label for a specific point type on the canvas.
+     *
+     * @param gc the {@link GraphicsContext} used to draw on the canvas.
+     * @param pointType the label text representing the type of the point to be drawn.
+     * @param y the vertical position (Y-coordinate) on the canvas where the label will be drawn.
+     */
     private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
         double xLeftEdge = 5;
         gc.setFill(Color.BLACK);
         gc.fillText(pointType, xLeftEdge, y);
     }
 
+    /**
+     * Shows the instructions for the Airport Simulator.
+     */
     private void showInstructions() {
-        // Create a simple alert with instructions
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Info");
         alert.setHeaderText("Airport Simulator Instructions");
@@ -326,6 +329,15 @@ public class SimulatorController {
         alert.showAndWait();  // Show the alert and wait for user interaction
     }
 
+    /**
+     * Validates the input for a spinner and checks if it falls within the specified range.
+     *
+     * @param spinner the spinner component whose input is being validated
+     * @param newValue the value entered by the user in the spinner's text field
+     * @param min the minimum acceptable value for the spinner
+     * @param max the maximum acceptable value for the spinner
+     * @param labelName the name of the label associated with the spinner, used for error message formatting
+     */
     private void validateInput(Spinner<Integer> spinner, String newValue, int min, int max, String labelName) {
         String errorMessage = "";
 
@@ -350,6 +362,18 @@ public class SimulatorController {
         inputErrorLabel.setText(errorMessage);
     }
 
+    /**
+     * Retrieves the frequency corresponding to the selected passenger arrival rate option.
+     *
+     * This method converts the selected option from a dropdown (such as "Fast", "Moderate",
+     * "Normal", "Slow", or "Very Slow") into a frequency value, where the frequency is expressed
+     * in minutes per cycle. The available options represent different time intervals for how often
+     * passengers arrive, with each option corresponding to a specific time interval in seconds,
+     * converted to minutes.
+     *
+     * @return the frequency in minutes corresponding to the selected option.
+     * @throws IllegalArgumentException if the selected option does not match any of the predefined options.
+     */
     private double getSelectedFrequency() {
         String selectedOption = passengerSelect.getValue(); // Get the selected item
         switch (selectedOption) {
@@ -368,6 +392,9 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Starts the simulation with the specified settings.
+     */
     @FXML
     private void startSimulation() {
         MyEngine sim = new MyEngine();
@@ -456,6 +483,11 @@ public class SimulatorController {
         }).start();
     }
 
+    /**
+     * Sets the speed of the simulation based on the selected speed mode.
+     *
+     * @param sim the simulation engine
+     */
     private void setSpeed(MyEngine sim){
         int speedMode = (int) speedSlider.getValue();
         double millis = switch (speedMode) {
@@ -470,6 +502,12 @@ public class SimulatorController {
         Platform.runLater(() ->         log(String.format("Speed Mode %s%s", speedMode, millis == 0 ? ": no delay" : ": delay of " + millis / 1000 + " s")));
     }
 
+    /**
+     * Finishes the simulation and displays the results.
+     *
+     * @param sim the simulation engine
+     * @param simulationParameters the parameters used for the simulation
+     */
     private void finishSim(MyEngine sim, Parameters simulationParameters) {
         log(String.format("Simulation done running: %.2f minutes simulated", sim.getSimulationTime()));
 
@@ -496,6 +534,17 @@ public class SimulatorController {
         );
     }
 
+    /**
+     * Prints the simulation results to the screen.
+     *
+     * @param customersServed
+     * @param meanServiceTime
+     * @param simulationTime
+     * @param avQueueLength
+     * @param longestQueueName
+     * @param longestQueueSize
+     * @param servicePointResults
+     */
     public void printResults(int customersServed, double meanServiceTime, double simulationTime, double avQueueLength, String longestQueueName, int longestQueueSize, String servicePointResults) {
         totalPassengersServedLabel.setText(String.valueOf(customersServed));
         avServiceTimeLabel.setText(String.format("%.0f mins", meanServiceTime));
@@ -506,35 +555,18 @@ public class SimulatorController {
         servicePointResultsTextArea.setText(servicePointResults);
     }
 
-    private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            // Create and populate Parameters entity
-            Parameters simulationParameters = new Parameters();
-            simulationParameters.setCheck_in(check_in);
-            simulationParameters.setSecurity_check(security_check);
-            simulationParameters.setFasttrack(fasttrack);
-            simulationParameters.setBorder_control(border_control);
-            simulationParameters.setEU_boarding(EU_boarding);
-            simulationParameters.setNon_EU_Boarding(non_EU_Boarding);
-
-            // Persist Parameters entity
-            em.persist(simulationParameters);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            em.close();
-            emf.close();
-        }
-    }
-
+    /**
+     * Saves the simulation results to a MariaDB database using JPA.
+     *
+     * This method records the results of a simulation. It creates a new Result entity, populates it with the provided data,
+     * and persists it to the database.
+     *
+     * @param servedClients the total number of clients served during the simulation.
+     * @param meanServiceTime the mean service time of the clients during the simulation.
+     * @param simulationTime the total time the simulation ran, in seconds or minutes (depending on the context).
+     * @param longestQueuename the name of the queue that had the longest waiting time during the simulation.
+     * @param parameters the Parameters entity associated with the simulation run.
+     */
     private void saveSimuResult(int servedClients, double meanServiceTime, double simulationTime, String longestQueuename, Parameters parameters) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
         EntityManager em = emf.createEntityManager();
@@ -569,6 +601,9 @@ public class SimulatorController {
         log("Simulation ended: results on the right side");
     }
 
+    /**
+     * Initializes the sliders for the service points.
+     */
     private void initializeSliders() {
         setupSlider(checkInSlider, checkInLabel, "CheckIn");
         setupSlider(regularSecurityCheckSlider, regularSecurityCheckLabel, "RegularSecurityCheck");
@@ -578,6 +613,13 @@ public class SimulatorController {
         setupSlider(outEuOnboardingSlider, outEuOnboardingLabel, "OutEuOnboarding");
     }
 
+    /**
+     * Sets up a slider with a label and a point type.
+     *
+     * @param slider
+     * @param label
+     * @param pointType
+     */
     private void setupSlider(Slider slider, Label label, String pointType) {
         int defaultValue = (int) slider.getValue();
         int maxPoints = maxServicePointsMap.getOrDefault(pointType, 0);
@@ -646,6 +688,11 @@ public class SimulatorController {
         }
     }
 
+    /**
+     * Logs a message to the log list view.
+     *
+     * @param s the message to log
+     */
     public void log(String s) {
         // Get the current time in HH:mm:ss format
         LocalTime currentTime = LocalTime.now();
