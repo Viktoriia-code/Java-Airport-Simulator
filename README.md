@@ -45,3 +45,8 @@ In your IDE (e.g., IntelliJ IDEA or Eclipse), right-click the `Launcher` class a
 ## Configurable Simulation Settings
 <img src="https://github.com/user-attachments/assets/c63acc4b-7c76-48b0-8f58-14660bf7dba5" width="700">
 
+## Authors:
+- [Viktoriia-code](https://github.com/Viktoriia-code)
+- [Santtu](https://github.com/santten)
+- [Jiayue Zheng](https://github.com/JY1Z)
+- [farahelbaj](https://github.com/farahelbaj)
