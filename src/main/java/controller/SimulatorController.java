@@ -555,35 +555,6 @@ public class SimulatorController {
         servicePointResultsTextArea.setText(servicePointResults);
     }
 
-    private void saveSimuParameters(int check_in, int security_check, int fasttrack, int border_control, int EU_boarding, int non_EU_Boarding) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CompanyMariaDbUnit");
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            // Create and populate Parameters entity
-            Parameters simulationParameters = new Parameters();
-            simulationParameters.setCheck_in(check_in);
-            simulationParameters.setSecurity_check(security_check);
-            simulationParameters.setFasttrack(fasttrack);
-            simulationParameters.setBorder_control(border_control);
-            simulationParameters.setEU_boarding(EU_boarding);
-            simulationParameters.setNon_EU_Boarding(non_EU_Boarding);
-
-            // Persist Parameters entity
-            em.persist(simulationParameters);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            em.close();
-            emf.close();
-        }
-    }
-
     /**
      * Saves the simulation results to a MariaDB database using JPA.
      *
