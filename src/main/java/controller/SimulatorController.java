@@ -793,12 +793,12 @@ public class SimulatorController {
             private long lastUpdateTime = 0;
             @Override
             public void handle(long now) {
-                if (sim != null && !isPaused) {
+                if (now - lastUpdateTime >= 33_000_000) {
                     updatePassengerPositions();
                     drawPassengers();
+                    lastUpdateTime = now;
                 }
             }
-
         };
 
 
