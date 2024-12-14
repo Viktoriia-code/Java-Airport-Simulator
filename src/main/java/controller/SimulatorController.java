@@ -868,7 +868,9 @@ public class SimulatorController {
     private void drawPassengers() {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
-        for (Customer c : sim.getAllCustomers()) {
+
+        List<Customer> customersCopy = new ArrayList<>(sim.getAllCustomers());
+        for (Customer c : customersCopy) {
             gc.setFill(Color.ORANGERED); // Set the customer color
             gc.fillOval(c.getX() - 4, c.getY() - 4, 8, 8); // Draw the customer dot
         }
