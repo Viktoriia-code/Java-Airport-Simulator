@@ -6,6 +6,7 @@ import eduni.distributions.Negexp;
 import framework.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javafx.geometry.Point2D;
@@ -696,5 +697,19 @@ public class MyEngine extends Engine {
     public void removeCustomer(Customer c) {
         allCustomers.remove(c);
     }
+
+
+    private Consumer<String> logCallback;
+
+    public void setLogCallback(Consumer<String> logCallback) {
+        this.logCallback = logCallback;
+    }
+
+    private void log(String message) {
+        if (logCallback != null) {
+            logCallback.accept(message);
+        }
+    }
+
 
 }

@@ -181,6 +181,7 @@ public class SimulatorController {
     // Simulation engine
     private MyEngine sim;
 
+
     /**
      * Initializes the Airport Simulator application.
      */
@@ -474,6 +475,7 @@ public class SimulatorController {
             );
 
             sim.setPositionProvider(key -> servicePointPositions.get(key));
+            sim.setLogCallback(message -> Platform.runLater(() -> log(message)));
 
             setSpeed(sim);
 
@@ -831,25 +833,47 @@ public class SimulatorController {
      *
      * @param s the message to log
      */
+//    public void log(String s) {
+//        // Get the current time in HH:mm:ss format
+//        LocalTime currentTime = LocalTime.now();
+//        String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+//
+//        // Create a Text object for the time and set it to bold
+//        Text timeText = new Text(timeString + "  ");
+//        timeText.setStyle("-fx-font-weight: bold;");
+//
+//        // Create a Text object for the message
+//        Text messageText = new Text(s);
+//
+//        // Combine both into a TextFlow
+//        TextFlow textFlow = new TextFlow(timeText, messageText);
+//
+//        // Add the TextFlow to the ListView
+//        logListView.getItems().add(textFlow);
+//        Platform.runLater(() -> logListView.scrollTo(logListView.getItems().size() - 1));
+//    }
     public void log(String s) {
-        // Get the current time in HH:mm:ss format
-        LocalTime currentTime = LocalTime.now();
-        String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        Platform.runLater(() -> {
+            // Get the current time in HH:mm:ss format
+            LocalTime currentTime = LocalTime.now();
+            String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-        // Create a Text object for the time and set it to bold
-        Text timeText = new Text(timeString + "  ");
-        timeText.setStyle("-fx-font-weight: bold;");
+            // Create a Text object for the time and set it to bold
+            Text timeText = new Text(timeString + "  ");
+            timeText.setStyle("-fx-font-weight: bold;");
 
-        // Create a Text object for the message
-        Text messageText = new Text(s);
+            // Create a Text object for the message
+            Text messageText = new Text(s);
 
-        // Combine both into a TextFlow
-        TextFlow textFlow = new TextFlow(timeText, messageText);
+            // Combine both into a TextFlow
+            TextFlow textFlow = new TextFlow(timeText, messageText);
 
-        // Add the TextFlow to the ListView
-        logListView.getItems().add(textFlow);
-        Platform.runLater(() -> logListView.scrollTo(logListView.getItems().size() - 1));
+            // Add the TextFlow to the ListView
+            logListView.getItems().add(textFlow);
+            logListView.scrollTo(logListView.getItems().size() - 1);
+        });
     }
+
 
     /**
      * Draws all passengers on the passenger canvas.
