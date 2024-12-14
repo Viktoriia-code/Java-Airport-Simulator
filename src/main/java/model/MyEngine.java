@@ -315,10 +315,10 @@ public class MyEngine extends Engine {
     public void results() {
         for (ArrayList<ServicePoint> servicePointList : allServicePoints) {
             for (ServicePoint p : servicePointList) {
-                Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
+                /* Trace.out(Trace.Level.INFO, p.getName() + " #" + servicePointList.indexOf(p));
                 Trace.out(Trace.Level.INFO, "  - " + p.getServedCustomersHere() + " customers served");
                 Trace.out(Trace.Level.INFO, "  - Longest queue: " + p.getLongestQueueSize() + " customer" + (p.getLongestQueueSize() > 1 ? "s" : ""));
-                Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime());
+                Trace.out(Trace.Level.INFO, "  - Average Queue Time: " + p.getAverageQueueTime()); */
 
                 servicePointResults.append(p.getName()).append(" #").append(servicePointList.indexOf(p) + 1).append(": \n")
                         .append(p.getServedCustomersHere()).append(" customers\n\n");
@@ -669,7 +669,7 @@ public class MyEngine extends Engine {
         String mappedName = servicePointNameMapping.getOrDefault(name, name);
 
         String key = mappedName + "#" + index;
-        System.out.println("Looking for key: " + key);
+        Trace.out(Trace.Level.DEBUG,"Looking for key: " + key);
 
         Point2D position = positionProvider.apply(key);
         if (position == null) {

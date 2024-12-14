@@ -276,10 +276,10 @@ public class SimulatorController {
         sim.togglePause();
         Trace.out(Trace.Level.INFO, "*** PAUSE BUTTON PRESSED ***");
         if (isPaused) {
-            log("Simulation paused");
-            log(String.format("%.0f minutes simulated: %s completely handled", sim.getCurrentTime(), sim.getServedClients()));
+            log("Simulation paused with" +
+            String.format("%.2f minutes simulated and %s served passengers.", sim.getCurrentTime(), sim.getServedClients()));
         } else {
-            log("Continued Simulation");
+            log("Simulation resumed.");
         }
     }
 
@@ -418,6 +418,7 @@ public class SimulatorController {
      */
     @FXML
     private void startSimulation() {
+        resetResults();
         sim = new MyEngine();
 
         new Thread(() -> {
@@ -450,6 +451,7 @@ public class SimulatorController {
             });
 
             Trace.setTraceLevel(Trace.Level.INFO);
+            Trace.setController(this);
 
             // Set time for the simulation
             sim.setSimulationTime(timeValue);
@@ -581,6 +583,19 @@ public class SimulatorController {
         longestQueueNameLabel.setText(longestQueueName);
         longestQueueSizeLabel.setText(String.format(longestQueueSize + " passenger" + (longestQueueSize != 1 ? "s" : "")));
         servicePointResultsTextArea.setText(servicePointResults);
+    }
+
+    /**
+     * Resets the results section of the screen.
+     */
+    public void resetResults() {
+        totalPassengersServedLabel.setText("--");
+        avServiceTimeLabel.setText("-- mins");
+        simulationTimeLabel.setText("-- mins");
+        avQueueLabel.setText("-- mins");
+        longestQueueNameLabel.setText("--");
+        longestQueueSizeLabel.setText("-- passengers");
+        servicePointResultsTextArea.setText("---");
     }
 
     /**
@@ -727,9 +742,9 @@ public class SimulatorController {
             double yOffset = yStart + spacingY * currentRow;
 
             if (i < activatedCount) {
-                gc.setFill(Color.BLUE);
+                gc.setFill(Color.web("#A0B8F7"));
             } else {
-                gc.setFill(Color.DARKGRAY);
+                gc.setFill(Color.LIGHTGREY);
             }
 
             gc.fillRect(x - rectWidth / 2, yOffset - rectHeight / 2, rectWidth, rectHeight);
@@ -833,6 +848,7 @@ public class SimulatorController {
 
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
+        Platform.runLater(() -> logListView.scrollTo(logListView.getItems().size() - 1));
     }
 
     /**
@@ -845,7 +861,7 @@ public class SimulatorController {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
         for (Customer c : sim.getAllCustomers()) {
-            gc.setFill(Color.RED); // Set the customer color
+            gc.setFill(Color.ORANGERED); // Set the customer color
             gc.fillOval(c.getX() - 4, c.getY() - 4, 8, 8); // Draw the customer dot
         }
     }
