@@ -1,14 +1,19 @@
 package controller;
 
+import model.Customer;
+import model.MyEngine;
 import entity.Parameters;
 import entity.Result;
+import model.ServicePoint;
+
 import framework.Trace;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import model.MyEngine;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -17,22 +22,24 @@ import javafx.scene.control.Slider;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import model.ServicePoint;
 
 /**
  * Controller class for the Airport Simulator application.
  * Handles user input, simulation setup, and results display.
  */
 public class SimulatorController {
-    // Input section (left part of the screen)
-    // Service points settings
+    // Input Section (Left part of the screen)
+
+    // Service points settings (controls for configuring service points)
     @FXML
     private Label checkInLabel;
     @FXML
@@ -83,7 +90,7 @@ public class SimulatorController {
     @FXML
     private Slider onboardingTimeSlider;
 
-    // Clients settings
+    // Clients settings (controls for configuring customer distribution)
     @FXML
     private ChoiceBox<String> passengerSelect;
     @FXML
@@ -107,11 +114,11 @@ public class SimulatorController {
     @FXML
     private Label offlineCheckInPercLabel;
 
-    // General simulation settings
+    // General simulation settings (global simulation parameters)
     @FXML
     private Spinner<Integer> timeSpinner;
 
-    // Speed control settings
+    // Control Section (Speed control and animation controls)
     @FXML
     private Button playButton;
     @FXML
@@ -121,30 +128,41 @@ public class SimulatorController {
     @FXML
     private Label speedLabel;
 
+    // Pause state of the simulation, toggled via control buttons.
     boolean isPaused = false;
 
-    // Maps to store the number of service points for each type
+    // Data Structures (Backend data management)
+
+    // Maps for service point and customer configurations
     private final Map<String, Integer> servicePointsMap = new LinkedHashMap<>();
-
     private final Map<String, Double> customerTypesMap = new LinkedHashMap<>();
-
     private final Map<String, Integer> maxServicePointsMap = new LinkedHashMap<>();
 
-    // Bottom part of the screen
+    // Animation and position tracking
+    private AnimationTimer animationTimer;
+    private Map<String, Point2D> servicePointPositions = new LinkedHashMap<>();
+
+    // Display Section
+
+    // Bottom part of the screen (error messages and help)
     @FXML
     private Label inputErrorLabel;
     @FXML
     private Button helpButton;
 
-    // Central part of the screen
+    // Central part of the screen (main visual components)
     @FXML
-    private SplitPane splitPane;
+    private Canvas airportCanvas; // Canvas for drawing service points
     @FXML
-    private Canvas airportCanvas;
+    private Canvas passengerCanvas; // Canvas for drawing passengers
+    @FXML
+    private Canvas labelCanvas; // Canvas for drawing labels
+
+    // Log area for simulation events
     @FXML
     private ListView<TextFlow> logListView;
 
-    // Results section (right part of the screen)
+    // Results Section (Right part of the screen)
     @FXML
     private Label totalPassengersServedLabel;
     @FXML
@@ -159,6 +177,9 @@ public class SimulatorController {
     private Label longestQueueSizeLabel;
     @FXML
     private TextArea servicePointResultsTextArea;
+
+    // Simulation engine
+    private MyEngine sim;
 
     /**
      * Initializes the Airport Simulator application.
@@ -307,7 +328,7 @@ public class SimulatorController {
     private void drawTypeLabel(GraphicsContext gc, String pointType, double y) {
         double xLeftEdge = 5;
         gc.setFill(Color.BLACK);
-        gc.fillText(pointType, xLeftEdge, y);
+        gc.fillText(pointType, xLeftEdge, y-15);
     }
 
     /**
@@ -397,7 +418,7 @@ public class SimulatorController {
      */
     @FXML
     private void startSimulation() {
-        MyEngine sim = new MyEngine();
+        sim = new MyEngine();
 
         new Thread(() -> {
             int timeValue = timeSpinner.getValue();
@@ -450,6 +471,8 @@ public class SimulatorController {
                     onboardingTime
             );
 
+            sim.setPositionProvider(key -> servicePointPositions.get(key));
+
             setSpeed(sim);
 
             // Create Parameters object
@@ -474,6 +497,11 @@ public class SimulatorController {
             stopButton.setOnAction(event -> stopSim(sim));
 
             speedSlider.setOnMouseReleased(event -> setSpeed(sim));
+
+            Platform.runLater(() -> {
+                log("Simulation started...");
+                startAnimation();
+            });
 
             sim.run();
 
@@ -635,6 +663,12 @@ public class SimulatorController {
         });
     }
 
+    /**
+     * Draws all service points on the airport canvas.
+     *
+     * This method clears the canvas and iterates through all service point types,
+     * drawing each type with its activated and total points at appropriate positions.
+     */
     private void drawAllServicePoints() {
         GraphicsContext gc = airportCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, airportCanvas.getWidth(), airportCanvas.getHeight());
@@ -646,27 +680,41 @@ public class SimulatorController {
             String pointType = entry.getKey();
             int totalPoints = entry.getValue();
             int activatedPoints = servicePointsMap.getOrDefault(pointType, 0);
-
             double y = yStep * (typeIndex + 1);
 
             if (pointType.equals("CheckIn") && typeIndex > 0) {
                 y += 2;
+            } else if (pointType.equals("EuOnboarding") && typeIndex > 0) {
+                y += 85;
             } else if (typeIndex > 0) {
                 y += yStep;
             }
 
-            drawServicePoints(gc, activatedPoints, totalPoints, y);
+            drawServicePoints(gc, pointType, activatedPoints, totalPoints, y);
             drawTypeLabel(gc, pointType, y - 15);
+
             typeIndex++;
         }
     }
 
-
-    private void drawServicePoints(GraphicsContext gc, int activatedCount, int totalPoints, double yStart) {
-        double pointDiameter = 10.0;
-        double spacingX = 20.0;
+    /**
+     * Draws service points of a specific type on the canvas.
+     *
+     * Renders the service points as rectangles, distinguishing between activated
+     * and non-activated points, and stores their coordinates in a map.
+     *
+     * @param gc             The {@code GraphicsContext} used for drawing.
+     * @param pointType      The type of the service points (e.g., "CheckIn").
+     * @param activatedCount The number of activated service points to be highlighted.
+     * @param totalPoints    The total number of service points to draw.
+     * @param yStart         The starting y-coordinate for drawing the service points.
+     */
+    private void drawServicePoints(GraphicsContext gc, String pointType, int activatedCount, int totalPoints, double yStart) {
+        double rectWidth = 15.0;
+        double rectHeight = 10.0;
+        double spacingX = 28.0;
         double spacingY = 30.0;
-        int pointsPerRow = 26;
+        int pointsPerRow = 20;
 
         int currentRow = 0;
         for (int i = 0; i < totalPoints; i++) {
@@ -684,8 +732,83 @@ public class SimulatorController {
                 gc.setFill(Color.DARKGRAY);
             }
 
-            gc.fillOval(x - pointDiameter / 2, yOffset - pointDiameter / 2, pointDiameter, pointDiameter);
+            gc.fillRect(x - rectWidth / 2, yOffset - rectHeight / 2, rectWidth, rectHeight);
+
+            // Store the service point coordinates in the Map
+            String key = pointType + "#" + i;
+            servicePointPositions.put(key, new Point2D(x, yOffset));
         }
+    }
+
+    /**
+     * Draws queue size labels for each service point on the canvas.
+     *
+     * Clears the canvas and iterates through all service points, rendering the
+     * queue size labels centered above their respective positions.
+     */
+    private void drawQueueLabels() {
+        GraphicsContext gc = labelCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, labelCanvas.getWidth(), labelCanvas.getHeight());
+
+        gc.setFill(Color.BLACK);
+        gc.setFont(javafx.scene.text.Font.font("Arial", 12));
+
+        for (Map.Entry<String, Point2D> entry : servicePointPositions.entrySet()) {
+            String spKey = entry.getKey();
+            int queueSize = getQueueSizeForServicePoint(spKey);
+            Point2D position = entry.getValue();
+
+            if (queueSize > 0) {
+                double x = position.getX();
+                double y = position.getY() - 10;
+
+                // Measure text width for centering
+                javafx.scene.text.Font font = gc.getFont();
+                javafx.scene.text.Text text = new javafx.scene.text.Text(String.valueOf(queueSize));
+                text.setFont(font);
+                double textWidth = text.getLayoutBounds().getWidth();
+
+                // Adjust x to center the text
+                gc.fillText(String.valueOf(queueSize), x - textWidth / 2, y);
+            }
+        }
+    }
+
+    /**
+     * A mapping of service point display names to their normalized keys.
+     *
+     * This map provides a lowercase, simplified representation of service point names
+     * to ensure consistency when matching keys in the system.
+     */
+    private static final Map<String, String> normalizedKeyMap = new HashMap<>();
+    static {
+        normalizedKeyMap.put("Check-in", "checkin");
+        normalizedKeyMap.put("Security check", "regularsecuritycheck");
+        normalizedKeyMap.put("Border control", "bordercontrol");
+        normalizedKeyMap.put("Security check (Fast Track)", "fastsecuritycheck");
+        normalizedKeyMap.put("Boarding (inside EU)", "euonboarding");
+        normalizedKeyMap.put("Boarding (outside EU)", "outeuonboarding");
+    }
+
+    /**
+     * Retrieves the queue size for a specific service point identified by its key.
+     *
+     * Iterates through all service points, matches the provided key with the
+     * normalized service point key, and returns the size of the corresponding queue.
+     *
+     * @param spKey The key identifying the service point.
+     * @return The size of the queue for the specified service point, or 0 if no match is found.
+     */
+    private int getQueueSizeForServicePoint(String spKey) {
+        for (ArrayList<ServicePoint> servicePointList : sim.getAllServicePoints()) {
+            for (ServicePoint sp : servicePointList) {
+                String normalizedFullKey = normalizedKeyMap.getOrDefault(sp.getName(), sp.getName().toLowerCase()) + "#" + servicePointList.indexOf(sp);
+                if (spKey.toLowerCase().equals(normalizedFullKey)) {
+                    return sp.getQueueSize();
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -710,5 +833,64 @@ public class SimulatorController {
 
         // Add the TextFlow to the ListView
         logListView.getItems().add(textFlow);
+    }
+
+    /**
+     * Draws all passengers on the passenger canvas.
+     *
+     * Clears the canvas and iterates through all customers in the simulation,
+     * rendering each customer as a red dot at their current position.
+     */
+    private void drawPassengers() {
+        GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
+        for (Customer c : sim.getAllCustomers()) {
+            gc.setFill(Color.RED); // Set the customer color
+            gc.fillOval(c.getX() - 4, c.getY() - 4, 8, 8); // Draw the customer dot
+        }
+    }
+
+    /**
+     * Updates the positions of all passengers in the simulation.
+     *
+     * Checks if the simulation engine is initialized. If it is, iterates through
+     * all customers and updates their positions based on their target coordinates.
+     */
+     private void updatePassengerPositions() {
+        if (sim == null) {
+            System.err.println("Simulation engine (sim) is null.");
+            return;
+        }
+        for (Customer c : sim.getAllCustomers()) {
+            c.updatePosition();
+        }
+    }
+
+    /**
+     * Starts the animation loop for updating and rendering the simulation.
+     *
+     * Stops any existing animation timer before initializing and starting a new one.
+     * The animation timer periodically updates passenger positions, redraws passengers,
+     * and updates queue labels at a fixed interval.
+     */
+    public void startAnimation() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+
+        animationTimer = new AnimationTimer() {
+            private long lastUpdateTime = 0;
+
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdateTime >= 33_000_000) {
+                    updatePassengerPositions();
+                    drawPassengers();
+                    drawQueueLabels();
+                    lastUpdateTime = now;
+                }
+            }
+        };
+        animationTimer.start();
     }
 }

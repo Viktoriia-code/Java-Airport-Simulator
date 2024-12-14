@@ -20,6 +20,13 @@ public class Customer {
 
 	private double queueEntryTime;
 
+
+	private double x; // x and y coordinates of the customer
+	private double y;
+	private double targetX; // x and y coordinates of the target
+	private double targetY;
+	private double speed = 45.0; // speed of the customer
+
 	/**
 	 * Create a unique customer
 	 *
@@ -192,4 +199,50 @@ public class Customer {
 				this.isEUFlight ? "Internal" : "External",
 				removalTime - arrivalTime);
 	}
+
+	/**
+	 * Sets the target position of the customer in the simulation space.
+	 *
+	 * @param tx The x-coordinate of the target position.
+	 * @param ty The y-coordinate of the target position.
+	 */
+	public void setTargetPosition(double tx, double ty) {
+		this.targetX = tx;
+		this.targetY = ty;
+	}
+
+	/**
+	 * Updates the position of the customer, moving them closer to their target position.
+	 */
+	public void updatePosition() {
+		double dx = targetX - x;
+		double dy = targetY - y;
+		double dist = Math.sqrt(dx * dx + dy * dy);
+		if (dist > speed) {
+			x += speed * (dx / dist);
+			y += speed * (dy / dist);
+		} else {
+			x = targetX;
+			y = targetY;
+		}
+	}
+
+	/**
+	 * Gets the x coordinate of the customer
+	 *
+	 * @return The current x-coordinate of the customer.
+	 */
+	public double getX() {
+		return x;
+	}
+
+	/**
+	 * Gets the y coordinate of the customer
+	 *
+	 * @return The current y-coordinate of the customer.
+	 */
+	public double getY() {
+		return y;
+	}
+
 }
