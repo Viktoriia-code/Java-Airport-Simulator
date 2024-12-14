@@ -23,10 +23,7 @@ import javafx.scene.control.Slider;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -888,7 +885,9 @@ public class SimulatorController {
             System.err.println("Simulation engine (sim) is null.");
             return;
         }
-        for (Customer c : sim.getAllCustomers()) {
+
+        List<Customer> customersCopy = new ArrayList<>(sim.getAllCustomers());
+        for (Customer c : customersCopy) {
             c.updatePosition();
         }
     }
