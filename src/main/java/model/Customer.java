@@ -200,27 +200,11 @@ public class Customer {
 				removalTime - arrivalTime);
 	}
 
-
 	/**
-	 * Sets the customer's current position to the specified coordinates.
-	 * This method also aligns the customer's target position with the given coordinates,
-	 * effectively placing the customer directly at their target destination without requiring any movement.
+	 * Sets the target position of the customer in the simulation space.
 	 *
-	 * @param x the x-coordinate of the new position
-	 * @param y the y-coordinate of the new position
-	 */
-	public void setPosition(double x, double y) {
-		this.x = x;
-		this.y = y;
-		this.targetX = x;
-		this.targetY = y;
-	}
-
-	/**
-	 * Set the target position of the customer
-	 *
-	 * @param tx
-	 * @param ty
+	 * @param tx The x-coordinate of the target position.
+	 * @param ty The y-coordinate of the target position.
 	 */
 	public void setTargetPosition(double tx, double ty) {
 		this.targetX = tx;
@@ -228,7 +212,7 @@ public class Customer {
 	}
 
 	/**
-	 * Update the position of the customer
+	 * Updates the position of the customer, moving them closer to their target position.
 	 */
 	public void updatePosition() {
 		double dx = targetX - x;
@@ -244,18 +228,18 @@ public class Customer {
 	}
 
 	/**
-	 * Get the x coordinate of the customer
+	 * Gets the x coordinate of the customer
 	 *
-	 * @return x coordinate
+	 * @return The current x-coordinate of the customer.
 	 */
 	public double getX() {
 		return x;
 	}
 
 	/**
-	 * Get the y coordinate of the customer
+	 * Gets the y coordinate of the customer
 	 *
-	 * @return y coordinate
+	 * @return The current y-coordinate of the customer.
 	 */
 	public double getY() {
 		return y;

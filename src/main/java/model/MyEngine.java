@@ -32,6 +32,7 @@ public class MyEngine extends Engine {
     ArrayList<ServicePoint> boardingNotEUPoints = new ArrayList<>();
 
     ArrayList<ArrayList<ServicePoint>> allServicePoints = new ArrayList<>();
+    private List<Customer> allCustomers = new ArrayList<>();
 
     double percentage_business_class;
     double percentage_inside_EU;
@@ -54,6 +55,7 @@ public class MyEngine extends Engine {
     private int queueMeasurementCount = 0;
 
     private final StringBuilder servicePointResults = new StringBuilder();
+    private Function<String, Point2D> positionProvider;
 
     public MyEngine() {
         /* customer distribution percentages (0-100) */
@@ -182,9 +184,11 @@ public class MyEngine extends Engine {
 
     /**
      * Handling of ARRIVAL event. If associated Customer has done online Check-In, places them
-     * to Security: if not, places them to Check-In. Generates next arrival event.
+     * to Security, updates their target position; if not, places them to Check-In, updates their target position.
+     * Generates next arrival event.
      *
      * @param t The event that is being handled
+     * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
     private void handleArrival(Event t) {
         Customer c = t.getCustomer();
@@ -205,7 +209,6 @@ public class MyEngine extends Engine {
             throw new IllegalStateException("Target position not found for service point: " + q.getName());
         }
         arrivalProcess.generateNextEvent();
-
     }
 
     /**
@@ -213,6 +216,7 @@ public class MyEngine extends Engine {
      * in Security queue (either Fast Track or regular, depending on if Customer is in Business Class)
      *
      * @param t The event that is being handled
+     * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
     private void handleDepCheckin(Event t) {
         Customer c = checkInPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
@@ -225,13 +229,15 @@ public class MyEngine extends Engine {
             c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
         } else {
             throw new IllegalStateException("Target position not found for service point: " + q.getName());
-        }    }
+        }
+    }
 
     /**
      * Handling of DEP_SECURITY. Removes Customer from the right queue and places them to
      * In-EU Boarding or Border Control, depending on if their destination is in or out of EU.
      *
      * @param t The event that is being handled
+     * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
     private void handleDepSecurity(Event t) {
         Customer c = t.getCustomer().isBusinessClass() ?
@@ -246,13 +252,15 @@ public class MyEngine extends Engine {
             c.setTargetPosition(targetPosition.getX(), targetPosition.getY());
         } else {
             throw new IllegalStateException("Target position not found for service point: " + q.getName());
-        }    }
+        }
+    }
 
     /**
      * Handling of DEP_BORDERCTRL. Removes Customer from Border Control queue, places them
      * in out of EU Boarding.
      *
      * @param t The event that is being handled
+     * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
     private void handleDepBorderCtrl(Event t) {
         Customer c = borderControlPoints.get(t.getCustomer().getCurrentQueueIndex()).removeQueue();
@@ -624,14 +632,35 @@ public class MyEngine extends Engine {
         return servicePointResults.toString();
     }
 
-    // ANIMATION
-    private Function<String, Point2D> positionProvider;
-
+    /**
+     * Sets the position provider function used to retrieve service point positions.
+     *
+     * @param provider A function mapping service point keys to their positions.
+     */
     public void setPositionProvider(Function<String, Point2D> provider) {
         this.positionProvider = provider;
     }
 
+    /**
+     * A mapping of service point display names to their internal names.
+     */
+    private static final Map<String, String> servicePointNameMapping = Map.of(
+            "Security check", "RegularSecurityCheck",
+            "Security check (Fast Track)", "FastSecurityCheck",
+            "Check-in", "CheckIn",
+            "Border control", "BorderControl",
+            "Boarding (inside EU)", "EuOnboarding",
+            "Boarding (outside EU)", "OutEuOnboarding"
+    );
 
+    /**
+     * Retrieves the position of a specific service point based on its name and index.
+     *
+     * @param name  The name of the service point.
+     * @param index The index of the service point.
+     * @return The position of the service point as a {@code Point2D}.
+     * @throws IllegalStateException if the position provider is not set or the position cannot be found.
+     */
     private Point2D getServicePointPosition(String name, int index) {
         if (positionProvider == null) {
             throw new IllegalStateException("Position provider not set");
@@ -650,27 +679,22 @@ public class MyEngine extends Engine {
         return position;
     }
 
-
-    private List<Customer> allCustomers = new ArrayList<>();
-
+    /**
+     * Retrieves the list of all customers currently in the simulation.
+     *
+     * @return A list of all {@code Customer} objects.
+     */
     public List<Customer> getAllCustomers() {
         return allCustomers;
     }
 
+    /**
+     * Removes a customer from the simulation.
+     *
+     * @param c The {@code Customer} to be removed.
+     */
     public void removeCustomer(Customer c) {
         allCustomers.remove(c);
     }
-
-
-    private static final Map<String, String> servicePointNameMapping = Map.of(
-            "Security check", "RegularSecurityCheck",
-            "Security check (Fast Track)", "FastSecurityCheck",
-            "Check-in", "CheckIn",
-            "Border control", "BorderControl",
-            "Boarding (inside EU)", "EuOnboarding",
-            "Boarding (outside EU)", "OutEuOnboarding"
-    );
-
-
 
 }
