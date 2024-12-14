@@ -79,13 +79,13 @@ public abstract class Engine {
                 }
             }
 
-            Trace.out(Trace.Level.INFO, "\nA-phase: time is " + currentTime());
+            Trace.out(Trace.Level.DEBUG, "\nA-phase: time is " + currentTime());
             clock.setClock(currentTime());
 
-            Trace.out(Trace.Level.INFO, "\nB-phase:");
+            Trace.out(Trace.Level.DEBUG, "\nB-phase:");
             runBEvents();
 
-            Trace.out(Trace.Level.INFO, "\nC-phase:");
+            Trace.out(Trace.Level.DEBUG, "\nC-phase:");
             tryCEvents();
 
             synchronized (this) {

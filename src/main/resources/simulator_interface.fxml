@@ -521,20 +521,20 @@
                   <VBox prefHeight="200.0" prefWidth="100.0" spacing="1.0">
                      <children>
                         <Label text="Served passengers" />
-                        <Label fx:id="totalPassengersServedLabel" text="0" />
+                        <Label fx:id="totalPassengersServedLabel" text="--" />
                         <Separator prefWidth="200.0" />
                         <Label text="Simulation time" />
-                        <Label fx:id="simulationTimeLabel" text="0 mins" />
+                        <Label fx:id="simulationTimeLabel" text="-- mins" />
                         <Separator prefWidth="200.0" />
                         <Label minHeight="-Infinity" text="Average service time per passenger" wrapText="true" />
-                        <Label fx:id="avServiceTimeLabel" text="0 mins" />
+                        <Label fx:id="avServiceTimeLabel" text="-- mins" />
                         <Separator prefWidth="200.0" />
                         <Label minHeight="-Infinity" text="Average queue time per passenger" wrapText="true" />
-                        <Label fx:id="avQueueLabel" text="0 mins" />
+                        <Label fx:id="avQueueLabel" text="-- mins" />
                         <Separator prefWidth="200.0" />
-                        <Label text="Longest queue length" />
-                        <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="Point name" wrapText="true" />
-                        <Label fx:id="longestQueueSizeLabel" text="0 passengers" />
+                        <Label text="Longest queue" />
+                        <Label fx:id="longestQueueNameLabel" minHeight="-Infinity" text="--" wrapText="true" />
+                        <Label fx:id="longestQueueSizeLabel" text="-- passengers" />
                         <Separator prefWidth="200.0" />
                         <Label text="Served passengers by SP" />
                      </children>
@@ -542,7 +542,7 @@
                         <Insets left="5.0" right="5.0" />
                      </padding>
                   </VBox>
-                  <TextArea fx:id="servicePointResultsTextArea" style="-fx-border-radius: 5px;" VBox.vgrow="ALWAYS">
+                  <TextArea fx:id="servicePointResultsTextArea" promptText="---" style="-fx-border-radius: 5px;" VBox.vgrow="ALWAYS">
                      <font>
                         <Font size="11.0" />
                      </font>
@@ -605,5 +605,3 @@
       </BorderPane>
    </content>
 </ScrollPane>
-
-

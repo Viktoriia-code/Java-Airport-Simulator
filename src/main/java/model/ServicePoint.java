@@ -145,7 +145,9 @@ public class ServicePoint {
      */
     public void beginService() {        // Begins a new service, customer is on the queue during the service
         try {
-            Trace.out(Trace.Level.INFO, "Starting " + name + " for the customer #" + queue.peek().getId() + " at queue #" + queue.peek().getCurrentQueueIndex());
+            String message = "Start to serve passenger #" + queue.peek().getId() + " at " + name + " #" + queue.peek().getCurrentQueueIndex();
+            Trace.out(Trace.Level.INFO, message);
+            Trace.log(Trace.Level.INFO, message);
             reserved = true;
             double serviceTime = generator.sample();
             eventList.add(new Event(eventTypeScheduled, Clock.getInstance().getClock() + serviceTime, queue.getLast()));

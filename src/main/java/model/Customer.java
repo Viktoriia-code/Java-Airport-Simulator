@@ -20,7 +20,6 @@ public class Customer {
 
 	private double queueEntryTime;
 
-
 	private double x; // x and y coordinates of the customer
 	private double y;
 	private double targetX; // x and y coordinates of the target
@@ -42,10 +41,12 @@ public class Customer {
 		id = i++;
 
 		setArrivalTime(Clock.getInstance().getClock());
-		Trace.out(Trace.Level.INFO, "New customer #" + id + " arrived at  " + arrivalTime +
+		String message = "Passenger #" + id + " arrived at " + String.format("%.2f mins", arrivalTime) +
 				(this.isBusinessClass ? " (Business Class" : " (Economy Class") +
-				(this.isEUFlight ? " || Inside EU ||" : " || Outside EU ||") +
-				(this.isOnlineCheckIn ? " Online Check-Out)" : " Regular Check Out)"));
+				(this.isEUFlight ? " | Inside EU |" : " | Outside EU |") +
+				(this.isOnlineCheckIn ? " Online Check-In)" : " Onsite Check-In)");
+		Trace.out(Trace.Level.INFO, message);
+		Trace.log(Trace.Level.INFO, message);
 	}
 
 	/**
@@ -185,19 +186,15 @@ public class Customer {
 	 * Report the measured variables of the customer. In this case to the diagnostic output.
 	 */
 	public void reportResults() {
-		Trace.out(Trace.Level.INFO, "\nCustomer #" + id + " ready! ");
-		Trace.out(Trace.Level.INFO, "Customer #" + id + " arrived: " + arrivalTime);
-		Trace.out(Trace.Level.INFO, "Customer #" + id + " removed: " + removalTime);
-		Trace.out(Trace.Level.INFO, "Customer #" + id + " stayed: " + (removalTime - arrivalTime));
+		Trace.out(Trace.Level.INFO, "Customer #" + id + " is ready. Total time: " + (removalTime - arrivalTime));
+		Trace.log(Trace.Level.INFO, "Customer #" + id + " is ready. Total time: " + (removalTime - arrivalTime));
 
 		serviceTimeSum += (getRemovalTime() - getArrivalTime());
-		double mean = serviceTimeSum / id;
-		System.out.println("Current mean of the customer service times " + mean);
-		System.out.printf("Customer %s: %s, Flight: %s, Total Time: %.2f%n",
+		/* System.out.printf("Customer %s: %s, Flight: %s, Total Time: %.2f%n",
 				getId(),
 				this.isBusinessClass ? "Business" : "Economy",
 				this.isEUFlight ? "Internal" : "External",
-				removalTime - arrivalTime);
+				removalTime - arrivalTime); */
 	}
 
 	/**
