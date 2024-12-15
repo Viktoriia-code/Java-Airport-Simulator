@@ -120,7 +120,7 @@ public class MyEngine extends Engine {
      * creates CustomerCreator with proper percentages, resets ServiceTimeSum and id of Customer Class
      */
     @Override
-    protected void initialize() {
+    public void initialize() {
         this.allServicePoints.clear();
         this.checkInPoints.clear();
         this.securityPoints.clear();
@@ -192,7 +192,7 @@ public class MyEngine extends Engine {
      * @param t The event that is being handled
      * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
-    private void handleArrival(Event t) {
+    public void handleArrival(Event t) {
         Customer c = t.getCustomer();
         allCustomers.add(c);
         ServicePoint q;
