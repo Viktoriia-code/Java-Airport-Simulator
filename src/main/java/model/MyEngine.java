@@ -6,6 +6,7 @@ import eduni.distributions.Negexp;
 import framework.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javafx.geometry.Point2D;
@@ -33,6 +34,7 @@ public class MyEngine extends Engine {
 
     ArrayList<ArrayList<ServicePoint>> allServicePoints = new ArrayList<>();
     private List<Customer> allCustomers = new ArrayList<>();
+    private Consumer<String> logCallback;
 
     double percentage_business_class;
     double percentage_inside_EU;
@@ -118,7 +120,7 @@ public class MyEngine extends Engine {
      * creates CustomerCreator with proper percentages, resets ServiceTimeSum and id of Customer Class
      */
     @Override
-    protected void initialize() {
+    public void initialize() {
         this.allServicePoints.clear();
         this.checkInPoints.clear();
         this.securityPoints.clear();
@@ -190,7 +192,7 @@ public class MyEngine extends Engine {
      * @param t The event that is being handled
      * @throws IllegalStateException if the target position for the assigned queue cannot be determined.
      */
-    private void handleArrival(Event t) {
+    public void handleArrival(Event t) {
         Customer c = t.getCustomer();
         allCustomers.add(c);
         ServicePoint q;
@@ -695,6 +697,27 @@ public class MyEngine extends Engine {
      */
     public void removeCustomer(Customer c) {
         allCustomers.remove(c);
+    }
+
+
+    /**
+     * Sets the callback function to handle log messages.
+     *
+     * @param logCallback a {@code Consumer} to process log messages
+     */
+    public void setLogCallback(Consumer<String> logCallback) {
+        this.logCallback = logCallback;
+    }
+
+    /**
+     * Logs a message using the specified log callback, if set.
+     *
+     * @param message the message to log
+     */
+    private void log(String message) {
+        if (logCallback != null) {
+            logCallback.accept(message);
+        }
     }
 
 }
