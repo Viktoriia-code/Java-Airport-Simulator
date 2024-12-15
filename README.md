@@ -4,6 +4,7 @@ This is a Maven-based Java simulation for airport systems, designed to model and
 
 The Airport Simulator is intended to help airport operators simulate the time passengers take during the boarding process and optimize resource allocation to improve efficiency.
 
+JavaDoc documentation: https://viktoriia-code.github.io/Java-Airport-Simulator/src/main/docs/index.html
 
 📅 November - December, 2024
 
