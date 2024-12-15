@@ -1,6 +1,9 @@
 unnamed package
 controller
+dao
+datasource
 eduni.distributions
+entity
 framework
 model
 view
