@@ -50,6 +50,7 @@ In your IDE (e.g., IntelliJ IDEA or Eclipse), right-click the `Launcher` class a
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c87c71fa-7088-457f-b8ba-7e090b3c4d0f" width="700">
 </p>
+
 ## Configurable Simulation Settings
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c63acc4b-7c76-48b0-8f58-14660bf7dba5" width="700">
