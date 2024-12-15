@@ -23,10 +23,7 @@ import javafx.scene.control.Slider;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -161,6 +158,8 @@ public class SimulatorController {
     // Log area for simulation events
     @FXML
     private ListView<TextFlow> logListView;
+    // Maximum number of log items
+    private static final int MAX_LOG_ITEMS = 100;
 
     // Results Section (Right part of the screen)
     @FXML
@@ -180,6 +179,7 @@ public class SimulatorController {
 
     // Simulation engine
     private MyEngine sim;
+
 
     /**
      * Initializes the Airport Simulator application.
@@ -474,6 +474,7 @@ public class SimulatorController {
             );
 
             sim.setPositionProvider(key -> servicePointPositions.get(key));
+            sim.setLogCallback(message -> Platform.runLater(() -> log(message)));
 
             setSpeed(sim);
 
@@ -832,23 +833,30 @@ public class SimulatorController {
      * @param s the message to log
      */
     public void log(String s) {
-        // Get the current time in HH:mm:ss format
-        LocalTime currentTime = LocalTime.now();
-        String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        Platform.runLater(() -> {
+            // Get the current time in HH:mm:ss format
+            LocalTime currentTime = LocalTime.now();
+            String timeString = currentTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-        // Create a Text object for the time and set it to bold
-        Text timeText = new Text(timeString + "  ");
-        timeText.setStyle("-fx-font-weight: bold;");
+            // Create a Text object for the time and set it to bold
+            Text timeText = new Text(timeString + "  ");
+            timeText.setStyle("-fx-font-weight: bold;");
 
-        // Create a Text object for the message
-        Text messageText = new Text(s);
+            // Create a Text object for the message
+            Text messageText = new Text(s);
 
-        // Combine both into a TextFlow
-        TextFlow textFlow = new TextFlow(timeText, messageText);
+            // Combine both into a TextFlow
+            TextFlow textFlow = new TextFlow(timeText, messageText);
 
-        // Add the TextFlow to the ListView
-        logListView.getItems().add(textFlow);
-        Platform.runLater(() -> logListView.scrollTo(logListView.getItems().size() - 1));
+            // Add the TextFlow to the ListView
+            logListView.getItems().add(textFlow);
+
+            if (logListView.getItems().size() > MAX_LOG_ITEMS) {
+                logListView.getItems().remove(0);
+            }
+
+            logListView.scrollTo(logListView.getItems().size() - 1);
+        });
     }
 
     /**
@@ -860,7 +868,9 @@ public class SimulatorController {
     private void drawPassengers() {
         GraphicsContext gc = passengerCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, passengerCanvas.getWidth(), passengerCanvas.getHeight());
-        for (Customer c : sim.getAllCustomers()) {
+
+        List<Customer> customersCopy = new ArrayList<>(sim.getAllCustomers());
+        for (Customer c : customersCopy) {
             gc.setFill(Color.ORANGERED); // Set the customer color
             gc.fillOval(c.getX() - 4, c.getY() - 4, 8, 8); // Draw the customer dot
         }
@@ -877,7 +887,9 @@ public class SimulatorController {
             System.err.println("Simulation engine (sim) is null.");
             return;
         }
-        for (Customer c : sim.getAllCustomers()) {
+
+        List<Customer> customersCopy = new ArrayList<>(sim.getAllCustomers());
+        for (Customer c : customersCopy) {
             c.updatePosition();
         }
     }
