@@ -2,9 +2,13 @@
 
 This is a Maven-based Java simulation for airport systems, designed to model and analyze airport operations in a controlled, virtual environment using a 3-phase model. It uses a <a href="https://www.dcs.ed.ac.uk/home/simjava/distributions/doc/eduni/distributions/package-summary.html">distribution package from The University of Edinburgh</a> to model events like passenger arrivals, check-ins, security checks, border control and boarding. The project provides a complete framework for setting up, managing, and analyzing the flow of passengers and queues within an airport environment. In addition to improving passenger flow, the simulator also provides useful data on how busy each part of the airport is. By showing which service point are the most crowded, it helps airport management make better decisions on how to allocate resources and improve overall efficiency.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c551f8e5-f465-433b-b37a-314e82e47480" width="700">
+</p>
+
 The Airport Simulator is intended to help airport operators simulate the time passengers take during the boarding process and optimize resource allocation to improve efficiency.
 
-JavaDoc documentation: https://viktoriia-code.github.io/Java-Airport-Simulator/src/main/docs/index.html
+:clipboard: JavaDoc documentation: https://viktoriia-code.github.io/Java-Airport-Simulator/src/main/docs/index.html
 
 📅 November - December, 2024
 
@@ -15,8 +19,9 @@ JavaDoc documentation: https://viktoriia-code.github.io/Java-Airport-Simulator/s
 - **JavaDoc**: A tool used to generate API documentation in HTML format directly from the Java source code.
 - **MariaDB**: A relational database management system used to store and manage the application's data persistently.
 - **JUnit5**: A modern testing framework used to write and execute unit tests, ensuring code quality and reliability.
-
-<img src="https://github.com/user-attachments/assets/ee2e5b35-7ee6-4689-9abc-540f4443a7ab" width="700">
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ee2e5b35-7ee6-4689-9abc-540f4443a7ab" width="700">
+</p>
 
 ## Installation
 
@@ -39,12 +44,16 @@ Once MariaDB is installed, you will need to set up the database for the simulato
 In your IDE (e.g., IntelliJ IDEA or Eclipse), right-click the `Launcher` class and choose Run.
 
 ## Simulation Metrics and Observed Data
-<img src="https://github.com/user-attachments/assets/f2bf7b85-d4a8-4bc0-881b-1b61a5843c83" width="700">
-
-<img src="https://github.com/user-attachments/assets/c87c71fa-7088-457f-b8ba-7e090b3c4d0f" width="700">
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f2bf7b85-d4a8-4bc0-881b-1b61a5843c83" width="700">
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c87c71fa-7088-457f-b8ba-7e090b3c4d0f" width="700">
+</p>
 ## Configurable Simulation Settings
-<img src="https://github.com/user-attachments/assets/c63acc4b-7c76-48b0-8f58-14660bf7dba5" width="700">
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c63acc4b-7c76-48b0-8f58-14660bf7dba5" width="700">
+</p>
 
 ## Authors:
 - [Viktoriia-code](https://github.com/Viktoriia-code)
