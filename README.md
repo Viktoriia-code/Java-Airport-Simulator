@@ -4,6 +4,7 @@ This is a Maven-based Java simulation for airport systems, designed to model and
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c551f8e5-f465-433b-b37a-314e82e47480" width="700">
+  <img src="https://github.com/user-attachments/assets/131c44d1-2782-414d-90c2-f4a01058a8df" width="700">
 </p>
 
 The Airport Simulator is intended to help airport operators simulate the time passengers take during the boarding process and optimize resource allocation to improve efficiency.
